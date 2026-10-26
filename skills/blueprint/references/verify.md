@@ -1,13 +1,12 @@
 # Verify: the review checklist
 
-The person who builds it finds faults by standing at the saw with the page. Find them first. Run the three commands, read every PNG, then answer every question below. Fix the design or the text, rebuild, and go round again until every answer is yes.
+The person who builds it finds faults by standing at the saw with the page. Find them first. Run `check`, read every PNG, then answer every question below. Fix the design or the text, run it again, and go round until every answer is yes.
 
 ```bash
-node scripts/test-fea.mjs                              # once per kit change
-node scripts/build.mjs plans/<id>/design.mjs           # writes index.html, prints the checks
-node scripts/audit.mjs plans/<id>/design.mjs           # must end: audit passed
-node scripts/capture.mjs plans/<id>/index.html --pdf   # must end: capture passed; PNGs, plan.pdf and pdf-N.png pages in shots/
-node scripts/capture.mjs plans/<id>/index.html --hash "top=steel" --out plans/<id>/shots/steel   # every option and every size where the design changes (hash values in mm / kg, bools 1/0)
+node $SKILL/scripts/blueprint.mjs check plans/<id>/design.mjs --hash "top=steel" --hash "length=2400"
+#   build, audit, capture --pdf, then one capture per --hash into shots/<hash>/: must end "check passed"
+#   a --hash for every option and every size where the design changes (values in mm / kg, bools 1/0)
+node $SKILL/scripts/blueprint.mjs test   # once per kit change: the frame solver against textbook beams
 ```
 
 ## The commands must pass

@@ -2,9 +2,9 @@
 name: blueprint
 description: Create a complete, parametric build plan for anything a workshop makes (welded steel or aluminium frames, timber and plywood, PVC pipe, plate and sheet, 3D-printed fixtures and hubs, and the parts you buy: connectors, cable, fasteners) as one standalone HTML build pack: a 3D model, input fields that resize the whole plan live, checks that must all pass, a bill of materials with what to buy and what to print, downloadable STL and OpenSCAD files for every printed part, a third-angle general arrangement drawing, numbered build steps with jig drawings and joint coordinates, a cut sheet for every piece, and a cut list with a stock cutting plan. Use it whenever someone wants plans, a blueprint, a build guide, a cut list or "how do I build" instructions for a physical thing: a workbench, welding cart, shelf, gate, stand, jig, mount, antenna, enclosure frame, PVC rack or furniture, even if they never say "plan". Metric by default; imperial when the user asks for it.
 license: MIT
-compatibility: Written for Claude Code; runs in any agent that can run Node.js 20+. The browser check needs Playwright with Chromium.
+compatibility: Any agent that can run shell commands with Node.js 20+ (no npm install). The browser check needs Playwright with Chromium; `scripts/blueprint.mjs doctor` checks the machine and prints the fix.
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Blueprint
@@ -17,7 +17,23 @@ Open the closest example before you start, and copy its shape.
 - `examples/metal-workbench/design.mjs`: an all-steel welded workbench with a bar top and a bar shelf, generated with this skill from "create build plans for a simple metal work bench" and iterated until it passed. Shows a design that adapts (middle legs above 1800 mm, cross rails every 600 mm or less), a `bool` param, four load cases plus a shelf case, bars placed by a rule (`points: false` and a step table), foot plates with welded nuts for levelling feet, and `{mark:id}` in the steps.
 - `examples/v-dipole-137/design.mjs`: a 137 MHz V-dipole for weather satellites (9A4QV style), generated with this skill: aluminium or brass rods, a PVC mast and a **3D-printed feed hub** with an SMA jack. Shows prints (solids, cuts, `bed`), non-steel materials, `choice` labels that follow the units, electrical plan checks (element length from frequency, feed match, choke, coax loss), a mast length whose limit follows the wind, and a two-part wind load.
 
-Build one with `node scripts/build.mjs examples/<name>/design.mjs --out /tmp/<name>.html` and open it (without `--out` it writes `index.html` next to the design).
+## Quickstart
+
+Every tool is one command, `scripts/blueprint.mjs`, run with Node.js 20+ from the user's project. `$SKILL` below is the folder this SKILL.md is in (for example `~/.claude/skills/blueprint`); write it out in full. No `npm install` is needed: the kit has no dependencies.
+
+```bash
+node $SKILL/scripts/blueprint.mjs doctor                                # first: what this machine has, and the fix for anything missing
+node $SKILL/scripts/blueprint.mjs examples                              # the examples and what each one shows
+node $SKILL/scripts/blueprint.mjs new welding-cart --from metal-workbench --name "Welding cart"
+                                                                        # writes plans/welding-cart/design.mjs from that example
+node $SKILL/scripts/blueprint.mjs check plans/welding-cart/design.mjs   # build + audit + browser capture: must end "check passed"
+```
+
+- `check` stops at the first stage that fails and names it. Exit 0 passed, 1 a check failed (fix the design), 2 bad usage or the machine is missing something (run `doctor`).
+- Add `--hash "top=steel"` (repeatable) to also capture a variant into `shots/<hash>/`.
+- If `doctor` says there is no browser and it cannot be installed, run `check ... --no-browser` (build and audit only) and tell the user the page was not opened in a browser. Never skip the audit.
+- The stages also run on their own: `build`, `audit`, `capture`, `test` (`blueprint.mjs help` lists the flags).
+- A file started by `new` carries a "STARTED FROM" note, and the audit fails until you have rewritten the plan and deleted it.
 
 ## The one idea that matters
 
@@ -56,12 +72,13 @@ Work in this order. Write the requirements and the structure before any code: mo
 2. **Truth first.** Write down what it must do before you design it: the load and how it is applied (a 300 kg spread load, a 100 kg point load at a corner, someone leaning on it), what it stands on, where it lives, who builds it and with what tools, the stock they can buy (ask only if it changes the design; otherwise pick common local stock and say so). These become the load cases, the checks and the tools list.
 3. **Choose the structure and the materials.** Use what the job and the builder's shop call for, not steel by habit: PVC pipe for light frames, masts and anything outdoors that must not rust; aluminium rod or tube for light conductors and elements; timber and plywood for benches and decks; steel where it carries real load. Use a **3D-printed part** where a fabricated one would be fiddly: a hub where several members meet at odd angles, a clamp or saddle onto a pipe, a holder for a connector, a jig or a drilling guide. Keep prints in clamping and compression, not as the main load path of anything heavy, and pick the filament for where it lives (outdoors: ASA or PETG, not PLA). `references/prints.md` has the design rules.
    Then lay out the frame in words: which members run through, which butt, where the braces go, how it meets the floor. Follow `references/structure.md`: straight cuts, legs that run past corners with rails welded to their faces, one or two sections, no ears, triangulate or rely on welded corners (and check racking), feet that spread the load. Pick sections from its stock tables (steel, aluminium, timber, PVC).
-4. **Write the params**, then the model in `design.mjs`, in this order: sections, nodes (named so a builder can read them: `FL0` front-left at the floor), members, plates, hardware, supports, loads, tip, plan checks, steps. The schema is in `references/model.md`; copy the example's shape.
+4. **Start the file** with `blueprint.mjs new <id> --from <closest example>`, then **write the params** and the model in `design.mjs`, in this order: sections, nodes (named so a builder can read them: `FL0` front-left at the floor), members, plates, hardware, supports, loads, tip, plan checks, steps. The schema is in `references/model.md`; copy the example's shape.
 5. **Write the steps**: Fabricate (cut, tack sub-frames on a flat table, join, weld out in a balanced sequence, plates and tabs from the real parts), then Finish or Assemble (paint, fit parts, level, load-test). Every step that fits members ends with a check (diagonals, plumb, level, within a tolerance). `references/steps.md` has the rules and a model step.
-6. **Build and audit.**
-   - `node scripts/build.mjs plans/<id>/design.mjs` writes `plans/<id>/index.html` and prints every check with its value.
-   - `node scripts/audit.mjs plans/<id>/design.mjs` must end `audit passed`. Fix the design, never a check: a failing strength check gets a bigger section or a brace, a failing size gets a design that adapts, a hard-coded "mm" gets `u.len()`.
-   - `node scripts/capture.mjs plans/<id>/index.html --pdf` must end `capture passed`. It types into a field, switches to inches, checks the 3D view and the phone width, and writes PNGs (and the printed pages) to `plans/<id>/shots/`. For every `choice` option and every size where the design changes (a middle leg appears), capture that variant too: `--hash "top=steel" --out plans/<id>/shots/steel`.
+6. **Check it.** `node $SKILL/scripts/blueprint.mjs check plans/<id>/design.mjs` must end `check passed`. It runs three stages:
+   - **build** writes `plans/<id>/index.html` and prints every check with its value.
+   - **audit** runs every check at every size the fields allow and lints the plan. Fix the design, never a check: a failing strength check gets a bigger section or a brace, a failing size gets a design that adapts, a hard-coded "mm" gets `u.len()`.
+   - **capture** opens the page in headless Chromium: types into a field, switches to inches, checks the 3D view, the downloads and the phone width, and writes PNGs (and the printed pages) to `plans/<id>/shots/`.
+   For every `choice` option and every size where the design changes (a middle leg appears), add that variant: `--hash "top=steel"`.
 7. **Verify like a builder.** Read every PNG: desktop, phone, every step, the drawings, the cut list, the imperial pass. Then go through `references/verify.md` as someone standing at the saw with only this page. Iterate until every answer is yes.
 8. **Deliver.** The plan folder (`design.mjs`, `index.html`, `shots/`). Tell the user the size, the main numbers (mass, load and safety factor, cost if priced), the assumptions you made about stock and load, and how to change the size (the fields on the page; the URL keeps it).
 
@@ -71,19 +88,21 @@ The kit is in `kit/`; a plan never imports it (the build script bundles both int
 
 | File | What it does |
 |---|---|
-| `kit/core.mjs` | Vectors, materials (steel, stainless, aluminium, timber), stock sections (`squareTube`, `rectTube`, `roundTube`, `flatBar`, `bar`, `timber`) with their section properties, the metric/imperial formatters, param resolution with dynamic limits. |
+| `scripts/blueprint.mjs` | **The command you run**: `doctor`, `examples`, `new`, `build`, `audit`, `capture`, `check`, `test`. The other scripts are its stages. |
+| `scripts/build.mjs` | Builds `design.mjs` into one standalone `index.html` (the sections are pre-rendered, so it reads and prints without JavaScript). |
+| `scripts/audit.mjs` | The sweep and the plan lint. Must print `audit passed`. |
+| `scripts/capture.mjs` | Headless Chromium check and screenshots; `--pdf` prints the pack to A4. Must print `capture passed`. |
+| `scripts/env.mjs` | Finds Node, Playwright, Chromium and pdftoppm the same way for `doctor` and `capture`. |
+| `scripts/test-fea.mjs` | The frame solver against textbook beams. |
+| `kit/core.mjs` | Vectors, materials (steel, stainless, aluminium, timber, PVC, copper, brass), stock sections (`squareTube`, `rectTube`, `roundTube`, `flatBar`, `bar`, `timber`, `rod`, `pvcPipe`) with their section properties, the metric/imperial formatters, param resolution with dynamic limits. |
 | `kit/print.mjs` | 3D-printed parts: solids and cuts, filament and time estimates, OpenSCAD source. The page cuts the exact mesh in the browser (three-bvh-csg) for the 3D view and the STL download. |
 | `kit/joints.mjs` | The joint solver: at every node decides through / mitre / butt / flush, trims every member to its real cut planes, gives each end's angles. |
 | `kit/derive.mjs` | `derive(plan, params, units)`: the one pipeline. Joints, piece marks (identical and mirror pieces share a letter), plate marks, stock nesting, mass and centre of mass, frame analysis, tip-over, every kit check plus the plan's own, cost, hours. |
-| `kit/fea.mjs` | 3D beam frame solver, two bending stiffnesses per section. Proven by `scripts/test-fea.mjs`. |
+| `kit/fea.mjs` | 3D beam frame solver, two bending stiffnesses per section. Proven by `blueprint.mjs test`. |
 | `kit/shop.mjs` | SVG drawings: third-angle sheets (GA and per-step jigs) at one scale with dimensions, cut sheets with edge marks, plate drawings with holes, cutting plans. |
 | `kit/pack.mjs`, `kit/page.mjs` | The page sections and the standalone HTML shell, print styles included. |
 | `kit/viewer.mjs` | The 3D view (three.js): orthographic, four greys by facing, ink outlines, the current step lit in red, a stress view. |
 | `kit/app.mjs` | The page runtime: input fields, units switch, URL state, live re-render, step ticks saved on the device. |
-| `scripts/build.mjs` | Builds `design.mjs` into one standalone `index.html` (the sections are pre-rendered, so it reads and prints without JavaScript). |
-| `scripts/audit.mjs` | The sweep and the plan lint. Must print `audit passed`. |
-| `scripts/capture.mjs` | Headless Chromium check and screenshots; `--pdf` prints the pack to A4. Must print `capture passed`. |
-| `scripts/test-fea.mjs` | The frame solver against textbook beams. |
 
 Put new plans in `plans/<id>/design.mjs` in the user's project (or wherever they ask), not inside the skill folder.
 

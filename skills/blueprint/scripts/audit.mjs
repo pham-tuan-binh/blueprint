@@ -11,6 +11,7 @@
 // without a check). Ends with "audit passed" or exits 1.
 import { resolve, dirname, join } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 
 const KIT = resolve(dirname(fileURLToPath(import.meta.url)), '../kit');
 const args = process.argv.slice(2);
@@ -25,6 +26,7 @@ const plan = mod.plan || mod.default;
 
 const problems = [];
 const fail = (where, msg) => problems.push(`${where}: ${msg}`);
+if (/STARTED FROM examples\//.test(readFileSync(resolve(file), 'utf8'))) fail('design.mjs', 'still carries the "STARTED FROM examples/" note from `blueprint new`: rewrite the plan for this thing, then delete the note');
 
 // ---------------------------------------------------------------- plan lint
 const params = plan.params || [];

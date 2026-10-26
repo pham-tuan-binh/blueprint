@@ -19,7 +19,13 @@ An agent skill that creates the build plan for anything a workshop makes: welded
 npx skills add pham-tuan-binh/blueprint
 ```
 
-or copy `skills/blueprint/` into your agent's skills folder (for Claude Code: `~/.claude/skills/blueprint/` or `.claude/skills/blueprint/` in a project). It needs Node.js 20+; the browser check needs Playwright with Chromium.
+or copy `skills/blueprint/` into your agent's skills folder (for Claude Code: `~/.claude/skills/blueprint/` or `.claude/skills/blueprint/` in a project). It needs Node.js 20+ and nothing to install; the browser check needs Playwright with Chromium. Check a machine with:
+
+```bash
+node skills/blueprint/scripts/blueprint.mjs doctor
+```
+
+Any agent that can run shell commands can use it (Claude Code, Codex, Cursor, Gemini CLI, ...): every tool is one command, `scripts/blueprint.mjs`.
 
 ## Use
 
@@ -29,7 +35,15 @@ Ask for a plan in plain words. Say inches if you want imperial.
 
 > I need plans for a welding cart for a 120 A MIG and one gas bottle, in inches.
 
-The agent writes `plans/<name>/design.mjs` (the single source of truth), builds it, audits it at every size the fields allow and checks the page in a browser, then hands you `plans/<name>/index.html`.
+The agent starts `plans/<name>/design.mjs` (the single source of truth) from the closest example, writes the design, and runs `blueprint.mjs check`, which builds it, audits it at every size the fields allow and checks the page in a browser. Then it hands you `plans/<name>/index.html`.
+
+The same commands by hand:
+
+```bash
+B=skills/blueprint/scripts/blueprint.mjs
+node $B new welding-cart --from metal-workbench     # plans/welding-cart/design.mjs
+node $B check plans/welding-cart/design.mjs         # build + audit + capture: "check passed"
+```
 
 ## Examples
 
@@ -51,10 +65,12 @@ skills/blueprint/
   references/         the design.mjs schema, structure and stock tables, writing steps, the review checklist
   kit/                one pipeline from a design to the page: joints, analysis, drawings, page, 3D viewer
   scripts/
+    blueprint.mjs     the one command: doctor, examples, new, build, audit, capture, check, test
     build.mjs         design.mjs -> one standalone index.html
     audit.mjs         every check at every min, max and 40 random sizes, metric and imperial: "audit passed"
     capture.mjs       headless Chromium: types into a field, switches to inches, screenshots: "capture passed"
     test-fea.mjs      the frame solver against textbook beams
+    env.mjs           finds Node, Playwright, Chromium and pdftoppm for doctor and capture
   examples/
 ```
 

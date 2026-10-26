@@ -11,11 +11,11 @@
 // list, the other units) and, with --pdf, the printed pack. Fails on any console error, a
 // blank 3D view, sideways scroll on a phone, an input field that does not change
 // the plan, or a units switch that leaves millimetres behind. Read every PNG.
-import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
 import { resolve, join, dirname } from 'node:path';
-import { mkdirSync, existsSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { findPlaywright, launchChromium, hasPdftoppm, PLAYWRIGHT_FIX } from './env.mjs';
 
 const args = process.argv.slice(2);
 const page0 = args.find(a => !a.startsWith('--'));
@@ -25,16 +25,11 @@ const file = resolve(page0);
 const out = resolve(opt('out', join(dirname(file), 'shots')));
 mkdirSync(out, { recursive: true });
 
-function loadPlaywright() {
-  const require = createRequire(import.meta.url);
-  const tries = [() => require('playwright'), () => require(join(execSync('npm root -g').toString().trim(), 'playwright'))];
-  for (const t of tries) { try { return t(); } catch { /* next */ } }
-  console.error('playwright not found: npm i -g playwright (and a Chromium it can launch)');
-  process.exit(2);
-}
-const { chromium } = loadPlaywright();
-const exe = ['/opt/pw-browsers/chromium', process.env.CHROMIUM_PATH].find(p => p && existsSync(p) && !p.endsWith('/chromium'));
-const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'], ...(exe ? { executablePath: exe } : {}) });
+const pw = findPlaywright();
+if (!pw) { console.error(`playwright not found. Fix: ${PLAYWRIGHT_FIX}\nThen: node scripts/blueprint.mjs doctor`); process.exit(2); }
+let browser;
+try { browser = await launchChromium(pw); }
+catch (e) { console.error(`${e.message}\nFix: ${e.fix}`); process.exit(2); }
 const problems = [];
 const url = pathToFileURL(file).href + (opt('hash', '') ? '#' + opt('hash', '').replace(/^#/, '') : '');
 
@@ -155,8 +150,8 @@ if (args.includes('--pdf')) {
   await p.emulateMedia({ media: 'print' });
   await p.pdf({ path: join(out, 'plan.pdf'), format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '12mm', left: '10mm', right: '10mm' } });
   // pages as images, so the print layout can be read too
-  try { execSync(`pdftoppm -r 50 -png "${join(out, 'plan.pdf')}" "${join(out, 'pdf')}"`); }
-  catch { console.log('note: pdftoppm not found, so plan.pdf pages were not rendered to PNG (install poppler-utils)'); }
+  if (hasPdftoppm()) execSync(`pdftoppm -r 50 -png "${join(out, 'plan.pdf')}" "${join(out, 'pdf')}"`);
+  else console.log('note: pdftoppm not found, so plan.pdf pages were not rendered to PNG (install poppler-utils)');
 }
 await p.close();
 

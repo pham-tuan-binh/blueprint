@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blueprint"
+  short_description: "Parametric build plans for anything a workshop makes: frames, PVC, timber, 3D prints"
+  default_prompt: "Use the blueprint skill to create a build plan for a simple metal workbench. Run `node scripts/blueprint.mjs doctor` first."

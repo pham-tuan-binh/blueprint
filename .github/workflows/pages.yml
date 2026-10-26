@@ -32,13 +32,13 @@ jobs:
           node-version: 22
 
       - name: Frame solver matches textbook beams
-        run: node skills/blueprint/scripts/test-fea.mjs
+        run: node skills/blueprint/scripts/blueprint.mjs test
 
       - name: Every plan passes its audit at every size its fields allow
         run: |
           for f in plans/*/design.mjs skills/blueprint/examples/*/design.mjs; do
             echo "::group::audit $f"
-            node skills/blueprint/scripts/audit.mjs "$f"
+            node skills/blueprint/scripts/blueprint.mjs audit "$f"
             echo "::endgroup::"
           done
 
