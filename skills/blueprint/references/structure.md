@@ -1,6 +1,6 @@
 # Structure, loads and stock
 
-How to lay out a frame so the joint solver, the checks and a person with a saw and a welder all agree. In short: square tube, straight cuts, no bending, a flat table, tack everything, weld out once.
+Read this when laying out a frame. How to lay out a frame so the joint solver, the checks and a person with a saw and a welder all agree. In short: square tube, straight cuts, no bending, a flat table, tack everything, weld out once.
 
 ## Joints
 

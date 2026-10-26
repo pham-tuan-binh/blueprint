@@ -83,13 +83,13 @@ One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions
 ```
 skills/blueprint/
   SKILL.md            the workflow and rules the agent follows
-  references/         the design.mjs schema, structure and stock tables, writing steps, the review checklist
+  references/         the design.mjs schema, structure and stock, prints, steps, the review checklist, the kit
   kit/                one pipeline from a design to the page: joints, analysis, drawings, page, 3D viewer
   scripts/
     blueprint.mjs     the one command: doctor, examples, new, build, audit, capture, check, test
     build.mjs         design.mjs -> one standalone index.html
     audit.mjs         every check at every min, max and 40 random sizes, metric and imperial: "audit passed"
-    capture.mjs       headless Chromium: types into a field, switches to inches, screenshots: "capture passed"
+    capture.mjs       headless Chromium: types into a field, switches to inches, proves every STL watertight, screenshots: "capture passed"
     test-fea.mjs      the frame solver against textbook beams
     env.mjs           finds Node, Playwright, Chromium and pdftoppm for doctor and capture
   examples/

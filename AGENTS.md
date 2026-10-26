@@ -8,7 +8,7 @@ Blueprint: an agent skill (`skills/blueprint/`) that generates parametric build 
 
 ## How it should look and read: an IKEA guide
 
-The full rules are in `skills/blueprint/SKILL.md` ("How it looks and reads"); in short:
+The full rules are in `skills/blueprint/references/kit.md` ("How the page looks"); in short:
 
 - **Clear above all.** If it does not help someone build the thing, remove it.
 - **Generated, not hand-made.** Every drawing, table, figure and number comes from a plan's `design.mjs` through the kit. New figures are generators in `kit/shop.mjs`, never hand-drawn SVG or HTML.

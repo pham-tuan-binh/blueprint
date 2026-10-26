@@ -1,6 +1,6 @@
 # Verify: the review checklist
 
-The person who builds it finds faults by standing at the saw with the page. Find them first. Run `check`, read every PNG, then answer every question below. Fix the design or the text, run it again, and go round until every answer is yes.
+Read this when the plan passes `check`. The person who builds it finds faults by standing at the saw with the page. Find them first. Run `check`, read every PNG, then answer every question below. Fix the design or the text, run it again, and go round until every answer is yes.
 
 ```bash
 node $SKILL/scripts/blueprint.mjs check plans/<id>/design.mjs --hash "top=steel" --hash "length=2400"
@@ -29,7 +29,7 @@ Open every PNG in `shots/`. For each, ask:
 8. **metric-*.png / imperial-*.png** (the plan switched to the other units): every length in the other system, sensible values, stock labels unchanged (they are what you buy)?
 9. **phone.png / phone-full.png**: readable at 390 px, fields usable, drawings legible when zoomed?
 10. **pdf-N.png** (the printed pages of plan.pdf): each step starts on a new page, no controls printed, drawings not split across pages?
-11. **prints** (if any): does each printed part look right in the 3D view, holes and bores where they should be, and sized for what it holds at this size (clearance per `references/prints.md`)? Did capture download a real STL and .scad for each (it fails if not)? Is the printing in an early step?
+11. **prints** (if any): does each printed part look right in the 3D view, holes and bores where they should be, and sized for what it holds at this size (clearance per `references/prints.md`)? Capture fails an STL that is not watertight at any end of any field. Is the printing in an early step?
 12. **every step, in order: can each part get to its place?** Picture it moving in through what is already built: a deck lowered into a welded rack, a sheet slid between posts, a wheel onto a welded axle. A frame closed round a space shuts out anything bigger than its opening. Wood, plastic and bought parts only after the welding and paint near them. Check the smallest and the largest sizes too.
 13. **guide.png / guide-phone.png** (the guide beside the plan): do its figures show this plan (the marked joint, the bay's diagonals, a real cut sheet, real joint close-ups), and only the sections that apply (no welding section for a glued PVC frame)? Is every task in the steps short enough that the explanation lives behind a `?`, not in the task?
 14. **every variant** you captured with `--hash`: does each step still read right with the option or the extra member (the steel top's welding step, the middle legs)?
