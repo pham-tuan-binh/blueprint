@@ -198,7 +198,10 @@ export function runLoads(d) {
   const { model, joints } = d;
   const loads = model.loads || [];
   if (!loads.length || !model.supports?.length) return [];
-  const extra = [...model.supports.map(s => s.at), ...loads.flatMap(l => l.at || [])];
+  // a load case may be several parts, each with its own members or points, size and
+  // direction (drag spread up a mast plus a load at its head): parts: [{ on, at, kg | N, dir }]
+  const partsOf = l => l.parts || [l];
+  const extra = [...model.supports.map(s => s.at), ...loads.flatMap(l => partsOf(l).flatMap(q => q.at || []))];
   const fm = frameModel(joints, extra);
   const N = fm.pts.length;
   let k = 0;
@@ -220,14 +223,18 @@ export function runLoads(d) {
   const cases = loads.map(l => {
     const F = new Float64Array(N * 6);
     for (let i = 0; i < N; i++) F[i * 6 + 2] -= lumps[i] * G0;
-    const dir = norm(l.dir || [0, 0, -1]);
-    const total = (l.kg != null ? l.kg * G0 : l.N) || 0;
-    let idx = [];
-    if (l.on) idx = [...new Set(l.on.flatMap(id => [...(fm.byMember[id] || [])]))];
-    if (l.at) idx = idx.concat(l.at.map(() => fm.snapped[k++].idx));
-    if (!idx.length) throw new Error(`load "${l.name}" lands on no member`);
-    idx.forEach(i => { for (let c = 0; c < 3; c++) F[i * 6 + c] += (total * dir[c]) / idx.length; });
-    return { l, F, idx };
+    const all = [];
+    for (const q of partsOf(l)) {
+      const dir = norm(q.dir || l.dir || [0, 0, -1]);
+      const total = (q.kg != null ? q.kg * G0 : q.N) || 0;
+      let idx = [];
+      if (q.on) idx = [...new Set(q.on.flatMap(id => [...(fm.byMember[id] || [])]))];
+      if (q.at) idx = idx.concat(q.at.map(() => fm.snapped[k++].idx));
+      if (!idx.length) throw new Error(`load "${l.name}" lands on no member`);
+      idx.forEach(i => { for (let c = 0; c < 3; c++) F[i * 6 + c] += (total * dir[c]) / idx.length; });
+      all.push(...idx);
+    }
+    return { l, F, idx: all };
   });
   const sols = solveFrame(fm, fixed, cases.map(c => c.F));
   return cases.map((c, i) => {

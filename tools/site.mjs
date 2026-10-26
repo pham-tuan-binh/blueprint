@@ -64,8 +64,8 @@ const GALLERY_CSS = `
 .card .arrow{position:absolute;top:12px;right:12px;width:34px;height:34px;border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--paper);transition:background .15s,color .15s}
 .card .arrow svg{width:16px;height:16px}
 .card:hover .arrow,.card:focus-visible .arrow{background:var(--ink);color:var(--paper)}
-.card .pic{border-bottom:1px solid var(--line);padding:14px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
-.card .pic svg{width:100%;height:100%;border:0}
+.card .pic{border-bottom:1px solid var(--line);padding:14px;height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card .pic svg{width:100%;height:100%;border:0;background:transparent}
 .card .txt{padding:12px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
 .card h2{font-size:19px;margin:0;padding:0;border:0;display:block}.card p{margin:0;color:var(--ink2);font-size:14px}
 .card dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:6px 0 0;font:12px var(--mono)}.card dt{color:var(--muted)}.card dd{margin:0}
@@ -81,14 +81,14 @@ const index = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <title>Blueprint plans</title>
-<meta name="description" content="Parametric build plans made with the blueprint agent skill: 3D model, sizes you can change, checks, cut sheets and steps.">
+<meta name="description" content="Parametric workshop build plans made with the blueprint agent skill: 3D model, sizes you can change, checks, cut sheets, 3D prints and steps.">
 <style>${PAGE_CSS}${GALLERY_CSS}</style>
 </head>
 <body>
 <main>
   <div class="hero">
-    <h1>Build plans for things made of steel and wood</h1>
-    <p class="lede">Each plan is a complete build pack: a 3D model, sizes you can change in the page, checks that must all pass, the materials to buy, drawings, numbered steps and a cut sheet for every piece. Metric, with an inch switch.</p>
+    <h1>Build plans for things you make in a workshop</h1>
+    <p class="lede">Steel, timber, PVC, 3D prints and the parts you buy. Each plan is a complete build pack: a 3D model, sizes you can change in the page, checks that must all pass, the materials to buy and print, drawings, numbered steps and a cut sheet for every piece. Metric, with an inch switch.</p>
   </div>
   <div class="grid">
 ${cards.map(c => `    <a class="card" href="${esc(c.id)}/">

@@ -1,6 +1,6 @@
 # blueprint
 
-An agent skill that creates the build plan for anything made from stock material: welded steel or aluminium tube, flat bar, plate, timber and sheet. Ask your coding agent for "plans for a welding cart" and you get one standalone HTML build pack:
+An agent skill that creates the build plan for anything a workshop makes: welded steel or aluminium frames, timber and plywood, PVC pipe, plate and sheet, 3D-printed parts, and the parts you buy. Ask your coding agent for "plans for a welding cart" and you get one standalone HTML build pack:
 
 - a 3D model (orbit, front/side/top, click a part to identify it, a stress view)
 - **input fields for the sizes**: change the length and every cut, drawing, check and step follows, live in the page; the size goes into the URL so it can be shared
@@ -10,6 +10,7 @@ An agent skill that creates the build plan for anything made from stock material
 - a third-angle general arrangement drawing with overall dimensions
 - numbered steps with jig drawings, joint coordinates and a check at the end of each
 - a cut sheet for every piece with edge marks you can follow with a hacksaw, and a cut list
+- 3D-printed parts with .stl and .scad downloads cut at the current size
 - a print layout (each step on its own page)
 
 ## Install
@@ -32,7 +33,8 @@ The agent writes `plans/<name>/design.mjs` (the single source of truth), builds 
 
 ## Examples
 
-- [`plans/metal-workbench/`](plans/metal-workbench/): a welded steel workbench, generated with the skill
+- [`plans/metal-workbench/`](plans/metal-workbench/): an all-steel welded workbench with a bar top, generated with the skill
+- [`plans/v-dipole-137/`](plans/v-dipole-137/): a 137 MHz V-dipole antenna with a 3D-printed feed hub and an SMA jack on a PVC mast, generated with the skill
 - [`skills/blueprint/examples/shelf-rack/`](skills/blueprint/examples/shelf-rack/): a welded shelf rack, the skill's reference example
 
 ## The plans site

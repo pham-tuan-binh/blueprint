@@ -7,6 +7,61 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/+esm';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm';
 import { memberCorners } from './joints.mjs';
+import { prismAxes } from './print.mjs';
+
+// the matrix of each placement of a print (see print.mjs copies)
+const placeMatrices = pr => [new THREE.Matrix4(), ...(pr.copies || []).map(c => {
+  const ab = c.about || [0, 0, 0], mv = c.move || [0, 0, 0];
+  return new THREE.Matrix4().makeTranslation(ab[0] + mv[0], ab[1] + mv[1], ab[2] + mv[2])
+    .multiply(new THREE.Matrix4().makeRotationZ(((c.rotZ || 0) * Math.PI) / 180))
+    .multiply(new THREE.Matrix4().makeTranslation(-ab[0], -ab[1], -ab[2]));
+})];
+
+// ---------------------------------------------------------------- printed parts
+// The exact mesh of a print: its solids unioned, then its cuts and bores taken out,
+// with three-bvh-csg (loaded only when a plan has prints). World coordinates, mm.
+let csgLib = null;
+const loadCsg = () => (csgLib ||= import('https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.16/+esm'));
+function solidGeo(sh, grow = 0) {
+  if (sh.type === 'box') { const g = new THREE.BoxGeometry(...sh.s.map(v => v + 2 * grow)); g.translate(...sh.c); return g; }
+  if (sh.type === 'cyl' || sh.type === 'tube' || sh.type === 'hole') {
+    const r = sh.type === 'hole' ? sh.d / 2 : sh.r;
+    const a = new THREE.Vector3(...sh.a), b = new THREE.Vector3(...sh.b), d = b.clone().sub(a);
+    const g = new THREE.CylinderGeometry(r, r, d.length() + 2 * grow, Math.max(24, Math.min(96, Math.round(r * 6))));
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()));
+    g.translate(...a.add(b).multiplyScalar(0.5).toArray());
+    return g;
+  }
+  if (sh.type === 'prism') {
+    const shape = new THREE.Shape(sh.pts.map(([u, v]) => new THREE.Vector2(u, v)));
+    let g = new THREE.ExtrudeGeometry(shape, { depth: sh.h + 2 * grow, bevelEnabled: false });
+    if (g.index) g = g.toNonIndexed();
+    g.translate(0, 0, sh.z0 - grow);
+    const [iu, iv, iz] = prismAxes(sh.axis), pos = g.attributes.position, out = new Float32Array(pos.count * 3);
+    for (let i = 0; i < pos.count; i++) { out[i * 3 + iu] = pos.getX(i); out[i * 3 + iv] = pos.getY(i); out[i * 3 + iz] = pos.getZ(i); }
+    // the 'y' mapping is a mirror: swap two corners of every triangle to keep faces outward
+    if (sh.axis === 'y') for (let t = 0; t < out.length; t += 9) for (let c = 0; c < 3; c++) { const k = out[t + 3 + c]; out[t + 3 + c] = out[t + 6 + c]; out[t + 6 + c] = k; }
+    const ng = new THREE.BufferGeometry();
+    ng.setAttribute('position', new THREE.BufferAttribute(out, 3));
+    ng.computeVertexNormals();
+    return ng;
+  }
+  throw new Error(`unknown print solid "${sh.type}"`);
+}
+const clean = g => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal') n.deleteAttribute(k); n.computeVertexNormals(); return n; };
+export async function printGeometry(part) {
+  const { Brush, Evaluator, ADDITION, SUBTRACTION } = await loadCsg();
+  const ev = new Evaluator();
+  ev.attributes = ['position', 'normal'];
+  const brush = g => { const b = new Brush(clean(g)); b.updateMatrixWorld(); return b; };
+  let acc = null;
+  for (const sh of part.shapes) { const b = brush(solidGeo(sh)); acc = acc ? ev.evaluate(acc, b, ADDITION) : b; }
+  const cuts = [...(part.cuts || []), ...part.shapes.filter(s => s.type === 'tube').map(s => ({ type: 'cyl', a: s.a, b: s.b, r: s.ri }))];
+  for (const c of cuts) acc = ev.evaluate(acc, brush(solidGeo(c, 0.05)), SUBTRACTION);
+  return acc.geometry;
+}
+// the plain union before the cut arrives, so the part shows at once
+const roughPrint = part => part.shapes.map(sh => solidGeo(sh));
 
 const TONES = {
   light: {
@@ -159,13 +214,27 @@ export function createViewer(el, { onPick } = {}) {
       }
       for (const g of geos) add(g, info, tone);
     }
+    const gen = ++generation;
+    for (const pr of md.prints || []) {
+      const info = { id: pr.id, name: pr.name, step: pr.step, kind: 'print', spec: `3D print, ${pr.material || 'PETG'}` };
+      const tone = pr.tone || 'faint';
+      const mats4 = placeMatrices(pr);
+      const rough = mats4.flatMap(m4 => roughPrint(pr).map(g => { add(g.applyMatrix4(m4), info, tone); return meshes[meshes.length - 1]; }));
+      printGeometry(pr).then(geo => {
+        if (gen !== generation) return;
+        for (const r of rough) { root.remove(r.mesh); r.mesh.geometry.dispose(); meshes.splice(meshes.indexOf(r), 1); }
+        for (const m4 of mats4) add(geo.clone().applyMatrix4(m4), info, tone);
+        refresh();
+      }).catch(e => console.warn('print geometry:', e.message));
+    }
     for (const h of md.hardware) for (const sh of [].concat(h.shape || [])) {
       const info = { id: h.id, name: h.name, step: h.step, kind: 'hardware', spec: h.spec };
       add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');
     }
     const [lo, hi] = d.bbox;
     const span = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
-    size = (span / 1000) * 0.6;
+    // fit the bounding sphere, so a tall or wide build stays in view from any side
+    size = (Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 1000) * 0.52;
     // close enough that half-float depth in the outline pass resolves millimetres
     camDist = Math.max(1.5, (span / 1000) * 1.6);
     camera.near = -camDist * 2; camera.far = camDist * 4;
@@ -182,7 +251,7 @@ export function createViewer(el, { onPick } = {}) {
     resize();
     refresh();
   }
-  let framed = false;
+  let framed = false, generation = 0;
 
   function refresh() {
     for (const r of meshes) {

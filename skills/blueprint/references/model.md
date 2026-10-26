@@ -49,10 +49,11 @@ export const plan = {
 
 | name | use |
 |---|---|
-| `k.u` | units, for every number in text: `u.len(mm)` (a bare number for drawings and tables), `u.len(mm, { u: true })` (with its unit, for sentences), `u.size(mm)`, `u.mass(kg)`, `u.tol(mm)` (`±1 mm` / `±1/16"`), `u.force(N)` |
-| `k.squareTube(b, t, o)`, `k.rectTube(bu, bw, t, o)`, `k.roundTube(d, t, o)`, `k.flatBar(b, t, o)`, `k.bar(bu, bw, o)`, `k.timber(bu, bw, o)` | stock sections. `bu` is the width across the member (horizontal), `bw` its height (up for a level member). `o`: `{ id, label, short, stockLen, price (per metre) or pricePerFt, material }` |
+| `k.u` | units, for every number in text: `u.len(mm)` (a bare number for drawings and tables, whole mm), `u.len(mm, { u: true })` (with its unit, for sentences), `u.fine(mm, { u: true })` (to a tenth: a drill, a clearance, a wall), `u.size(mm)`, `u.mass(kg)`, `u.tol(mm)` (`±1 mm` / `±1/16"`), `u.force(N)` |
+| `k.squareTube(b, t, o)`, `k.rectTube(bu, bw, t, o)`, `k.roundTube(d, t, o)`, `k.flatBar(b, t, o)`, `k.bar(bu, bw, o)`, `k.timber(bu, bw, o)`, `k.rod(d, o)` (solid round), `k.pvcPipe(d, t, o)` | stock sections. `bu` is the width across the member (horizontal), `bw` its height (up for a level member). `o`: `{ id, label, short, stockLen, price (per metre) or pricePerFt, material }` |
 | `k.inch(v)`, `k.feet(v)` | imperial stock sizes in mm |
-| `k.MATERIALS` | steel, stainless, aluminium (welded strength), timber |
+| `k.MATERIALS` | steel, stainless, aluminium (welded strength), aluminium-bare (bolted), timber, pvc, copper (half hard), copper-annealed (house wire), brass: pass `material:` in a section's `o` |
+| `k.FILAMENTS` | PLA, PETG, ASA, ABS, TPU, PA for prints |
 | `k.v3` | small vector helpers |
 
 ## The model build() returns
@@ -66,6 +67,7 @@ return {
   members: [ ... ],
   plates: [ ... ],
   hardware: [ ... ],
+  prints: [ ... ],             // 3D-printed parts: references/prints.md
   consumables: [{ name: 'MIG wire, 0.8 mm', qty: '1 kg spool', note: '' }],
   tools: ['MIG welder', '...'],
   supports: [{ at: [x, y, z], fix: 'pin' }],  // where it stands: 'pin' (feet), 'fixed', 'roller'
@@ -74,8 +76,11 @@ return {
   checks: [{ name, pass, value, why }],       // the plan's own checks
   steps: [ ... ],
   facts: [['Work height', u.len(900, { u: true }), 'top surface']],   // optional extra facts
-  join: 'weld',                // 'weld' (default), 'bolt' or 'screw': changes the legend wording
-  kerf: 2, trim: 10, minPiece: 32, tolerance: '...', orderNote: 'One line above the build order.',
+  join: 'weld',                // 'weld' (default), 'bolt', 'screw', 'glue', 'solder' or 'clamp': the legend wording
+  kerf: 2, trim: 10, minPiece: 32,
+  tolerance: 'cut ±1 mm; feed gap ±0.5 mm',   // the legend's tolerance line, when the frame default does not fit
+  printer: { bed: [220, 220, 250] },          // the bed the print check uses
+  orderNote: 'One line above the build order.',
 };
 ```
 
@@ -102,7 +107,7 @@ Member ids: short and meaningful (`rail-F-top`, `leg-BR`). Identical pieces get 
   material: 'steel', holes: [{ at: [a, b], d: 10 }], note: 'Weld all round.', price: 1.5 }
 ```
 
-An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. Plates count in the overall size: a foot plate centred under a leg at the corner of the frame sticks out past the top and makes the "Overall" bigger than the length the person typed. Keep foot plates inside the footprint (the leg's size, or offset inward) or let the top overhang the frame. The drawing shows, dashed, where the members welded to it stand. A plate that straight members pass through (a lower shelf around the legs) gets `notch: true`: the kit cuts a notch where each member passes, draws it on the plate's drawing with its size, and shows it in 3D; without it, that is a clash. Holes are drawn on the plate's two biggest axes, from its lower-left corner. `material: 'plywood' | 'mdf' | 'timber' | 'steel' | 'aluminium'` (`materialLabel` overrides the printed material word only, printed after the size: "1500 × 700 × 18 plywood", so give `'plywood'`, not `'18 mm plywood'`), `drawing: false` for sheet goods that need no shop drawing (a plywood deck), `price` per piece, `tone`, `on: 'member-id'` when it is held by something it does not touch (rare). Identical plates (same size, holes, material and name) share a mark (P1, P2).
+An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. Plates count in the overall size: a foot plate centred under a leg at the corner of the frame sticks out past the top and makes the "Overall" bigger than the length the person typed. Keep foot plates inside the footprint (the leg's size, or offset inward) or let the top overhang the frame. The drawing shows, dashed, where the members welded to it stand. A plate that straight members pass through (a lower shelf around the legs) gets `notch: true`: the kit cuts a notch where each member passes, draws it on the plate's drawing with its size, and shows it in 3D; without it, that is a clash. Holes are drawn on the plate's two biggest axes, from its lower-left corner. `material: 'plywood' | 'mdf' | 'timber' | 'steel' | 'aluminium' | 'pvc' | 'hdpe' | 'acrylic' | 'polycarbonate' | 'copper' | 'brass' | 'fr4'` (or give `rho` in kg/mm³) (`materialLabel` overrides the printed material word only, printed after the size: "1500 × 700 × 18 plywood", so give `'plywood'`, not `'18 mm plywood'`), `drawing: false` for sheet goods that need no shop drawing (a plywood deck), `price` per piece, `tone`, `on: 'member-id'` when it is held by something it does not touch (rare). Identical plates (same size, holes, material and name) share a mark (P1, P2).
 
 ### hardware
 
@@ -113,7 +118,13 @@ An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. P
 
 Anything bought. `shape` (optional, a box `{ type: 'box', c, s }` or cylinder, or a list) draws it in 3D and the drawings and makes it count in the floating check; `kg` adds to the mass and the analysis; `on: 'id'` names what holds it if it does not touch it.
 
+### prints
+
+3D-printed parts, with their solids, cuts, filament and settings: see `references/prints.md`. The kit adds them to the 3D view, the drawings, the materials list (with .stl and .scad downloads) and their step.
+
 ### supports and loads
+
+Supports must hold the frame still in every direction, or the solver reports a mechanism. Two `pin` supports on one vertical line (a mast in two clamps) leave it free to turn about its own axis: make one of them `fixed`. Feet under a frame are fine as `pin`s. Members with `loose: true` (clamped, bolted or held in a print) are left out of the frame analysis, but their weight still bears on it.
 
 ```js
 supports: legs.map(n => ({ at: nodes[n], fix: 'pin' })),
@@ -125,6 +136,7 @@ loads: [
 ```
 
 - `what` is a short phrase that reads after the load in the check's explanation: "Yield ÷ peak stress with 150 kg *on one corner*". Write `what: 'on one corner'`, not a sentence.
+- `parts: [{ on, at, kg | N, dir }, ...]` makes one case of several loads applied together: drag spread up a mast plus a load at its head. The case's `what` should describe the whole.
 - `kg` (or `N`) is spread equally over every node of the members in `on` (the members are cut into short spans, so it acts along them) and/or the points in `at` (snapped to the nearest member).
 - `dir` defaults to straight down. Self weight of every member, plate and part is always added.
 - `sf`: the safety factor on yield the check requires. `defl`: the largest movement allowed at the loaded points, in mm.
@@ -142,7 +154,7 @@ loads: [
 
 Numbered 1, 2, 3… with no gaps. `phase` groups them in the build order. `hours` is the honest time for one person. `views` overrides which jig views are drawn: a list of `'top'`, `'front'`, `'side'` (default: the top view for a flat step, all three otherwise).
 
-**Name pieces by mark** with `{mark:member-id}` in any step text, check or plate note: `'Clamp the end rails ({mark:end-L1}) between the legs'` prints "Clamp the end rails (B) between the legs". Marks are assigned after `build()` runs, so this placeholder is the only way to write them; an unknown id is an error. `alone: true` draws a sub-assembly built on its own without the rest of the frame. Every member, plate and part has a `step`, and the step that fits members shows its jig, joint positions and cut sheets automatically.
+**Name pieces by mark** with `{mark:member-id}` in any step text, check or plate note: `'Clamp the end rails ({mark:end-L1}) between the legs'` prints "Clamp the end rails (B) between the legs". Marks are assigned after `build()` runs, so this placeholder is the only way to write them; an unknown id is an error. `alone: true` draws a sub-assembly built on its own without the rest of the frame. `points: false` leaves out the point labels and the joint table, for parts placed by a rule rather than by coordinates (bars laid with a spacer block); `table: { title, head, rows }` adds the step's own small table instead (the rule, the counts, the gaps). Every member, plate and part has a `step`, and the step that fits members shows its jig, joint positions and cut sheets automatically.
 
 Not modelled (write them as tasks): holes in members (screw holes for a top: "drill a ⌀5 hole every 300 along the top rails"), bends, copes.
 

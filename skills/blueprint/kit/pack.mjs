@@ -2,12 +2,31 @@
 // functions feed the live page and its printed form; nothing here computes a
 // number of its own, it only lays out what derive() found.
 import { esc } from './core.mjs';
-import { jigSheet, gaSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
+import { jigSheet, gaSheet, printSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
+import { printBox, bedBox, printQty } from './print.mjs';
 
 // a plate: its drawing, then its holes, notches and note as text that wraps
 const plateFigure = (d, pl) => `<figure class="plate-fig">${plateSvg(d, pl)}<figcaption>${plateNotes(d, pl).map(t => `<p>${esc(t)}</p>`).join('')}</figcaption></figure>`;
 
-const money = (d, v) => (d.model.currency ? `${d.model.currency}${Math.round(v).toLocaleString('en-US')}` : '');
+const money = (d, v) => (d.model.currency ? `${d.model.currency}${v < 10 ? v.toFixed(2) : Math.round(v).toLocaleString('en-US')}` : '');
+
+const printHours = d => (Math.round(d.prints.reduce((h, x) => h + x.est.hours * printQty(x.part), 0) * 10) / 10);
+const dl = pr => `<span class="dls"><button type="button" class="btn sm" data-stl="${esc(pr.id)}">${ICON_DL}.stl</button><button type="button" class="btn sm" data-scad="${esc(pr.id)}">${ICON_DL}.scad</button></span>`;
+const ICON_DL = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M4.5 7L8 10.5 11.5 7M3 13.5h10"/></svg>';
+const printSettings = pr => `${pr.material || 'PETG'} · ${pr.layer ?? 0.2} mm layers · ${pr.walls ?? 3} walls · ${Math.round((pr.infill ?? 0.3) * 100)}% infill · ${pr.supports ? 'supports' : 'no supports'}`;
+
+// the holes, bores and pockets of a print, so the part can be checked against its drawing
+function printCuts(d, pr) {
+  const u = d.units, [lo] = printBox(pr), rel = p => p.map((v, i) => u.fine(v - lo[i])).join(', ');
+  const axis = (a, b) => { const v = b.map((x, i) => x - a[i]), k = [0, 1, 2].filter(i => Math.abs(v[i]) > 1e-6); return k.length === 1 ? 'xyz'[k[0]] : 'angled'; };
+  const rows = [
+    ...pr.shapes.filter(c => c.type === 'tube').map(c => ['Bore', `⌀${u.fine(c.ri * 2)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))]),
+    ...(pr.cuts || []).map(c => c.type === 'hole' ? ['Hole', `⌀${u.fine(c.d)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))]
+      : c.type === 'box' ? ['Pocket', c.s.map(v => u.fine(v)).join(' × '), '', rel(c.c), ''] : c.type === 'cyl' ? ['Bore', `⌀${u.fine(c.r * 2)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))] : ['Cut', c.type, '', '', '']),
+  ];
+  const bb = bedBox(pr);
+  return (rows.length ? `<div class="wrap"><table class="doc"><tr><th>Cut</th><th>Size</th><th>Axis</th><th class=n>From (x, y, z)</th><th class=n>Depth</th></tr>${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td class=n>${esc(r[3])}</td><td class=n>${esc(r[4])}</td></tr>`).join('')}</table></div><p class="muted">Dashed on the drawing. Positions from the part's lower-left-bottom corner as drawn${pr.bed && pr.bed !== '-z' ? `; the files come turned for printing (${esc(pr.bed)} face on the bed)` : ''}. On the bed it is ${bb.size.map(v => u.fine(v)).join(' × ')}${u.imperial ? '' : ' mm'}.</p>` : '');
+}
 
 function plateLine(d) {
   const metal = d.plateGroups.filter(g => ['steel', 'aluminium', 'stainless'].includes(g.pl.material || 'steel')).reduce((s, g) => s + g.qty, 0);
@@ -21,8 +40,9 @@ export function factsHtml(d) {
     ['Overall', `${u.len(hi[0] - lo[0])} × ${u.len(hi[1] - lo[1])} × ${u.len(hi[2] - lo[2])}${u.imperial ? '' : ' mm'}`, 'length × depth × height'],
     ['Mass', u.mass(d.totalKg), 'as built, with every part listed'],
     ['Pieces', `${d.model.members.length} cut (${d.pieces.length} different)`, plateLine(d)],
-    [d.model.join === 'screw' || d.model.join === 'bolt' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join === 'screw' || d.model.join === 'bolt' ? '' : `about ${u.run(d.weld.length)} of weld`],
+    ...(d.weld.joins ? [[d.model.join && d.model.join !== 'weld' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join && d.model.join !== 'weld' ? '' : `about ${u.run(d.weld.length)} of weld`]] : []),
     ...d.loads.map(r => [r.name, `factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(1)}`, r.load.defl != null ? `${(r.load.dir && Math.abs(r.load.dir[2]) < 0.5) ? 'moves' : 'sags'} ${u.deflection(r.loadDefl)}` : 'safety factor on yield']),
+    ...(d.prints.length ? [['3D prints', `${d.prints.reduce((n, x) => n + printQty(x.part), 0)} part${d.prints.length > 1 || printQty(d.prints[0].part) > 1 ? 's' : ''}`, `about ${Math.round(d.prints.reduce((g, x) => g + x.est.grams * printQty(x.part), 0))} g of filament, ${printHours(d)} h printing`]] : []),
     ['Build time', d.hours ? `${d.hours} h` : '', `${d.model.steps.length} steps`],
     ...(d.price.total && d.model.currency ? [['Cost', `~${money(d, d.price.total)}`, d.price.known ? 'everything on the materials list' : 'priced lines only; see the materials list']] : []),
     ...d.model.facts,
@@ -55,6 +75,11 @@ export function bomHtml(d) {
     }
     h += `</table></div>`;
   }
+  if (d.prints.length) {
+    h += `<h3>3D prints</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Settings</th><th class=n>Qty</th><th class=n>Filament</th><th class=n>Print</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}<th>Files</th></tr>`;
+    for (const { part: pr, est } of d.prints) h += `<tr><td>${esc(pr.name)}</td><td><span class="spec">${esc(printSettings(pr))}</span></td><td class=n>${printQty(pr)}</td><td class=n>${Math.round(est.grams * printQty(pr))} g</td><td class=n>${(Math.round(est.hours * printQty(pr) * 10) / 10)} h</td><td class=n>${pr.step}</td>${md.currency ? `<td class=n>${money(d, est.cost * printQty(pr))}</td>` : ''}<td>${dl(pr)}</td></tr>`;
+    h += `</table></div><p class="muted">Filament and time are estimates from the part's volume; your slicer has the real numbers. The .stl is the part at this size, in millimetres; the .scad is its OpenSCAD source.</p>`;
+  }
   if (md.hardware.length) {
     h += `<h3>Parts to buy</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Spec</th><th class=n>Qty</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
     for (const x of md.hardware) h += `<tr><td>${esc(x.name)}</td><td>${esc(x.spec || '')}</td><td class=n>${x.qty || 1}</td><td class=n>${x.step}</td>${md.currency ? `<td class=n>${x.price != null ? money(d, x.price * (x.qty || 1)) : ''}</td>` : ''}</tr>`;
@@ -71,17 +96,18 @@ export function drawingsHtml(d) {
 
 export function legendHtml(d) {
   const u = d.units, md = d.model;
-  const joinWord = md.join === 'screw' ? 'screw' : md.join === 'bolt' ? 'bolt' : 'weld';
+  const joinWord = { screw: 'screw', bolt: 'bolt', glue: 'solvent-cement or glue', solder: 'solder', clamp: 'clamp' }[md.join] || 'weld';
   const rows = [
     ['Units', u.imperial ? 'inches (to 1/16"), pounds, degrees' : 'millimetres, kilograms, degrees'],
     ['Datum', md.datum || 'x along the length, y front to back, z up from the floor'],
     ['Piece marks', 'A, B, C… one letter per different piece; x4 after it means cut four the same. Mirror images share a mark.'],
     ['Cut marks', 'From one square end, mark each edge at the two numbers, join the marks around the section, cut on the lines. Angles are for reference.'],
     ['Edges', `named by where they face on the finished build (${md.axes.z[0]}-${md.axes.y[1]}, ${md.axes.z[1]}-${md.axes.x[0]}…)`],
-    ['Joints', `mitre = same section, on the bisector · butt onto X = square onto the face of X · flush with X = cut level with X's outer face · then ${joinWord}`],
+    d.weld.joins ? ['Joints', `mitre = same section, on the bisector · butt onto X = square onto the face of X · flush with X = cut level with X's outer face · then ${joinWord}`]
+      : ['Joints', `nothing is welded: parts ${joinWord === 'weld' ? 'clamp, bolt or sit in printed parts' : joinWord}, as each step says`],
     ['Long point', 'the overall length of the piece, tip to tip'],
     ['Dimensions', 'jig drawings and joint tables give centre lines (℄), where the members\' centres cross; the general arrangement gives outside sizes'],
-    ['Tolerance', md.tolerance || `cut ${u.tol(1)} · tacked ${u.tol(1)} · finished ${u.tol(2)} · diagonals equal within ${u.len(3)}`],
+    ['Tolerance', md.tolerance || !d.weld.joins ? (md.tolerance || `cut ${u.tol(1)} unless a step says otherwise`) : `cut ${u.tol(1)} · tacked ${u.tol(1)} · finished ${u.tol(2)} · diagonals equal within ${u.len(3)}`],
   ];
   return `<div class="wrap"><table class="doc legend">${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table></div>`;
 }
@@ -95,6 +121,9 @@ export function orderHtml(d) {
     }).join('') + `</div>`;
 }
 
+// a column is numeric (right-aligned) when every cell in it is a number or a length
+const numCol = (t, i) => i > 0 && t.rows.every(r => /^[\d\s.,/"'×x±-]+(mm|in|kg|lb|h)?$/.test(String(r[i]).trim()));
+
 function piecesOfStep(d, n) { return d.pieces.filter(g => g.members.some(m => m.step === n)); }
 
 export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
@@ -105,14 +134,19 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   h += interactive
     ? `<ol class="tasks">${st.tasks.map((t, i) => { const id = `t-${n}-${i}`; return `<li><input type="checkbox" id="${id}" data-check="${id}" ${checked[id] ? 'checked' : ''}><label for="${id}">${esc(t)}</label></li>`; }).join('')}</ol>`
     : `<ol>${st.tasks.map(t => `<li>${esc(t)}</li>`).join('')}</ol>`;
+  // a plan's own table for the step: { title, head: [...], rows: [[...]] }, numbers right-aligned
+  if (st.table) h += `<h4>${esc(st.table.title || 'Table')}</h4><div class="wrap"><table class="doc"><tr>${st.table.head.map((c, i) => `<th${numCol(st.table, i) ? ' class=n' : ''}>${esc(c)}</th>`).join('')}</tr>${st.table.rows.map(r => `<tr>${r.map((c, i) => `<td${numCol(st.table, i) ? ' class=n' : ''}>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
   if (st.check) h += `<p class="gate"><b>Check</b> ${esc(st.check)}</p>`;
   if (st.tip) h += `<p class="note">${esc(st.tip)}</p>`;
+  for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
+    h += `<h4>Print: ${esc(pr.name)}${printQty(pr) > 1 ? ` x${printQty(pr)}` : ''}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}${printCuts(d, pr)}<p>${dl(pr)}</p>${pr.note ? `<p class="note">${esc(pr.note)}</p>` : ''}`;
+  }
   const hw = d.model.hardware.filter(x => x.step === n);
   if (hw.length) h += `<h4>Parts</h4><ul class="plain">${hw.map(x => `<li>${esc(x.name)} x${x.qty || 1}${x.spec ? ` <span class="muted">${esc(x.spec)}</span>` : ''}</li>`).join('')}</ul>`;
   const ms = d.model.members.filter(m => m.step === n);
   if (ms.length) {
     h += `<h4>Jig</h4>${jigSheet(d, st, stepViews(d, st))}`;
-    h += `<h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr>` +
+    if (st.points !== false) h += `<h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr>` +
       stepNodes(d, n).map(q => `<tr><td>${esc(q.name)}</td><td class=n>${esc(u.len(q.p[0]))}</td><td class=n>${esc(u.len(q.p[1]))}</td><td class=n>${esc(u.len(q.p[2]))}</td></tr>`).join('') + `</table></div>`;
     const pcs = piecesOfStep(d, n);
     const first = pcs.filter(g => g.step === n), earlier = pcs.filter(g => g.step !== n);

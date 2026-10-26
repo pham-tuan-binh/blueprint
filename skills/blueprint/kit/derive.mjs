@@ -2,16 +2,17 @@
 // everything a build pack shows. The page calls it on every input change; the
 // audit calls it at defaults and at every parameter's extremes. Nothing on the
 // page is computed anywhere else.
-import { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet } from './core.mjs';
+import { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet } from './core.mjs';
 import { solveJoints, memberCorners, describeEnd } from './joints.mjs';
 import { runLoads } from './fea.mjs';
+import { printBox, printBoxAll, printEstimate, printQty, FILAMENTS, bedBox } from './print.mjs';
 
 const { sub, len, dot, add, mul } = v3;
 
 // ---------------------------------------------------------------- normalise
 function normalise(model, plan) {
   model.axes ||= { x: ['right', 'left'], y: ['back', 'front'], z: ['top', 'bottom'] };
-  model.members ||= []; model.plates ||= []; model.hardware ||= []; model.consumables ||= [];
+  model.members ||= []; model.plates ||= []; model.hardware ||= []; model.consumables ||= []; model.prints ||= [];
   model.steps ||= []; model.checks ||= []; model.facts ||= [];
   model.kerf ??= 2; model.trim ??= 10; model.minPiece ??= 32;
   model.steps.sort((a, b) => a.n - b.n);
@@ -152,13 +153,19 @@ function massItems(model, joints) {
   for (const m of model.members) {
     const j = joints[m.id];
     const L = j.edges.reduce((s, e) => s + (e.tb - e.ta), 0) / 4;
-    items.push({ kind: 'member', id: m.id, m: (j.sec.kgPerM * L) / 1000, c: v3.lerp(j.A, j.B, 0.5) });
+    // loose members (clamped or bolted on, not in the frame) still weigh on it
+    items.push({ kind: m.loose ? 'loose' : 'member', id: m.id, m: (j.sec.kgPerM * L) / 1000, c: v3.lerp(j.A, j.B, 0.5) });
   }
   for (const pl of model.plates) {
-    const rho = pl.rho ?? { steel: 7.85e-6, aluminium: 2.7e-6, stainless: 8e-6, timber: 4.2e-7, plywood: 6e-7, mdf: 7.5e-7 }[pl.material || 'steel'];
+    const rho = pl.rho ?? { steel: 7.85e-6, aluminium: 2.7e-6, stainless: 8e-6, timber: 4.2e-7, plywood: 6e-7, mdf: 7.5e-7, pvc: 1.4e-6, hdpe: 9.5e-7, acrylic: 1.19e-6, polycarbonate: 1.2e-6, copper: 8.96e-6, brass: 8.5e-6, fr4: 1.85e-6 }[pl.material || 'steel'];
+    if (rho == null) throw new Error(`plate ${pl.id}: unknown material "${pl.material}" (give it rho in kg/mm³)`);
     const cut = (pl.notches || []).reduce((a, n) => a + (n[2] - n[0]) * (n[3] - n[1]), 0);
     const ax = [0, 1, 2].sort((a, b) => pl.s[b] - pl.s[a]);
     items.push({ kind: 'plate', id: pl.id, m: (pl.s[0] * pl.s[1] * pl.s[2] - cut * pl.s[ax[2]]) * rho * (pl.fill ?? 1), c: pl.c });
+  }
+  for (const pr of model.prints) {
+    const [lo, hi] = printBoxAll(pr);
+    items.push({ kind: 'print', id: pr.id, m: (printEstimate(pr).grams * printQty(pr)) / 1000, c: lo.map((v, i) => (v + hi[i]) / 2) });
   }
   for (const h of model.hardware) {
     if (!h.kg) continue;
@@ -236,7 +243,8 @@ function geometryChecks(model, joints, sites, ref) {
   for (const id of ids) boxes[id] = memberBox(joints[id]);
   for (const pl of model.plates) boxes[pl.id] = plateBox(pl);
   for (const h of model.hardware) { const b = shapeBox(h.shape); if (b) boxes[h.id] = b; }
-  const others = [...model.plates.map(p => ({ id: p.id, on: p.on })), ...model.hardware.filter(h => boxes[h.id]).map(h => ({ id: h.id, on: h.on }))];
+  for (const pr of model.prints) boxes[pr.id] = printBoxAll(pr);
+  const others = [...model.plates.map(p => ({ id: p.id, on: p.on })), ...model.hardware.filter(h => boxes[h.id]).map(h => ({ id: h.id, on: h.on })), ...model.prints.map(p => ({ id: p.id, on: p.on }))];
   for (const o of others) {
     if (o.on) { for (const t of [].concat(o.on)) if (boxes[t]) link(o.id, t); continue; }
     for (const [id, b] of Object.entries(boxes)) if (id !== o.id && boxGap(boxes[o.id], b) <= 1) link(o.id, id);
@@ -263,7 +271,7 @@ export function derive(plan, given = {}, system) {
   const { p, notes, limits } = resolveParams(plan.params || [], given);
   const units = makeUnits(system || p.units || plan.units || 'metric');
   // the design gets its helpers injected, so a design.mjs needs no import paths
-  const kit = { u: units, p, v3, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet };
+  const kit = { u: units, p, v3, MATERIALS, FILAMENTS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet };
   const model = normalise(plan.build(p, kit), plan);
   const { joints, sites, report } = solveJoints(model);
   // identical plates share a mark (P1, P2...): same size, thickness, holes and material
@@ -278,7 +286,7 @@ export function derive(plan, given = {}, system) {
   const { pieces, markOf, ref } = groupPieces(model, joints, plateAt(model));
   // step text may name a piece by its mark: {mark:leg-FL} becomes "A"
   const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { if (!markOf[id]) throw new Error(`{mark:${id}}: no member "${id}"`); return markOf[id]; }) : t);
-  for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); }
+  for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); if (st.table) st.table.rows = st.table.rows.map(r => r.map(c => fill(String(c)))); }
   for (const c of model.checks) { c.value = fill(c.value); c.why = fill(c.why); }
   for (const pl of model.plates) pl.note = fill(pl.note);
   const plateClashes = notchPlates(model, joints, ref);
@@ -321,7 +329,13 @@ export function derive(plan, given = {}, system) {
   // checks: kit checks first, then the plan's own
   const u = units, checks = [];
   const add2 = (name, pass, value, why) => checks.push({ name, pass: !!pass, value, why });
-  add2('Every joint can be made as drawn', !report.length, report.length ? report[0] : `${d.weld.joins} joints`, 'Each end is a mitre, a butt onto a face, a flush cut or a free end; nothing overhangs.');
+  if (d.weld.joins || report.length) add2('Every joint can be made as drawn', !report.length, report.length ? report[0] : `${d.weld.joins} joints`, 'Each end is a mitre, a butt onto a face, a flush cut or a free end; nothing overhangs.');
+  if (model.prints.length) {
+    const bed = model.printer?.bed || [220, 220, 250];
+    const big = model.prints.map(pr => ({ pr, size: bedBox(pr).size })).map(x => ({ ...x, fits: x.size[2] <= bed[2] && ((x.size[0] <= bed[0] && x.size[1] <= bed[1]) || (x.size[1] <= bed[0] && x.size[0] <= bed[1])) }));
+    const worst = big.find(x => !x.fits) || big.sort((a, b) => b.size[0] * b.size[1] - a.size[0] * a.size[1])[0];
+    add2('Every print fits the printer', big.every(x => x.fits), `${worst.pr.name}: ${worst.size.map(v => u.len(v)).join(' × ')} on a ${bed.map(v => u.len(v)).join(' × ')} bed`, 'As it sits on the bed, turned the way the files come.');
+  }
   add2('Nothing floating', !geo.floating.length, geo.floating.length ? geo.floating.join(', ') : 'all connected', 'Every member, plate and part touches what holds it.');
   const clashes = [...geo.clashes, ...plateClashes];
   add2('No clashes', !clashes.length, clashes[0] || 'none', 'No member passes through another away from a joint, and no plate through a member it is not notched around.');
@@ -335,13 +349,13 @@ export function derive(plan, given = {}, system) {
   if (loadErr) add2('Frame analysis', false, loadErr, 'The frame solver could not run.');
   for (const r of d.loads) {
     const need = r.load.sf ?? 2;
-    add2(`${r.name}: strength`, r.sf >= need, `safety factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + ref(r.worstMember) : ''}`, `Yield ÷ peak stress with ${r.load.kg != null ? u.mass(r.load.kg) : u.force(r.load.N)} ${r.load.what || 'applied'}, plus self weight.`);
+    add2(`${r.name}: strength`, r.sf >= need, `safety factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + ref(r.worstMember) : ''}`, `Yield ÷ peak stress with ${r.load.parts ? u.force(r.load.parts.reduce((t, q) => t + (q.kg != null ? q.kg * G0 : q.N || 0), 0)) : r.load.kg != null ? u.mass(r.load.kg) : u.force(r.load.N)} ${r.load.what || 'applied'}, plus self weight.`);
     if (r.load.defl != null) add2(`${r.name}: deflection`, r.loadDefl <= r.load.defl, `${u.deflection(r.loadDefl)} (limit ${u.deflection(r.load.defl)})`, 'Largest movement of the loaded members.');
   }
   if (d.tip && model.tip.anchored) add2('Does not tip over', true, `anchored (${model.tip.anchored}); free-standing factor ${d.tip.sf.toFixed(2)}`, `Free-standing it would tip with ${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high, so it is fixed down.`);
   else if (d.tip) add2('Does not tip over', d.tip.sf >= (model.tip.sf ?? 1.5), `factor ${d.tip.sf.toFixed(2)} (need ${model.tip.sf ?? 1.5})`, `${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high against its own weight.`);
   const stepNs = new Set(model.steps.map(s => s.n));
-  const orphan = [...model.members, ...model.plates, ...model.hardware].filter(x => !stepNs.has(x.step));
+  const orphan = [...model.members, ...model.plates, ...model.hardware, ...model.prints].filter(x => !stepNs.has(x.step));
   add2('Every part has a step', !orphan.length, orphan.length ? orphan.map(x => x.id).slice(0, 3).join(', ') : `${model.steps.length} steps`, 'Each piece is cut, fitted or bought in a numbered step.');
   for (const c of model.checks) add2(c.name, c.pass, c.value, c.why);
   d.checks = checks;
@@ -354,7 +368,9 @@ export function derive(plan, given = {}, system) {
   for (const h of model.hardware) { if (h.price == null) price.known = false; else price.hardware += h.price * (h.qty || 1); }
   for (const c of model.consumables) { if (c.price == null) price.known = false; else price.consumables = (price.consumables || 0) + c.price; }
   price.consumables ||= 0;
-  price.total = price.stock + price.plates + price.hardware + price.consumables;
+  d.prints = model.prints.map(pr => ({ part: pr, est: printEstimate(pr) }));
+  price.prints = d.prints.reduce((t, x) => t + x.est.cost * printQty(x.part), 0);
+  price.total = price.stock + price.plates + price.hardware + price.consumables + price.prints;
   d.price = price;
   d.hours = model.steps.reduce((s, st) => s + (st.hours || 0), 0);
   return d;

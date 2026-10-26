@@ -74,6 +74,22 @@ US / Canada; sold in 20 ft (`stockLen: feet(20)`) and 24 ft lengths. A500 / A513
 
 Price US stock per foot with `pricePerFt: 3.1` (about $3/ft for 1-1/2" 11 ga, $2/ft for 1" 14 ga). Label imperial stock the way it is sold: `label: '1-1/2" × 1-1/2" × 11 ga square tube'`, `short: '1.5" SQ 11ga'`.
 
+## PVC pipe, aluminium, copper and plastics
+
+Not every build is steel. Use these when they fit the job:
+
+| Material | Use for | Sections | In code |
+|---|---|---|---|
+| PVC-U pressure pipe | light frames, masts, outdoor racks, anything that must not rust | metric OD: 16, 20, 25, 32, 40, 50 mm (PN10/16 walls about 1.5 to 3 mm); US Sch 40: 1/2" (21.3 × 2.77), 3/4" (26.7 × 2.87), 1" (33.4 × 3.38), 1-1/4" (42.2 × 3.56) | `pvcPipe(25, 1.9)` |
+| Aluminium rod and tube | antenna elements, light frames, handles | rod 4, 6, 8, 10 mm; tube 8 × 1, 10 × 1, 12 × 1, 20 × 1.5 | `rod(6, { material: 'aluminium-bare' })`, `roundTube(10, 1, { material: 'aluminium-bare' })` |
+| Copper and brass | conductors, ground rods, solder joints | wire 1.5 to 4 mm, pipe 15 × 0.7, 22 × 0.9 | `rod(2.5, { material: 'copper' })` |
+| Sheet and board | plates, decks, panels, mounts | HDPE, acrylic, polycarbonate, FR4 (`material: 'hdpe'` etc. on a plate) | |
+
+- PVC joins with solvent cement and standard fittings (`join: 'glue'`), or with printed hubs. List fittings as hardware; put a member's nodes where the pipe really ends (at the bottom of the fitting's socket), so the cut length is right.
+- PVC creeps: the checks use a long-term design stress (25 MPa), not its short-term strength. Keep it out of sustained heavy bending; a PVC mast carries wind and a light antenna, not a person.
+- Bolted or clamped aluminium (`aluminium-bare`) keeps its full strength; welded aluminium (`aluminium`) is checked at its weakened heat-affected strength.
+- For anything electrical or RF, the structure is only half of it: put the electrical numbers (element length from frequency, conductor size from current, clearances) in plan checks.
+
 ## Timber and bolted builds
 
 The kit draws and cuts timber the same way (`timber(bu, bw)`, `join: 'screw'` on the model). Use butt joints with screws or bolts and a corner brace; the strength check uses a design bending strength, not yield. Use actual sizes (a 2×4 is 38 × 89 mm, `timber(38, 89)` laid flat or `roll: 90`).

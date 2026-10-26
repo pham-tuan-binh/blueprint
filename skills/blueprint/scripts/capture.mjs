@@ -108,19 +108,38 @@ if (lenField) {
   await p.waitForTimeout(400);
 }
 
+// ---------------------------------------------------------------- 3D print downloads
+// a plan with prints must hand over a real STL (cut at this size) and its .scad
+if (await p.$('[data-stl]')) {
+  const ids = await p.$$eval('#bom [data-stl]', bs => bs.map(b => b.dataset.stl));
+  for (const id of ids) {
+    const [dlS] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click(`#bom [data-stl="${id}"]`)]);
+    const fs = await import('node:fs');
+    const path = join(out, await dlS.suggestedFilename());
+    await dlS.saveAs(path);
+    const buf = fs.readFileSync(path), tris = buf.length > 84 ? buf.readUInt32LE(80) : 0;
+    if (tris < 12 || buf.length !== 84 + tris * 50) problems.push(`print ${id}: the STL is empty or malformed (${buf.length} bytes)`);
+    const [dlC] = await Promise.all([p.waitForEvent('download'), p.click(`#bom [data-scad="${id}"]`)]);
+    const scadPath = join(out, await dlC.suggestedFilename());
+    await dlC.saveAs(scadPath);
+    if (!/difference\(\)/.test(fs.readFileSync(scadPath, 'utf8'))) problems.push(`print ${id}: the .scad has no geometry`);
+  }
+  await shot(p, '#bom', 'materials.png');
+}
+
 // ---------------------------------------------------------------- the other units
 // the page opens in the plan's units; switch to the other system and check nothing
 // of the first is left in the plan's own numbers (bought-part specs are exempt)
 const home = await p.evaluate(() => window.__blueprint.d.units.system);
 const other = home === 'imperial' ? 'metric' : 'imperial';
-const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
+const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain, .spec').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
 const ownAll = async () => (await Promise.all(['#facts', '#checks-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'].map(ownText))).join('\n');
 await p.click(`[data-units="${other}"]`);
 await p.waitForTimeout(600);
 const all = await ownAll();
 if (other === 'imperial') {
   if (!/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
-  const mm = all.match(/(?<![\d.])\d+(\.\d+)?\s?mm\b/g);
+  const mm = all.match(/(?<![\d.])\d+(\.\d+)?\s?mm\b(?![²2])/g);
   if (mm) problems.push(`imperial: still shows millimetres (${mm.slice(0, 3).join(', ')})`);
 } else {
   const ins = all.match(/\d+(\s\d+\/\d+)?"/g);

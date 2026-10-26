@@ -19,7 +19,7 @@ a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{paddin
 .seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .btn{font:600 14px var(--sans);background:none;color:var(--ink);border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer;white-space:nowrap}
-.btn:hover,.seg button:hover{background:var(--th)}.btn{display:inline-flex;align-items:center;gap:6px}.btn svg{width:15px;height:15px;flex:none}
+.btn:hover,.seg button:hover{background:var(--th)}.btn{display:inline-flex;align-items:center;gap:6px}.btn svg{width:15px;height:15px;flex:none}.btn.sm{font-size:12px;padding:3px 8px;font-family:var(--mono)}.dls{display:inline-flex;gap:6px;flex-wrap:wrap}
 main{max-width:1080px;margin:0 auto;padding:24px 16px 64px}
 .kicker{font:12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
 h1{font-size:34px;line-height:1.1;margin:6px 0 8px;letter-spacing:-.01em}.lede{max-width:70ch;margin:0 0 16px;color:var(--ink2)}
@@ -71,7 +71,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .legend th{text-align:left;white-space:nowrap;width:1%}.legend td{text-align:left}
 .wrap{overflow-x:auto;max-width:100%}
 .sheet{display:grid;gap:0;border:1px solid var(--line);margin:8px 0}.sheet figure{margin:0;min-width:0}.sheet svg{border:0!important}
-.sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr;max-width:620px}
+.sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr;max-width:620px}.sheet.print{max-width:520px}
 figure{margin:0}
 .views svg,.piece-list svg,figure>svg{border:1px solid var(--line);width:100%;height:auto;display:block}
 .piece-list{display:grid;gap:14px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
@@ -88,7 +88,7 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 ${SHOP_CSS}
 @media print{
   :root{--paper:#fff;--ink:#000;--ink2:#222;--muted:#555;--line:#bbb;--th:#eee;--face:#e4e4e4;--now:#444;--old:#eee;--oldline:#aaa;--lit:#000;color-scheme:light}
-  .top,.back,#print,.seg,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step],[data-show-wrap]{display:none!important}
+  .dls,.top,.back,#print,.seg,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step],[data-show-wrap]{display:none!important}
   .toc-box{break-after:page}.size>p.muted{display:none}
   .split{display:block}.size{border:1px solid #000}
   .step{break-before:page}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}details.sheets{border:0;padding:0}
