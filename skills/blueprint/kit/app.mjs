@@ -100,9 +100,7 @@ export function mountPlan(plan) {
   // ---------------------------------------------------------------- viewer
   let viewer = null;
   try {
-    const theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     viewer = createViewer($('#viewer'), {
-      theme,
       onPick: info => {
         const el = $('#pick');
         if (!info) { el.hidden = true; return; }

@@ -1,15 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="color-scheme:light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
 <title>Welded steel workbench build plan</title>
 <meta name="description" content="Four square-tube legs, a welded top frame and lower frame, a plywood or steel top and an optional lower shelf. Straight square cuts only: every rail butts onto a leg face.">
 <style>
 :root{--paper:#fbfbfa;--ink:#16181b;--ink2:#3a3f46;--muted:#666d75;--line:#d7dade;--th:#f0f1f2;--face:#e1e4e7;--now:#4a4f57;--old:#e6e8eb;--oldline:#a9afb6;--lit:#d23f45;--okc:#1d6b3a;
 --sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#141416;--ink:#ecebe8;--ink2:#c9c8c4;--muted:#9a9a96;--line:#34353a;--th:#1d1e21;--face:#3a3c40;--now:#c9ccd0;--old:#26272a;--oldline:#56585d;--lit:#ef6a6f;--okc:#6fcf8f;color-scheme:dark}}
-:root[data-theme="dark"]{--paper:#141416;--ink:#ecebe8;--ink2:#c9c8c4;--muted:#9a9a96;--line:#34353a;--th:#1d1e21;--face:#3a3c40;--now:#c9ccd0;--old:#26272a;--oldline:#56585d;--lit:#ef6a6f;--okc:#6fcf8f;color-scheme:dark}
 *{box-sizing:border-box}[hidden]{display:none!important}html{scroll-padding-top:64px}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-text-size-adjust:100%}
 a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{padding:16px}
@@ -1629,12 +1628,6 @@ const TONES = {
     lo: [0x5a5a5c, 0x6d6d6f, 0x808082, 0x949496], faint: [0xd2d2ce, 0xdededa, 0xe8e8e4, 0xf2f2ef],
     lit: [0xa8343a, 0xc63f45, 0xe5484d, 0xef7478],
   },
-  dark: {
-    paper: 0x141416, ink: 0x0a0a0b, grid: [0x2e2e31, 0x232326],
-    hi: [0x6e6e6c, 0x8c8c89, 0xaaaaa6, 0xc8c8c4], mid: [0x4c4c4d, 0x5e5e5f, 0x717172, 0x858586],
-    lo: [0x2f2f31, 0x3a3a3c, 0x464648, 0x535355], faint: [0x5b5b5a, 0x676766, 0x737372, 0x80807f],
-    lit: [0xa8343a, 0xc63f45, 0xe5484d, 0xef7478],
-  },
 };
 
 function toneMat(cols, { opacity = 1 } = {}) {
@@ -1653,8 +1646,9 @@ function toneMat(cols, { opacity = 1 } = {}) {
   });
 }
 
-function createViewer(el, { onPick, theme = 'light' } = {}) {
-  const T = TONES[theme] || TONES.light;
+function createViewer(el, { onPick } = {}) {
+  // light paper only, like the page
+  const T = TONES.light;
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(T.paper, 1);
@@ -2009,9 +2003,7 @@ function mountPlan(plan) {
   // ---------------------------------------------------------------- viewer
   let viewer = null;
   try {
-    const theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     viewer = createViewer($('#viewer'), {
-      theme,
       onPick: info => {
         const el = $('#pick');
         if (!info) { el.hidden = true; return; }

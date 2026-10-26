@@ -15,12 +15,6 @@ const TONES = {
     lo: [0x5a5a5c, 0x6d6d6f, 0x808082, 0x949496], faint: [0xd2d2ce, 0xdededa, 0xe8e8e4, 0xf2f2ef],
     lit: [0xa8343a, 0xc63f45, 0xe5484d, 0xef7478],
   },
-  dark: {
-    paper: 0x141416, ink: 0x0a0a0b, grid: [0x2e2e31, 0x232326],
-    hi: [0x6e6e6c, 0x8c8c89, 0xaaaaa6, 0xc8c8c4], mid: [0x4c4c4d, 0x5e5e5f, 0x717172, 0x858586],
-    lo: [0x2f2f31, 0x3a3a3c, 0x464648, 0x535355], faint: [0x5b5b5a, 0x676766, 0x737372, 0x80807f],
-    lit: [0xa8343a, 0xc63f45, 0xe5484d, 0xef7478],
-  },
 };
 
 function toneMat(cols, { opacity = 1 } = {}) {
@@ -39,8 +33,9 @@ function toneMat(cols, { opacity = 1 } = {}) {
   });
 }
 
-export function createViewer(el, { onPick, theme = 'light' } = {}) {
-  const T = TONES[theme] || TONES.light;
+export function createViewer(el, { onPick } = {}) {
+  // light paper only, like the page
+  const T = TONES.light;
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(T.paper, 1);

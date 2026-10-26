@@ -5,11 +5,10 @@ import { esc } from './core.mjs';
 import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary } from './pack.mjs';
 import { SHOP_CSS } from './shop.mjs';
 
+// Light paper only, like a printed drawing: no dark theme, whatever the device prefers.
 export const PAGE_CSS = `
 :root{--paper:#fbfbfa;--ink:#16181b;--ink2:#3a3f46;--muted:#666d75;--line:#d7dade;--th:#f0f1f2;--face:#e1e4e7;--now:#4a4f57;--old:#e6e8eb;--oldline:#a9afb6;--lit:#d23f45;--okc:#1d6b3a;
 --sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#141416;--ink:#ecebe8;--ink2:#c9c8c4;--muted:#9a9a96;--line:#34353a;--th:#1d1e21;--face:#3a3c40;--now:#c9ccd0;--old:#26272a;--oldline:#56585d;--lit:#ef6a6f;--okc:#6fcf8f;color-scheme:dark}}
-:root[data-theme="dark"]{--paper:#141416;--ink:#ecebe8;--ink2:#c9c8c4;--muted:#9a9a96;--line:#34353a;--th:#1d1e21;--face:#3a3c40;--now:#c9ccd0;--old:#26272a;--oldline:#56585d;--lit:#ef6a6f;--okc:#6fcf8f;color-scheme:dark}
 *{box-sizing:border-box}[hidden]{display:none!important}html{scroll-padding-top:64px}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-text-size-adjust:100%}
 a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{padding:16px}
@@ -93,10 +92,11 @@ export function pageHtml(d, { script = '', title, description, back = null } = {
   const plan = d.plan, steps = d.model.steps;
   const t = title || `${plan.name} build plan`;
   return `<!doctype html>
-<html lang="en">
+<html lang="en" style="color-scheme:light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
 <title>${esc(t)}</title>
 <meta name="description" content="${esc(description || plan.summary || '')}">
 <style>${PAGE_CSS}</style>

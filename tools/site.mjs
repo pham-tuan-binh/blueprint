@@ -74,10 +74,11 @@ const GALLERY_CSS = `
 `;
 
 const index = `<!doctype html>
-<html lang="en">
+<html lang="en" style="color-scheme:light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
 <title>Blueprint plans</title>
 <meta name="description" content="Parametric build plans made with the blueprint agent skill: 3D model, sizes you can change, checks, cut sheets and steps.">
 <style>${PAGE_CSS}${GALLERY_CSS}</style>
