@@ -12,7 +12,7 @@
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
 a{color:inherit}code{font:.88em var(--mono);background:var(--th);padding:.05em .35em}.muted{color:var(--muted)}.pad{padding:16px}
 main{max-width:1000px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right)) 80px max(16px,env(safe-area-inset-left))}
-.back{display:inline-block;text-decoration:none;color:var(--muted);font-size:14px;margin:0 0 8px}.back:hover{color:var(--ink)}
+.back{margin:0 0 8px;text-decoration:none}
 h1{font-size:40px;line-height:1.15;margin:24px 0 32px;letter-spacing:-.01em;text-wrap:balance}.lede{font-size:18px;max-width:68ch;margin:0 0 24px}
 .sec{margin-top:144px}.sec>h2{display:flex;align-items:baseline;gap:14px;font-size:28px;line-height:1.2;margin:0 0 24px}
 .secn{font:400 .85em var(--mono);color:var(--muted)}h3{font-size:19px;margin:40px 0 8px}h4{font-size:15px;margin:40px 0 12px}
@@ -33,6 +33,7 @@ p,li{max-width:72ch}
 @media (max-width:880px){.split{grid-template-columns:1fr}}
 .viewer-box{position:relative;border:1px solid var(--line);aspect-ratio:4/3;background:#fbfbfa}
 .viewer{position:absolute;inset:0}.viewer canvas{display:block}
+.loading{position:absolute;inset:0;margin:0;display:grid;place-items:center;font:13px var(--mono);color:var(--muted);pointer-events:none}
 .cams{position:absolute;left:12px;bottom:12px;display:flex;border:1px solid var(--ink);background:var(--paper)}
 .cams button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;border-right:1px solid var(--line);padding:6px 11px;cursor:pointer}.cams button:last-child{border-right:0}
 .cams button:hover{background:var(--th)}
@@ -67,8 +68,8 @@ figure{margin:0}
 .piece-list{display:grid;gap:18px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
 .phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}.phases h4{margin:8px 0 0}.phases ol{margin:4px 0;padding-left:1.6em}.phases li{margin:2px 0}
 /* one left column per step: the number, every checkbox and the check and warning marks are centred in it; the title and all text start right of it */
-.step{margin-top:112px;--gut:76px;--gap:20px}.step-h{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);gap:var(--gap);align-items:center;margin-bottom:28px}.sn{font:700 64px/1 var(--sans);text-align:center}
-.step-h h3{margin:0;font-size:22px}.step-h p{margin:4px 0 0}
+.step{margin-top:112px;--gut:76px;--gap:20px}.step-h{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);gap:var(--gap);align-items:start;margin-bottom:28px}.step-h>div{padding-top:var(--cap-pad,5px)}.sn{font:700 64px/1 var(--sans);text-align:center}
+.step-h h3{margin:0;font-size:22px;line-height:1.15}.step-h p{margin:11px 0 0;line-height:1.2}
 .tasks{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:t}
 .tasks li{display:grid;grid-template-columns:var(--gut,76px) minmax(0,1fr);gap:var(--gap,20px);align-items:start;counter-increment:t}
 .tasks label{line-height:1.6}.tasks input{font:inherit;margin:calc((1.6em - 1.1rem) / 2) 0 0;justify-self:center}   /* centred on the first line, and in the step's left column */
@@ -98,7 +99,7 @@ details.sheets{margin:40px 0 0}details.sheets summary{cursor:pointer;font-weight
 .linkish{font:inherit;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
 ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 .foot{max-width:1000px;margin:0 auto;padding:48px 16px;color:var(--muted);font-size:13px}
-@media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px;--gut:52px;--gap:14px}.sn{font-size:44px}.inp input{width:84px}ul.cols{columns:1}}
+@media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px;--gut:62px;--gap:14px}.sn{font-size:52px}.step .step-h h3{font-size:18px}.step .step-h p{font-size:13px;margin-top:8px}.step .step-h>div{--cap-pad:4px}.inp input{width:84px}ul.cols{columns:1}}
 
 .piece,.jig,.nest{background:var(--paper);max-width:100%;height:auto;display:block}
 .pt{font:700 24px var(--mono);fill:var(--ink)}.pq{font:400 20px var(--mono);fill:var(--muted)}
@@ -148,7 +149,7 @@ th .q,h4 .q,summary .q{width:15px;height:15px}
 <body>
 <main>
   <h1>How to read this plan</h1>
-  <p class="lede">Welded steel workbench: what the plan leaves out. Read once; after that the <span class="q" style="pointer-events:none"><svg class="mk mk-q" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6"/><path class="ln" d="M9.1 9.3a2.9 2.9 0 1 1 4.3 2.6c-.9.5-1.4 1.1-1.4 2.1v.4"/><circle class="dot" cx="12" cy="17.6" r="1.25"/></svg></span> marks remind you.</p>
+  <p class="lede">Welded steel workbench: what the plan leaves out. Read once; after that the <span class="q" style="pointer-events:none"><svg class="mk mk-q" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="#ffd100" stroke="#14171a" stroke-width="1.6"/><path class="ln" d="M9.1 9.3a2.9 2.9 0 1 1 4.3 2.6c-.9.5-1.4 1.1-1.4 2.1v.4" fill="none" stroke="#14171a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle class="dot" cx="12" cy="17.6" r="1.25" fill="#14171a"/></svg></span> marks remind you.</p>
   <nav aria-label="Contents"><p class="contents-h">Contents</p><ol class="contents"><li><a href="#start"><span class="cn">1</span><span class="ct">How the plan works</span><span class="cl" aria-hidden="true"></span><span class="cm">parts of a step</span></a></li><li><a href="#tools"><span class="cn">2</span><span class="ct">Tools you need</span><span class="cl" aria-hidden="true"></span><span class="cm">what to have</span></a></li><li><a href="#coords"><span class="cn">3</span><span class="ct">Coordinates</span><span class="cl" aria-hidden="true"></span><span class="cm">x, y, z from the datum</span></a></li><li><a href="#jig"><span class="cn">4</span><span class="ct">Jig drawings</span><span class="cl" aria-hidden="true"></span><span class="cm">dark = now, light = done</span></a></li><li><a href="#square"><span class="cn">5</span><span class="ct">Squareness</span><span class="cl" aria-hidden="true"></span><span class="cm">diagonals</span></a></li><li><a href="#stock"><span class="cn">6</span><span class="ct">Buying stock</span><span class="cl" aria-hidden="true"></span><span class="cm">2 sections</span></a></li><li><a href="#cut"><span class="cn">7</span><span class="ct">Cut sheets</span><span class="cl" aria-hidden="true"></span><span class="cm">marks, long point</span></a></li><li><a href="#joints"><span class="cn">8</span><span class="ct">Joint types</span><span class="cl" aria-hidden="true"></span><span class="cm">flush, butt</span></a></li><li><a href="#weld"><span class="cn">9</span><span class="ct">Tacking and welding</span><span class="cl" aria-hidden="true"></span><span class="cm">tack, then weld out</span></a></li><li><a href="#checks"><span class="cn">10</span><span class="ct">The checks</span><span class="cl" aria-hidden="true"></span><span class="cm">what they prove</span></a></li><li><a href="#tol"><span class="cn">11</span><span class="ct">Tolerances</span><span class="cl" aria-hidden="true"></span><span class="cm">how close is close enough</span></a></li><li><a href="#safety"><span class="cn">12</span><span class="ct">Safety</span><span class="cl" aria-hidden="true"></span><span class="cm">before you start</span></a></li><li><a href="#glossary"><span class="cn">13</span><span class="ct">Glossary</span><span class="cl" aria-hidden="true"></span><span class="cm">every term</span></a></li><li><a href="index.html"><span class="cn"></span><span class="ct">Back to the plan</span><span class="cl" aria-hidden="true"></span><span class="cm">the steps</span></a></li></ol></nav>
 <section class="sec" id="start"><h2><span class="secn">1</span>How the plan works</h2>
 <p>9 steps, in order. Tack, measure, then weld.</p>

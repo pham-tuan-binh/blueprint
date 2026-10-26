@@ -231,7 +231,7 @@ export function mountPlan(plan) {
   followSteps(true);
   // the step viewer second, after the first frame, so the page never waits on two builds at once
   requestAnimationFrame(() => setTimeout(() => {
-    try { stepViewer = createViewer($('#viewer-steps')); stepViewer.setModel(d); stepViewer.setStep(stepNow, stepNow); }
+    try { stepViewer = createViewer($('#viewer-steps')); stepViewer.setModel(d); stepViewer.setStep(stepNow, stepNow); $('#loading-steps').hidden = true; }
     catch (e) { $('#viewer-steps').innerHTML = '<p class="muted pad">3D view unavailable.</p>'; }
   }, 50));
   window.__blueprint = { get d() { return d; }, render, setParams(p) { given = { ...given, ...p }; render(); renderForm(); }, setUnits(s) { system = s; render(); renderForm(); } };

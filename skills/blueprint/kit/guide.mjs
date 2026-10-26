@@ -39,11 +39,14 @@ export const TIPS = {
 
 // The three marks as drawn icons, so each sits dead centre in its circle whatever the
 // font: a black outline always, the fill from the colour code (yellow ?, green ✓, red !).
-const mk = (cls, inner) => `<svg class="mk ${cls}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6"/>${inner}</svg>`;
+// Size and paint are also attributes, so an icon looks right even before a stylesheet applies.
+const mk = (cls, fill, ink, inner) => `<svg class="mk ${cls}" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="${fill}" stroke="#14171a" stroke-width="1.6"/>${inner(ink)}</svg>`;
+const ln = (d, ink) => `<path class="ln" d="${d}" fill="none" stroke="${ink}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+const dot = (cx, cy, r, ink) => `<circle class="dot" cx="${cx}" cy="${cy}" r="${r}" fill="${ink}"/>`;
 export const ICON = {
-  q: mk('mk-q', '<path class="ln" d="M9.1 9.3a2.9 2.9 0 1 1 4.3 2.6c-.9.5-1.4 1.1-1.4 2.1v.4"/><circle class="dot" cx="12" cy="17.6" r="1.25"/>'),
-  check: mk('mk-ok', '<path class="ln" d="M7.4 12.4l3.1 3.1 6.1-6.6"/>'),
-  warn: mk('mk-warn', '<path class="ln" d="M12 6.6v7.2"/><circle class="dot" cx="12" cy="17.4" r="1.3"/>'),
+  q: mk('mk-q', CODE.yellow, '#14171a', k => ln('M9.1 9.3a2.9 2.9 0 1 1 4.3 2.6c-.9.5-1.4 1.1-1.4 2.1v.4', k) + dot(12, 17.6, 1.25, k)),
+  check: mk('mk-ok', CODE.green, '#fff', k => ln('M7.4 12.4l3.1 3.1 6.1-6.6', k)),
+  warn: mk('mk-warn', CODE.red, '#fff', k => ln('M12 6.6v7.2', k) + dot(12, 17.4, 1.3, k)),
 };
 
 // the circled "?" itself
