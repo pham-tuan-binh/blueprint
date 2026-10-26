@@ -78,7 +78,8 @@ for (let i = 0; i < N; i++) {
   cases.push({ name: `random ${i + 1} (${Object.entries(g).map(([k, v]) => `${k}=${typeof v === 'number' ? Math.round(v) : v}`).join(' ')})`, given: g });
 }
 
-const fingerprint = d => JSON.stringify([d.bbox.map(b => b.map(Math.round)), d.pieces.map(g => [g.mark, g.qty, Math.round(g.pm.longPoint)]), d.model.plates.map(p => p.s.map(Math.round)), d.model.hardware.map(h => h.qty), d.loads.map(l => l.load.kg ?? l.load.N)]);
+// what a person would see change: sizes, pieces, parts and their specs, sections, loads, and every check's result
+const fingerprint = d => JSON.stringify([d.bbox.map(b => b.map(Math.round)), d.pieces.map(g => [g.mark, g.qty, Math.round(g.pm.longPoint), g.sec.id]), d.model.plates.map(p => [p.s.map(Math.round), p.material]), d.model.hardware.map(h => [h.qty, h.spec, h.name]), d.loads.map(l => l.load.kg ?? l.load.N), d.checks.map(c => c.value), d.model.prints.map(p => p.material)]);
 const prints = {};
 const metricNum = /(^|[^\w.])\d+(\.\d+)?\s?(mm|cm|m)\b/;
 let worst = {};

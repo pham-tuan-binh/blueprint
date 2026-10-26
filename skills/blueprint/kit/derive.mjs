@@ -5,7 +5,7 @@
 import { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet } from './core.mjs';
 import { solveJoints, memberCorners, describeEnd } from './joints.mjs';
 import { runLoads } from './fea.mjs';
-import { printBox, printEstimate, FILAMENTS } from './print.mjs';
+import { printBox, printEstimate, FILAMENTS, bedBox } from './print.mjs';
 
 const { sub, len, dot, add, mul } = v3;
 
@@ -153,7 +153,8 @@ function massItems(model, joints) {
   for (const m of model.members) {
     const j = joints[m.id];
     const L = j.edges.reduce((s, e) => s + (e.tb - e.ta), 0) / 4;
-    items.push({ kind: 'member', id: m.id, m: (j.sec.kgPerM * L) / 1000, c: v3.lerp(j.A, j.B, 0.5) });
+    // loose members (clamped or bolted on, not in the frame) still weigh on it
+    items.push({ kind: m.loose ? 'loose' : 'member', id: m.id, m: (j.sec.kgPerM * L) / 1000, c: v3.lerp(j.A, j.B, 0.5) });
   }
   for (const pl of model.plates) {
     const rho = pl.rho ?? { steel: 7.85e-6, aluminium: 2.7e-6, stainless: 8e-6, timber: 4.2e-7, plywood: 6e-7, mdf: 7.5e-7, pvc: 1.4e-6, hdpe: 9.5e-7, acrylic: 1.19e-6, polycarbonate: 1.2e-6, copper: 8.96e-6, brass: 8.5e-6, fr4: 1.85e-6 }[pl.material || 'steel'];
@@ -328,7 +329,13 @@ export function derive(plan, given = {}, system) {
   // checks: kit checks first, then the plan's own
   const u = units, checks = [];
   const add2 = (name, pass, value, why) => checks.push({ name, pass: !!pass, value, why });
-  add2('Every joint can be made as drawn', !report.length, report.length ? report[0] : `${d.weld.joins} joints`, 'Each end is a mitre, a butt onto a face, a flush cut or a free end; nothing overhangs.');
+  if (d.weld.joins || report.length) add2('Every joint can be made as drawn', !report.length, report.length ? report[0] : `${d.weld.joins} joints`, 'Each end is a mitre, a butt onto a face, a flush cut or a free end; nothing overhangs.');
+  if (model.prints.length) {
+    const bed = model.printer?.bed || [220, 220, 250];
+    const big = model.prints.map(pr => ({ pr, size: bedBox(pr).size })).map(x => ({ ...x, fits: x.size[2] <= bed[2] && ((x.size[0] <= bed[0] && x.size[1] <= bed[1]) || (x.size[1] <= bed[0] && x.size[0] <= bed[1])) }));
+    const worst = big.find(x => !x.fits) || big.sort((a, b) => b.size[0] * b.size[1] - a.size[0] * a.size[1])[0];
+    add2('Every print fits the printer', big.every(x => x.fits), `${worst.pr.name}: ${worst.size.map(v => u.len(v)).join(' × ')} on a ${bed.map(v => u.len(v)).join(' × ')} bed`, 'As it sits on the bed, turned the way the files come.');
+  }
   add2('Nothing floating', !geo.floating.length, geo.floating.length ? geo.floating.join(', ') : 'all connected', 'Every member, plate and part touches what holds it.');
   const clashes = [...geo.clashes, ...plateClashes];
   add2('No clashes', !clashes.length, clashes[0] || 'none', 'No member passes through another away from a joint, and no plate through a member it is not notched around.');
@@ -342,7 +349,7 @@ export function derive(plan, given = {}, system) {
   if (loadErr) add2('Frame analysis', false, loadErr, 'The frame solver could not run.');
   for (const r of d.loads) {
     const need = r.load.sf ?? 2;
-    add2(`${r.name}: strength`, r.sf >= need, `safety factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + ref(r.worstMember) : ''}`, `Yield ÷ peak stress with ${r.load.kg != null ? u.mass(r.load.kg) : u.force(r.load.N)} ${r.load.what || 'applied'}, plus self weight.`);
+    add2(`${r.name}: strength`, r.sf >= need, `safety factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + ref(r.worstMember) : ''}`, `Yield ÷ peak stress with ${r.load.parts ? u.force(r.load.parts.reduce((t, q) => t + (q.kg != null ? q.kg * G0 : q.N || 0), 0)) : r.load.kg != null ? u.mass(r.load.kg) : u.force(r.load.N)} ${r.load.what || 'applied'}, plus self weight.`);
     if (r.load.defl != null) add2(`${r.name}: deflection`, r.loadDefl <= r.load.defl, `${u.deflection(r.loadDefl)} (limit ${u.deflection(r.load.defl)})`, 'Largest movement of the loaded members.');
   }
   if (d.tip && model.tip.anchored) add2('Does not tip over', true, `anchored (${model.tip.anchored}); free-standing factor ${d.tip.sf.toFixed(2)}`, `Free-standing it would tip with ${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high, so it is fixed down.`);

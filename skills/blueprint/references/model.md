@@ -49,7 +49,7 @@ export const plan = {
 
 | name | use |
 |---|---|
-| `k.u` | units, for every number in text: `u.len(mm)` (a bare number for drawings and tables), `u.len(mm, { u: true })` (with its unit, for sentences), `u.size(mm)`, `u.mass(kg)`, `u.tol(mm)` (`±1 mm` / `±1/16"`), `u.force(N)` |
+| `k.u` | units, for every number in text: `u.len(mm)` (a bare number for drawings and tables, whole mm), `u.len(mm, { u: true })` (with its unit, for sentences), `u.fine(mm, { u: true })` (to a tenth: a drill, a clearance, a wall), `u.size(mm)`, `u.mass(kg)`, `u.tol(mm)` (`±1 mm` / `±1/16"`), `u.force(N)` |
 | `k.squareTube(b, t, o)`, `k.rectTube(bu, bw, t, o)`, `k.roundTube(d, t, o)`, `k.flatBar(b, t, o)`, `k.bar(bu, bw, o)`, `k.timber(bu, bw, o)`, `k.rod(d, o)` (solid round), `k.pvcPipe(d, t, o)` | stock sections. `bu` is the width across the member (horizontal), `bw` its height (up for a level member). `o`: `{ id, label, short, stockLen, price (per metre) or pricePerFt, material }` |
 | `k.inch(v)`, `k.feet(v)` | imperial stock sizes in mm |
 | `k.MATERIALS` | steel, stainless, aluminium (welded strength), aluminium-bare (bolted), timber, pvc, copper, brass: pass `material:` in a section's `o` |
@@ -77,7 +77,10 @@ return {
   steps: [ ... ],
   facts: [['Work height', u.len(900, { u: true }), 'top surface']],   // optional extra facts
   join: 'weld',                // 'weld' (default), 'bolt', 'screw', 'glue', 'solder' or 'clamp': the legend wording
-  kerf: 2, trim: 10, minPiece: 32, tolerance: '...', orderNote: 'One line above the build order.',
+  kerf: 2, trim: 10, minPiece: 32,
+  tolerance: 'cut ±1 mm; feed gap ±0.5 mm',   // the legend's tolerance line, when the frame default does not fit
+  printer: { bed: [220, 220, 250] },          // the bed the print check uses
+  orderNote: 'One line above the build order.',
 };
 ```
 
@@ -121,6 +124,8 @@ Anything bought. `shape` (optional, a box `{ type: 'box', c, s }` or cylinder, o
 
 ### supports and loads
 
+Supports must hold the frame still in every direction, or the solver reports a mechanism. Two `pin` supports on one vertical line (a mast in two clamps) leave it free to turn about its own axis: make one of them `fixed`. Feet under a frame are fine as `pin`s. Members with `loose: true` (clamped, bolted or held in a print) are left out of the frame analysis, but their weight still bears on it.
+
 ```js
 supports: legs.map(n => ({ at: nodes[n], fix: 'pin' })),
 loads: [
@@ -131,6 +136,7 @@ loads: [
 ```
 
 - `what` is a short phrase that reads after the load in the check's explanation: "Yield ÷ peak stress with 150 kg *on one corner*". Write `what: 'on one corner'`, not a sentence.
+- `parts: [{ on, at, kg | N, dir }, ...]` makes one case of several loads applied together: drag spread up a mast plus a load at its head. The case's `what` should describe the whole.
 - `kg` (or `N`) is spread equally over every node of the members in `on` (the members are cut into short spans, so it acts along them) and/or the points in `at` (snapped to the nearest member).
 - `dir` defaults to straight down. Self weight of every member, plate and part is always added.
 - `sf`: the safety factor on yield the check requires. `defl`: the largest movement allowed at the loaded points, in mm.

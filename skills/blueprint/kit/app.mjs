@@ -6,7 +6,7 @@ import { derive } from './derive.mjs';
 import { makeUnits, esc } from './core.mjs';
 import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel, contentsHtml } from './pack.mjs';
 import { createViewer, printGeometry } from './viewer.mjs';
-import { scadOf, printBox } from './print.mjs';
+import { scadOf, bedBox } from './print.mjs';
 
 const $ = s => document.querySelector(s);
 const store = {
@@ -177,12 +177,13 @@ export function mountPlan(plan) {
   // downloads for 3D prints: the STL is cut from the part at the current size, in mm,
   // moved so it sits on the bed at the origin; the .scad is its OpenSCAD source
   const save = (name, blob) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
-  function stlOf(geo, lo) {
+  function stlOf(geo, part) {
+    const { lo, turn } = bedBox(part);
     const g = geo.index ? geo.toNonIndexed() : geo, pos = g.attributes.position, n = pos.count / 3;
     const buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf);
     dv.setUint32(80, n, true);
     for (let t = 0; t < n; t++) {
-      const p = [0, 1, 2].map(k => [pos.getX(t * 3 + k) - lo[0], pos.getY(t * 3 + k) - lo[1], pos.getZ(t * 3 + k) - lo[2]]);
+      const p = [0, 1, 2].map(k => turn([pos.getX(t * 3 + k), pos.getY(t * 3 + k), pos.getZ(t * 3 + k)]).map((v, i) => v - lo[i]));
       const u = p[1].map((v, i) => v - p[0][i]), w = p[2].map((v, i) => v - p[0][i]);
       const nn = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]], L = Math.hypot(...nn) || 1;
       let o = 84 + t * 50;
@@ -198,7 +199,7 @@ export function mountPlan(plan) {
     if (b.dataset.scad) return save(`${plan.id}-${pr.id}.scad`, new Blob([scadOf(pr, plan)], { type: 'text/plain' }));
     const label = b.innerHTML;
     b.textContent = 'cutting…';
-    try { save(`${plan.id}-${pr.id}.stl`, stlOf(await printGeometry(pr), printBox(pr)[0])); }
+    try { save(`${plan.id}-${pr.id}.stl`, stlOf(await printGeometry(pr), pr)); }
     catch (err) { alert('Could not make the STL: ' + err.message + '. Download the .scad and export it from OpenSCAD.'); }
     b.innerHTML = label;
   });

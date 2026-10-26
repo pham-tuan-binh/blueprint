@@ -3,16 +3,30 @@
 // number of its own, it only lays out what derive() found.
 import { esc } from './core.mjs';
 import { jigSheet, gaSheet, printSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
+import { printBox, bedBox } from './print.mjs';
 
 // a plate: its drawing, then its holes, notches and note as text that wraps
 const plateFigure = (d, pl) => `<figure class="plate-fig">${plateSvg(d, pl)}<figcaption>${plateNotes(d, pl).map(t => `<p>${esc(t)}</p>`).join('')}</figcaption></figure>`;
 
-const money = (d, v) => (d.model.currency ? `${d.model.currency}${Math.round(v).toLocaleString('en-US')}` : '');
+const money = (d, v) => (d.model.currency ? `${d.model.currency}${v < 10 ? v.toFixed(2) : Math.round(v).toLocaleString('en-US')}` : '');
 
 const printHours = d => (Math.round(d.prints.reduce((h, x) => h + x.est.hours * (x.part.qty || 1), 0) * 10) / 10);
 const dl = pr => `<span class="dls"><button type="button" class="btn sm" data-stl="${esc(pr.id)}">${ICON_DL}.stl</button><button type="button" class="btn sm" data-scad="${esc(pr.id)}">${ICON_DL}.scad</button></span>`;
 const ICON_DL = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M4.5 7L8 10.5 11.5 7M3 13.5h10"/></svg>';
 const printSettings = pr => `${pr.material || 'PETG'} · ${pr.layer ?? 0.2} mm layers · ${pr.walls ?? 3} walls · ${Math.round((pr.infill ?? 0.3) * 100)}% infill · ${pr.supports ? 'supports' : 'no supports'}`;
+
+// the holes, bores and pockets of a print, so the part can be checked against its drawing
+function printCuts(d, pr) {
+  const u = d.units, [lo] = printBox(pr), rel = p => p.map((v, i) => u.fine(v - lo[i])).join(', ');
+  const axis = (a, b) => { const v = b.map((x, i) => x - a[i]), k = [0, 1, 2].filter(i => Math.abs(v[i]) > 1e-6); return k.length === 1 ? 'xyz'[k[0]] : 'angled'; };
+  const rows = [
+    ...pr.shapes.filter(c => c.type === 'tube').map(c => ['Bore', `⌀${u.fine(c.ri * 2)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))]),
+    ...(pr.cuts || []).map(c => c.type === 'hole' ? ['Hole', `⌀${u.fine(c.d)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))]
+      : c.type === 'box' ? ['Pocket', c.s.map(v => u.fine(v)).join(' × '), '', rel(c.c), ''] : c.type === 'cyl' ? ['Bore', `⌀${u.fine(c.r * 2)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))] : ['Cut', c.type, '', '', '']),
+  ];
+  const bb = bedBox(pr);
+  return (rows.length ? `<div class="wrap"><table class="doc"><tr><th>Cut</th><th>Size</th><th>Axis</th><th class=n>From (x, y, z)</th><th class=n>Depth</th></tr>${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td class=n>${esc(r[3])}</td><td class=n>${esc(r[4])}</td></tr>`).join('')}</table></div><p class="muted">Dashed on the drawing. Positions from the part's lower-left-bottom corner as drawn${pr.bed && pr.bed !== '-z' ? `; the files come turned for printing (${esc(pr.bed)} face on the bed)` : ''}. On the bed it is ${bb.size.map(v => u.fine(v)).join(' × ')}${u.imperial ? '' : ' mm'}.</p>` : '');
+}
 
 function plateLine(d) {
   const metal = d.plateGroups.filter(g => ['steel', 'aluminium', 'stainless'].includes(g.pl.material || 'steel')).reduce((s, g) => s + g.qty, 0);
@@ -89,10 +103,11 @@ export function legendHtml(d) {
     ['Piece marks', 'A, B, C… one letter per different piece; x4 after it means cut four the same. Mirror images share a mark.'],
     ['Cut marks', 'From one square end, mark each edge at the two numbers, join the marks around the section, cut on the lines. Angles are for reference.'],
     ['Edges', `named by where they face on the finished build (${md.axes.z[0]}-${md.axes.y[1]}, ${md.axes.z[1]}-${md.axes.x[0]}…)`],
-    ['Joints', `mitre = same section, on the bisector · butt onto X = square onto the face of X · flush with X = cut level with X's outer face · then ${joinWord}`],
+    d.weld.joins ? ['Joints', `mitre = same section, on the bisector · butt onto X = square onto the face of X · flush with X = cut level with X's outer face · then ${joinWord}`]
+      : ['Joints', `nothing is welded: parts ${joinWord === 'weld' ? 'clamp, bolt or sit in printed parts' : joinWord}, as each step says`],
     ['Long point', 'the overall length of the piece, tip to tip'],
     ['Dimensions', 'jig drawings and joint tables give centre lines (℄), where the members\' centres cross; the general arrangement gives outside sizes'],
-    ['Tolerance', md.tolerance || `cut ${u.tol(1)} · tacked ${u.tol(1)} · finished ${u.tol(2)} · diagonals equal within ${u.len(3)}`],
+    ['Tolerance', md.tolerance || !d.weld.joins ? (md.tolerance || `cut ${u.tol(1)} unless a step says otherwise`) : `cut ${u.tol(1)} · tacked ${u.tol(1)} · finished ${u.tol(2)} · diagonals equal within ${u.len(3)}`],
   ];
   return `<div class="wrap"><table class="doc legend">${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table></div>`;
 }
@@ -124,7 +139,7 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   if (st.check) h += `<p class="gate"><b>Check</b> ${esc(st.check)}</p>`;
   if (st.tip) h += `<p class="note">${esc(st.tip)}</p>`;
   for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
-    h += `<h4>Print: ${esc(pr.name)}${(pr.qty || 1) > 1 ? ` x${pr.qty}` : ''}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}<p>${dl(pr)}</p>${pr.note ? `<p class="note">${esc(pr.note)}</p>` : ''}`;
+    h += `<h4>Print: ${esc(pr.name)}${(pr.qty || 1) > 1 ? ` x${pr.qty}` : ''}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}${printCuts(d, pr)}<p>${dl(pr)}</p>${pr.note ? `<p class="note">${esc(pr.note)}</p>` : ''}`;
   }
   const hw = d.model.hardware.filter(x => x.step === n);
   if (hw.length) h += `<h4>Parts</h4><ul class="plain">${hw.map(x => `<li>${esc(x.name)} x${x.qty || 1}${x.spec ? ` <span class="muted">${esc(x.spec)}</span>` : ''}</li>`).join('')}</ul>`;

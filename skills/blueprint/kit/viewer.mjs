@@ -224,7 +224,8 @@ export function createViewer(el, { onPick } = {}) {
     }
     const [lo, hi] = d.bbox;
     const span = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
-    size = (span / 1000) * 0.6;
+    // fit the bounding sphere, so a tall or wide build stays in view from any side
+    size = (Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 1000) * 0.52;
     // close enough that half-float depth in the outline pass resolves millimetres
     camDist = Math.max(1.5, (span / 1000) * 1.6);
     camera.near = -camDist * 2; camera.far = camDist * 4;

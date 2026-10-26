@@ -111,6 +111,8 @@ export function makeUnits(system = 'metric') {
     // a length on a drawing, cut sheet or task
     len: (mm, { u = false } = {}) => (imp ? fracIn(mm) : `${Math.round(mm)}${u ? ' mm' : ''}`),
     // an overall size for prose: 1.50 m / 4' 11"
+    // a small size to a tenth (a drill, a clearance, a wall): 4.3 / 0.169"
+    fine: (mm, { u = false } = {}) => (imp ? `${(mm / INCH).toFixed(3)}"` : `${Math.round(mm * 10) / 10}${u ? ' mm' : ''}`),
     size: mm => {
       if (!imp) return mm >= 1000 ? `${(mm / 1000).toFixed(2)} m` : `${Math.round(mm)} mm`;
       const inTot = Math.round(mm / INCH);

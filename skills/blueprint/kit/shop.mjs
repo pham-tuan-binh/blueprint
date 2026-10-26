@@ -3,7 +3,7 @@
 // and the units in force, so imperial is a re-render, never a second drawing.
 import { esc, f1, r0 } from './core.mjs';
 import { memberCorners } from './joints.mjs';
-import { printSolids } from './print.mjs';
+import { printSolids, printBox } from './print.mjs';
 import { hull2 } from './derive.mjs';
 
 // ---------------------------------------------------------------- views
@@ -107,13 +107,14 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
     if (showV) s += tag(xr + fs * 0.36, (dy0 + dy1) / 2, `${cl}${u.len(dy1 - dy0)}`, fs, { cls: 'dt', anchor: 'middle', rotate: -90 });
   }
   // points that land on the same spot in this view share one label: BL1…BL4
-  const spots = new Map();
+  // points closer than a label's height on this view share one label
+  const spots = [];
   for (const l of labels) {
-    const [x, y] = V.pr(l.p), k = `${Math.round(x)},${Math.round(y)}`;
-    if (!spots.has(k)) spots.set(k, { p: l.p, names: [] });
-    spots.get(k).names.push(l.name);
+    const [x, y] = V.pr(l.p);
+    const near = spots.find(sp => Math.hypot(sp.x - x, sp.y - y) < fs * 1.4);
+    if (near) near.names.push(l.name); else spots.push({ x, y, p: l.p, names: [l.name] });
   }
-  const merged = [...spots.values()].map(sp => ({ p: sp.p, name: sp.names.length > 2 ? `${sp.names[0]}…${sp.names[sp.names.length - 1]}` : sp.names.join(', ') }));
+  const merged = spots.map(sp => ({ p: sp.p, name: sp.names.length > 2 ? `${sp.names[0]}…${sp.names[sp.names.length - 1]}` : sp.names.join(', ') }));
   for (const l of merged) {
     const [x, y] = V.pr(l.p);
     s += `<circle class="jp" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.28)}"/>` + tag(x + fs * 0.7, y - fs * 0.85, l.name, fs * 0.8, { cls: 'jl' });
@@ -142,7 +143,7 @@ export function stepViews(d, st) {
 function sheet(items, views, opts) {
   const pts = items.flatMap(it => it.pts);
   const ext = i => Math.max(...pts.map(q => q[i])) - Math.min(...pts.map(q => q[i]));
-  const fs = Math.max(ext(0), ext(1), ext(2), 200) / 34;
+  const fs = opts.fs || Math.max(ext(0), ext(1), ext(2), 200) / 34;
   const svg = {};
   for (const v of views) svg[v] = viewSvg(items, v, { ...opts, fs, title: opts.title ? opts.title(v) : VIEWS[v].title });
   const w = v => +svg[v].match(/data-w="([\d.]+)"/)[1];
@@ -171,8 +172,15 @@ export function thumbSvg(d, view = 'iso') {
 
 // one print alone, top front and side at one scale, dimensioned
 export function printSheet(d, pr) {
-  const items = printSolids(pr).map(pts => ({ id: pr.id, kind: 'print', step: pr.step, pts }));
-  return sheet(items, ['top', 'front', 'side'], { u: d.units, cls: 'jig ga', title: v => `${pr.name}: ${VIEWS[v].title}` }).replace('<div class="sheet"', '<div class="sheet print"');
+  const cuts = [...(pr.cuts || []), ...pr.shapes.filter(c => c.type === 'tube').map(c => ({ type: 'cyl', a: c.a, b: c.b, r: c.ri }))];
+  const items = [
+    ...printSolids(pr).map(pts => ({ id: pr.id, kind: 'print', step: pr.step, pts })),
+    ...printSolids({ shapes: cuts.map(c => (c.type === 'hole' ? { ...c, type: 'cyl', r: c.d / 2 } : c)) }).map(pts => ({ id: pr.id, kind: 'cut', step: pr.step, pts })),
+  ];
+  // text sized to the sheet as it is shown (about 520 px wide), not to the part
+  const [lo, hi] = printBox(pr);
+  const fs = Math.max((hi[0] - lo[0] + hi[1] - lo[1]) * 0.04, 1.2);
+  return sheet(items, ['top', 'front', 'side'], { u: d.units, cls: 'jig ga', fs, title: v => `${pr.name}: ${VIEWS[v].title}` }).replace('<div class="sheet"', '<div class="sheet print"');
 }
 
 export function gaSheet(d) {
@@ -335,7 +343,7 @@ export const SHOP_CSS = `
 .pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
-.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
 .lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}

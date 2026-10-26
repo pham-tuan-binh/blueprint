@@ -20,7 +20,7 @@ Do not print the main load path of anything heavy, anything a person stands on, 
 prints: [{
   id: 'hub', name: 'Feed hub', step: 1, qty: 1,
   material: 'PETG', layer: 0.2, walls: 4, infill: 0.4, supports: false,
-  orient: 'socket end down, no supports',
+  bed: '+z', orient: 'top face down, socket pointing up; no supports',
   shapes: [
     { type: 'tube', a: [0, 0, z0], b: [0, 0, z1], r: 18, ri: pipeOD / 2 + 0.3 },   // socket onto the mast
     { type: 'cyl', a: [0, 0, z1], b: armEnd, r: 7 },                              // an arm
@@ -35,8 +35,10 @@ prints: [{
 }]
 ```
 
-- Everything is in the plan's coordinates (mm), so the print sits where it goes. The STL is moved onto the bed at the origin.
-- `shapes` are unioned; `cuts`, and the bore of every `tube`, are taken out. Overlap solids by a millimetre where they join.
+- Everything is in the plan's coordinates (mm), so the print sits where it goes in the 3D view and the drawings.
+- `bed` is the face, in plan axes, that goes down on the printer bed: `'-z'` (as modelled, the default), `'+z'` (upside down), `'-x'`, `'+x'`, `'-y'`, `'+y'`. The STL and .scad come out turned that way and moved onto the bed at the origin, so the person never rotates it in the slicer. Say the same in `orient`.
+- `shapes` are unioned; `cuts`, and the bore of every `tube`, are taken out. Overlap solids by a millimetre where they join. A `tube`'s bore cuts through everything it overlaps, so where a bore must stop against a plate, use a `cyl` and a `hole` cut of the length you want instead.
+- Cuts can be `hole` (round, from a to b), `cyl` or `box` (a pocket or a slot) or `prism` (a shaped pocket).
 - `prism` extrudes a 2D outline: `axis: 'z'` takes `pts` as [x, y]; `'x'` as [y, z]; `'y'` as [x, z].
 - `material`: PLA, PETG, ASA, ABS, TPU or PA. `infill` is 0 to 1. `orient` is the sentence the step prints after "print it".
 - A print touches what it holds, like a plate (the floating check sees it); `on: 'member-id'` names a holder it does not touch.
@@ -50,7 +52,7 @@ prints: [{
 | Bolt holes | + 0.3 mm (M3: 3.3, M4: 4.3, M5: 5.3). For threads in plastic use heat-set inserts or a nut trap, not tapped plastic |
 | Connector holes | SMA bulkhead 6.4 mm; BNC 9.6 mm; a 6 mm panel jack 6.3 mm |
 | Overhangs | 45° or less, or design a chamfer, so it prints without supports; say `supports: true` only when there is no way round it |
-| Orientation | so the layers run across the load, not along it: a socket printed standing up splits along its layers when it is clamped |
+| Orientation | the layers are weakest pulled apart: keep a pulling or bending load across the layers, not along the stack (a hook printed standing up snaps at a layer; printed lying down, it holds). A socket clamped round a pipe is fine either way, since its hoop load runs in the layers; pick the side that prints without supports |
 | Outdoors | ASA or PETG, 4 walls, 40% infill or more. PLA creeps and softens in the sun |
 
 ## In the pack
@@ -58,8 +60,12 @@ prints: [{
 The kit does this for every print:
 
 - the 3D view shows the exact part, holes and all
+- a check that every print fits the printer (`printer: { bed: [x, y, z] }` on the model, default 220 × 220 × 250 mm), turned the way the files come
+- its drawing shows every cut dashed, with a table of the holes, bores and pockets (size, axis, position) and its size on the bed
 - the materials list has a **3D prints** table with the settings, an estimate of filament (g) and print time (h), and **.stl** and **.scad** download buttons
 - the step it is in shows a dimensioned drawing, the settings, the orientation and the download buttons
 - the facts show the number of prints and the filament
+
+Fits and walls are yours to check: put them in a plan check (the bore against the rod or pipe it takes, the thinnest wall round a clamped bore). Format the sizes with `u.fine()`, which keeps a tenth of a millimetre (4.3, 0.4), since `u.len()` rounds to whole millimetres.
 
 Put the printing in the first step, or the first step that needs the part: it takes hours, and the person can cut and drill while the printer runs. The estimates come from the volume, so call them estimates; the slicer has the real numbers.
