@@ -65,7 +65,7 @@ const GALLERY_CSS = `
 .card .arrow svg{width:16px;height:16px}
 .card:hover .arrow,.card:focus-visible .arrow{background:var(--ink);color:var(--paper)}
 .card .pic{border-bottom:1px solid var(--line);padding:14px;height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.card .pic svg{width:100%;height:100%;border:0}
+.card .pic svg{width:100%;height:100%;border:0;background:transparent}
 .card .txt{padding:12px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
 .card h2{font-size:19px;margin:0;padding:0;border:0;display:block}.card p{margin:0;color:var(--ink2);font-size:14px}
 .card dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:6px 0 0;font:12px var(--mono)}.card dt{color:var(--muted)}.card dd{margin:0}

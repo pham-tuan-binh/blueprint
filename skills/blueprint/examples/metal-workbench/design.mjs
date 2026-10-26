@@ -18,6 +18,7 @@ export const plan = {
     { id: 'depth', label: 'Depth', type: 'len', value: 700, min: 500, max: 900, group: 'Size', hint: 'top, front to back' },
     { id: 'height', label: 'Work height', type: 'len', value: 900, min: 750, max: 1050, group: 'Size', hint: 'floor to top surface, feet mid-travel' },
     { id: 'load', label: 'Rated load', type: 'kg', value: 300, min: 100, max: 500, group: 'Load', hint: 'spread over the top' },
+    { id: 'gap', label: 'Gap between top bars', type: 'len', value: 10, min: 3, max: 25, step: 1, group: 'Top', hint: 'at least this; the bars space evenly across the depth' },
     { id: 'shelf', label: 'Lower shelf', type: 'bool', value: true, group: 'Options' },
   ],
 
@@ -103,13 +104,14 @@ export const plan = {
 
     // top bars: outer bars flush with the front and back of the frame, even gaps between,
     // no gap wider than gapMax; the shelf gets the same bars with wider gaps
-    const barRows = (gapMin, gapMax) => {
-      let n = Math.floor((D + gapMin) / (BAR.bu + gapMin));
-      while ((D - n * BAR.bu) / (n - 1) > gapMax) n++;
+    // as many bars as fit with at least the gap asked for, then the gap evened out
+    // so the outer bars stay flush with the front and back
+    const barRows = want => {
+      const n = Math.max(2, Math.floor((D + want) / (BAR.bu + want)));
       const gap = (D - n * BAR.bu) / (n - 1);
       return { n, gap, ys: Array.from({ length: n }, (_, i) => BAR.bu / 2 + i * (BAR.bu + gap)) };
     };
-    const top = barRows(6, 12);
+    const top = barRows(p.gap);
     // shelf bars run front to back between the legs, an even gap at both ends of each run
     const runs = mid ? [[2 * h, xm - h], [xm + h, L - 2 * h]] : [[2 * h, L - 2 * h]];
     const shelfXs = [];
@@ -197,11 +199,11 @@ export const plan = {
       tip: 'Ventilate: weld fumes from mill scale and paint are toxic.' });
     steps.push({ n: 6, phase: 'Fabricate', title: p.shelf ? 'Top and shelf bars' : 'Top bars', hours: p.shelf ? 4 : 3, views: ['top', 'side'], points: false,
       table: { title: 'Bars', head: ['Where', 'Bars', 'Runs', 'Gap', 'First centre line'], rows: [
-        ['Top', `{mark:top-bar-1} x${top.n}`, 'left to right', u.len(top.gap), `${u.len(BAR.bu / 2)} from the front`],
+        ['Top', `{mark:top-bar-1} x${top.n}`, 'left to right', u.fine(top.gap), `${u.len(BAR.bu / 2)} from the front`],
         ...(p.shelf ? [['Shelf', `{mark:shelf-bar-1} x${shelfBars.n}`, 'front to back', u.len(shelfBars.gap), `${u.len(shelfXs[0])} from the left end`]] : []),
       ] }, tasks: [
       `Lay the ${top.n} top bars ({mark:top-bar-1}) flat on the top frame, running the length, ends flush with the frame ends.`,
-      `Put the outer two flush with the front and back of the frame and space the rest evenly: ${u.len(top.gap, { u: true })} gaps (cut a spacer block to that width and use it at both ends of every bar).`,
+      `Put the outer two flush with the front and back of the frame and space the rest evenly: ${u.fine(top.gap, { u: true })} gaps (cut a spacer block to that width and use it at both ends of every bar).`,
       'Tack each bar to the end rails at both ends, checking the gaps as you go, then tack it to every cross rail.',
       ...(p.shelf ? [`Lay the ${shelfBars.n} shelf bars ({mark:shelf-bar-1}) flat across the lower long rails, front to back, ends flush with the front and back of the frame, between the legs with ${u.len(shelfBars.gap, { u: true })} gaps (the same gap next to each leg). Tack both ends of each.`] : []),
       `Stitch-weld each bar to every rail it crosses, ${u.len(25, { u: true })} on each side, working from the middle bar outward (${crossings} crossings).`,
@@ -251,12 +253,12 @@ export const plan = {
       checks: [
         { name: 'Top bars: strength', pass: barSF >= 2, value: `safety factor ${barSF.toFixed(2)} (need 2), sags ${u.deflection(barSag)} under 100 kg`, why: `Each bar spans ${u.len(bay, { u: true })} between cross rails: 100 kg on the middle of one span, or its share of the rated load.` },
         ...(p.shelf ? [{ name: 'Shelf bars: strength', pass: shelfSF >= 2, value: `safety factor ${shelfSF.toFixed(2)} (need 2)`, why: `Each shelf bar spans ${u.len(shelfSpan, { u: true })} between the lower rails${centre ? ' and the centre rail' : ''}, with 100 kg on its middle.` }] : []),
-        { name: 'Gaps between the top bars', pass: top.gap <= 12 && top.gap >= 4, value: `${top.n} bars, ${u.len(top.gap, { u: true })} gaps`, why: `Small parts should not drop through: gaps between ${u.len(4, { u: true })} and ${u.len(12, { u: true })}.` },
+        { name: 'Gaps between the top bars', pass: top.gap >= p.gap - 0.01 && top.gap <= p.gap + (BAR.bu + p.gap) / (top.n - 1) + 0.01, value: `${top.n} bars, ${u.fine(top.gap, { u: true })} gaps (asked ${u.len(p.gap, { u: true })})`, why: 'At least the gap asked for, evened out so the outer bars sit flush with the front and back.' },
         { name: 'Work height', pass: H >= 750 && H <= 1050, value: u.len(H, { u: true }), why: 'Standing work: about wrist height for a vise, elbow height for fine work.' },
         ...(p.shelf ? [{ name: 'Room above the shelf', pass: shelfClear >= 300, value: `${u.len(shelfClear, { u: true })} clear`, why: `At least ${u.len(300, { u: true })} between the shelf and the top frame for boxes and cases.` }] : []),
       ],
       steps,
-      facts: [['Work height', u.len(H, { u: true }), 'top surface, feet mid-travel'], ['Top', `${top.n} steel bars`, `RHS 40×20 laid flat, ${u.len(top.gap, { u: true })} gaps`]],
+      facts: [['Work height', u.len(H, { u: true }), 'top surface, feet mid-travel'], ['Top', `${top.n} steel bars`, `RHS 40×20 laid flat, ${u.fine(top.gap, { u: true })} gaps`]],
       orderNote: 'Cut everything, tack the end frames, join them, weld out, weld the bars on, then feet, paint and load test.',
     };
   },
