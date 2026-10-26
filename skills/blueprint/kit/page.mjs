@@ -20,7 +20,7 @@ a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{paddin
 .seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .btn{font:600 14px var(--sans);background:none;color:var(--ink);border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer;white-space:nowrap}
-.btn:hover,.seg button:hover{box-shadow:2px 2px 0 var(--ink)}
+.btn:hover,.seg button:hover{background:var(--th)}.btn{display:inline-flex;align-items:center;gap:6px}.btn svg{width:15px;height:15px;flex:none}
 main{max-width:1080px;margin:0 auto;padding:24px 16px 64px}
 .kicker{font:12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
 h1{font-size:34px;line-height:1.1;margin:6px 0 8px;letter-spacing:-.01em}.lede{max-width:70ch;margin:0 0 16px;color:var(--ink2)}
@@ -40,7 +40,7 @@ p,li{max-width:75ch}
 .hint{font:12px var(--mono);color:var(--muted);margin:6px 0 0}
 .pick{font-size:14px;margin:6px 0 0}
 .viewer-ctl{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 0;font-size:14px}.viewer-ctl label{display:flex;gap:6px;align-items:center}
-.size{border:1.5px solid var(--ink);padding:14px 16px 16px;box-shadow:4px 4px 0 var(--ink)}
+.size{border:1.5px solid var(--ink);padding:14px 16px 16px}
 .size h2{margin:0 0 4px;padding:0;border:0;font-size:19px}
 .size fieldset{border:0;padding:0;margin:10px 0 0}.size legend{font:12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0;margin:0 0 4px}
 .field{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
@@ -83,7 +83,7 @@ ${SHOP_CSS}
 @media print{
   :root{--paper:#fff;--ink:#000;--ink2:#222;--muted:#555;--line:#bbb;--th:#eee;--face:#e4e4e4;--now:#444;--old:#eee;--oldline:#aaa;--lit:#000;color-scheme:light}
   .top,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step],[data-show-wrap]{display:none!important}
-  .split{display:block}.size{box-shadow:none;border:1px solid #000}
+  .split{display:block}.size{border:1px solid #000}
   .step{break-before:page}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}details.sheets{border:0;padding:0}
   details.sheets>summary{list-style:none;font-weight:700}a{text-decoration:none}main{padding-top:0}
 }
@@ -108,7 +108,7 @@ export function pageHtml(d, { script = '', title, description, back = null } = {
     <a href="#size">Size</a><a href="#checks">Checks</a><a href="#bom">Materials</a><a href="#drawings">Drawings</a><a href="#legend">Legend</a><a href="#steps">Steps</a><a href="#cutlist">Cut list</a>
   </nav>
   <div class="seg" role="group" aria-label="Units"><button type="button" data-units="metric" aria-pressed="${!d.units.imperial}">mm</button><button type="button" data-units="imperial" aria-pressed="${d.units.imperial}">in</button></div>
-  <button type="button" class="btn" id="print">Print</button>
+  <button type="button" class="btn" id="print"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6V2h8v4M4 12H2.5V6h11v6H12M4 9.5h8V14H4z"/></svg>Print</button>
 </div></header>
 <main id="top">
   <p class="kicker">Build plan${plan.version ? ' · v' + esc(plan.version) : ''}</p>
@@ -130,7 +130,7 @@ export function pageHtml(d, { script = '', title, description, back = null } = {
       <h2 id="size-h">Make it yours</h2>
       <p class="muted" style="margin:0">Change a number and the whole plan, drawings, cut list and checks follow.</p>
       <form id="size-form" onsubmit="return false"></form>
-      <div class="size-act"><button type="button" class="btn" id="reset">Reset</button><button type="button" class="btn" id="copy-link">Copy link</button></div>
+      <div class="size-act"><button type="button" class="btn" id="reset"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2v3h3"/></svg>Reset</button><button type="button" class="btn" id="copy-link"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.8 2.8 0 0 1 4 4l-1 1M9 11.5l-1 1a2.8 2.8 0 0 1-4-4l1-1"/></svg><span>Copy link</span></button></div>
       <div id="notes"></div>
       <p class="built" id="built-for">${esc(paramsSummary(d))}</p>
     </section>

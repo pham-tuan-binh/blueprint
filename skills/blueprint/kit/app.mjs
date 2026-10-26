@@ -160,8 +160,9 @@ export function mountPlan(plan) {
   form.addEventListener('change', () => { clearTimeout(timer); given = readForm(); render(); syncForm(); });
   $('#reset').addEventListener('click', () => { given = {}; d = null; render(); renderForm(); });
   $('#copy-link').addEventListener('click', async e => {
-    try { await navigator.clipboard.writeText(location.href); e.target.textContent = 'Link copied'; } catch { e.target.textContent = 'Copy the address bar'; }
-    setTimeout(() => (e.target.textContent = 'Copy link'), 1600);
+    const label = $('#copy-link span');
+    try { await navigator.clipboard.writeText(location.href); label.textContent = 'Link copied'; } catch { label.textContent = 'Copy the address bar'; }
+    setTimeout(() => (label.textContent = 'Copy link'), 1600);
   });
   document.querySelectorAll('[data-units]').forEach(b => b.addEventListener('click', () => {
     system = b.dataset.units; store.set(key + ':units', system); render(); renderForm();

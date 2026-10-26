@@ -58,8 +58,11 @@ for (const id of ids) {
 const GALLERY_CSS = `
 .hero{max-width:70ch;margin:0 0 28px}.hero h1{margin-bottom:10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
-.card{border:1.5px solid var(--ink);display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--paper);transition:box-shadow .15s,transform .15s}
-.card:hover,.card:focus-visible{box-shadow:5px 5px 0 var(--ink);transform:translate(-2px,-2px)}
+.card{border:1.5px solid var(--ink);display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--paper);position:relative;transition:background .15s}
+.card:hover,.card:focus-visible{background:var(--th)}
+.card .arrow{position:absolute;top:12px;right:12px;width:34px;height:34px;border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--paper);transition:background .15s,color .15s}
+.card .arrow svg{width:16px;height:16px}
+.card:hover .arrow,.card:focus-visible .arrow{background:var(--ink);color:var(--paper)}
 .card .pic{border-bottom:1px solid var(--line);padding:14px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
 .card .pic svg{width:100%;height:100%;border:0}
 .card .txt{padding:12px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
@@ -67,7 +70,7 @@ const GALLERY_CSS = `
 .card dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:6px 0 0;font:12px var(--mono)}.card dt{color:var(--muted)}.card dd{margin:0}
 .card .go{margin-top:auto;padding-top:10px;font-weight:600;font-size:14px}
 .how{margin-top:44px;border-top:2px solid var(--ink);padding-top:14px;max-width:75ch}
-@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+@media (prefers-reduced-motion:reduce){.card,.card .arrow{transition:none}}
 `;
 
 const index = `<!doctype html>
@@ -89,6 +92,7 @@ const index = `<!doctype html>
   </div>
   <div class="grid">
 ${cards.map(c => `    <a class="card" href="${esc(c.id)}/">
+      <span class="arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 11L11 5M6 5h5v5"/></svg></span>
       <div class="pic">${c.thumb}</div>
       <div class="txt">
         <h2>${esc(c.plan.name)}</h2>
