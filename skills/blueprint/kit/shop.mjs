@@ -62,6 +62,16 @@ function isoOrder(polys) {
   return done;
 }
 
+// A label on a drawing in its own paper-coloured box, so it reads over lines and
+// filled members. Width from the monospace advance (0.6 em per character).
+function tag(x, y, text, size, { cls, anchor = 'start', rotate = 0 } = {}) {
+  const pad = size * 0.28, w = String(text).length * size * 0.6 + pad * 2, h = size * 1.3;
+  const x0 = anchor === 'middle' ? x - w / 2 : anchor === 'end' ? x - w : x - pad;
+  const box = `<rect class="lbox" x="${f1(x0)}" y="${f1(y - size * 0.98)}" width="${f1(w)}" height="${f1(h)}" rx="${f1(size * 0.22)}"/>`;
+  const t = `<text class="${cls}" x="${f1(x)}" y="${f1(y)}" text-anchor="${anchor}">${esc(text)}</text>`;
+  return rotate ? `<g transform="rotate(${rotate} ${f1(x)} ${f1(y)})">${box}${t}</g>` : box + t;
+}
+
 // One orthographic view with overall dimensions. now(id) marks the parts of this step.
 function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null, bare = false }) {
   const V = VIEWS[view];
@@ -88,11 +98,11 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
     // horizontal: under the view
     if (showH) s += `<path class="dl" d="M${f1(dx0)} ${f1(dy1 + fs * 0.4)}V${f1(yb + a)}M${f1(dx1)} ${f1(dy1 + fs * 0.4)}V${f1(yb + a)}M${f1(dx0)} ${f1(yb)}H${f1(dx1)}"/>`;
     if (showH) s += `<path class="da" d="M${f1(dx0)} ${f1(yb)}l${f1(a * 1.6)} ${f1(-a * 0.55)}v${f1(a * 1.1)}zM${f1(dx1)} ${f1(yb)}l${f1(-a * 1.6)} ${f1(-a * 0.55)}v${f1(a * 1.1)}z"/>`;
-    if (showH) s += `<text class="dt" x="${f1((dx0 + dx1) / 2)}" y="${f1(yb - fs * 0.35)}" text-anchor="middle">${cl}${esc(u.len(dx1 - dx0))}</text>`;
+    if (showH) s += tag((dx0 + dx1) / 2, yb + fs * 0.36, `${cl}${u.len(dx1 - dx0)}`, fs, { cls: 'dt', anchor: 'middle' });
     // vertical: right of the view
     if (showV) s += `<path class="dl" d="M${f1(dx1 + fs * 0.4)} ${f1(dy0)}H${f1(xr + a)}M${f1(dx1 + fs * 0.4)} ${f1(dy1)}H${f1(xr + a)}M${f1(xr)} ${f1(dy0)}V${f1(dy1)}"/>`;
     if (showV) s += `<path class="da" d="M${f1(xr)} ${f1(dy0)}l${f1(-a * 0.55)} ${f1(a * 1.6)}h${f1(a * 1.1)}zM${f1(xr)} ${f1(dy1)}l${f1(-a * 0.55)} ${f1(-a * 1.6)}h${f1(a * 1.1)}z"/>`;
-    if (showV) s += `<text class="dt" x="${f1(xr + fs * 0.4)}" y="${f1((dy0 + dy1) / 2)}" transform="rotate(-90 ${f1(xr + fs * 0.4)} ${f1((dy0 + dy1) / 2)})" text-anchor="middle" dy="${f1(-fs * 0.2)}">${cl}${esc(u.len(dy1 - dy0))}</text>`;
+    if (showV) s += tag(xr + fs * 0.36, (dy0 + dy1) / 2, `${cl}${u.len(dy1 - dy0)}`, fs, { cls: 'dt', anchor: 'middle', rotate: -90 });
   }
   // points that land on the same spot in this view share one label: BL1…BL4
   const spots = new Map();
@@ -104,7 +114,7 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
   const merged = [...spots.values()].map(sp => ({ p: sp.p, name: sp.names.length > 2 ? `${sp.names[0]}…${sp.names[sp.names.length - 1]}` : sp.names.join(', ') }));
   for (const l of merged) {
     const [x, y] = V.pr(l.p);
-    s += `<circle class="jp" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.28)}"/><text class="jl" x="${f1(x + fs * 0.7)}" y="${f1(y - fs * 0.85)}">${esc(l.name)}</text>`;
+    s += `<circle class="jp" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.28)}"/>` + tag(x + fs * 0.7, y - fs * 0.85, l.name, fs * 0.8, { cls: 'jl' });
   }
   if (!bare) s += `<text class="jt" x="${f1(vb[0] + fs * 0.6)}" y="${f1(vb[1] + fs * 1.6)}">${esc(title || V.title)}</text>`;
   return s + '</svg>';
@@ -316,7 +326,7 @@ export const SHOP_CSS = `
 .ga .jn{fill:var(--face)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
-.dt,.jl{paint-order:stroke;stroke:var(--paper);stroke-width:calc(var(--fs) * .3);stroke-linejoin:round}
+.lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}
 .jp{fill:var(--ink)}.jl{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}.jt{font:700 calc(var(--fs) * 1.1) var(--sans);fill:var(--ink)}
 .nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
 `;

@@ -4,7 +4,7 @@
 // between metric (default) and imperial without changing the design.
 import { derive } from './derive.mjs';
 import { makeUnits, esc } from './core.mjs';
-import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel } from './pack.mjs';
+import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel, contentsHtml } from './pack.mjs';
 import { createViewer } from './viewer.mjs';
 
 const $ = s => document.querySelector(s);
@@ -100,9 +100,7 @@ export function mountPlan(plan) {
   // ---------------------------------------------------------------- viewer
   let viewer = null;
   try {
-    const theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     viewer = createViewer($('#viewer'), {
-      theme,
       onPick: info => {
         const el = $('#pick');
         if (!info) { el.hidden = true; return; }
@@ -140,6 +138,7 @@ export function mountPlan(plan) {
     $('#notes').innerHTML = d.notes.length ? `<p class="warn">${esc(d.notes.join('. '))}.</p>` : '';
     $('#built-for').textContent = paramsSummary(d);
     $('#facts').innerHTML = factsHtml(d);
+    $('#contents-body').innerHTML = contentsHtml(d);
     $('#status').className = 'status ' + (d.ok ? 'ok' : 'bad');
     $('#status').textContent = d.ok ? `✓ All ${d.checks.length} checks pass` : `✗ ${d.checks.filter(c => !c.pass).length} check(s) failing`;
     $('#checks-body').innerHTML = checksHtml(d);
@@ -160,8 +159,9 @@ export function mountPlan(plan) {
   form.addEventListener('change', () => { clearTimeout(timer); given = readForm(); render(); syncForm(); });
   $('#reset').addEventListener('click', () => { given = {}; d = null; render(); renderForm(); });
   $('#copy-link').addEventListener('click', async e => {
-    try { await navigator.clipboard.writeText(location.href); e.target.textContent = 'Link copied'; } catch { e.target.textContent = 'Copy the address bar'; }
-    setTimeout(() => (e.target.textContent = 'Copy link'), 1600);
+    const label = $('#copy-link span');
+    try { await navigator.clipboard.writeText(location.href); label.textContent = 'Link copied'; } catch { label.textContent = 'Copy the address bar'; }
+    setTimeout(() => (label.textContent = 'Copy link'), 1600);
   });
   document.querySelectorAll('[data-units]').forEach(b => b.addEventListener('click', () => {
     system = b.dataset.units; store.set(key + ':units', system); render(); renderForm();

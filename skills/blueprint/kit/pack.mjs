@@ -139,6 +139,25 @@ export function cutListHtml(d) {
 // an option label may be a function of the units, so a size in it follows them
 export const optLabel = (o, u) => (o ? (typeof o.label === 'function' ? o.label(u) : o.label) : '');
 
+// The contents, like the front of a printed pack: numbered sections with what is
+// in them, the steps nested under Steps. Re-rendered with the plan, since steps
+// and counts follow the size.
+export function contentsHtml(d) {
+  const md = d.model, bars = d.nesting.reduce((n, x) => n + x.bars.length, 0);
+  const row = (href, n, title, meta = '', cls = '') => `<li class="${cls}"><a href="#${href}"><span class="cn">${n}</span><span class="ct">${esc(title)}</span><span class="cl" aria-hidden="true"></span><span class="cm">${esc(meta)}</span></a></li>`;
+  const bad = d.checks.filter(c => !c.pass).length;
+  return `<ol class="contents">` +
+    row('checks', 1, 'Checks', bad ? `${bad} failing` : `all ${d.checks.length} pass`) +
+    row('bom', 2, 'Materials', `${bars} stock length${bars > 1 ? 's' : ''}`) +
+    row('drawings', 3, 'Drawings', 'top, front, side') +
+    row('legend', 4, 'Legend', 'how to read it') +
+    row('order', 5, 'Order', d.hours ? `${d.hours} h in all` : '') +
+    row('steps', 6, 'Steps', `${md.steps.length} steps`) +
+    md.steps.map(st => row(`step-${st.n}`, `6.${st.n}`, st.title, st.hours ? `${st.hours} h` : '', 'sub')).join('') +
+    row('cutlist', 7, 'Cut list', `${d.pieces.length} piece mark${d.pieces.length > 1 ? 's' : ''}`) +
+    `</ol>`;
+}
+
 export function paramsSummary(d) {
   const u = d.units;
   return (d.plan.params || []).map(pd => {

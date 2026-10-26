@@ -141,6 +141,21 @@ if (args.includes('--pdf')) {
 }
 await p.close();
 
+// ---------------------------------------------------------------- light paper, always
+// a device set to dark mode still gets light paper: the pack is a drawing, not an app
+{
+  const dk = await browser.newPage({ viewport: { width: 1000, height: 700 }, colorScheme: 'dark' });
+  await dk.goto(url, { waitUntil: 'networkidle' });
+  await dk.waitForTimeout(800);
+  const lum = await dk.evaluate(() => {
+    const m = getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number);
+    return (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255;
+  });
+  if (lum < 0.85) problems.push(`dark mode: the page turns dark (background luminance ${lum.toFixed(2)}); it must stay light paper`);
+  await dk.screenshot({ path: join(out, 'dark-mode-device.png') });
+  await dk.close();
+}
+
 // ---------------------------------------------------------------- phone
 const ph = await open({ width: 390, height: 844 });
 await ph.screenshot({ path: join(out, 'phone.png') });
