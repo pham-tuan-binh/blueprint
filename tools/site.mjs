@@ -53,7 +53,7 @@ const GH_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"
 const COPY_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1"/><path d="M10.5 3.5v-1h-8v8h1"/></svg>';
 const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 11L11 5M6 5h5v5"/></svg>';
 
-// what the visitor copies: install, then ask
+// what the visitor copies: install, ask, open, share
 const STEPS = [
   { n: 1, title: 'Install the skill', note: 'Works with Claude Code, Codex, Cursor, Gemini CLI and any agent that can run Node.js 20+.',
     code: 'npx skills add pham-tuan-binh/blueprint' },
@@ -61,16 +61,17 @@ const STEPS = [
     code: 'Create build plans for a simple metal workbench.', prompt: true },
   { n: 3, title: 'Open the plan', note: 'One page to take to the shop: change the sizes in it and everything follows.',
     code: 'open plans/metal-workbench/index.html' },
+  { n: 4, title: 'Share the plan', note: 'Optional: the blueprint-share skill checks it and opens a pull request that puts it on this page, credited to you.',
+    code: 'Share my plan in plans/metal-workbench with the blueprint gallery.', prompt: true },
 ];
 
 const GALLERY_CSS = `
-main{position:relative}
-.gh{position:absolute;top:24px;right:16px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;font:600 14px var(--sans);color:var(--ink);border:1.5px solid var(--ink);padding:6px 12px;transition:background .15s,color .15s}
-.gh svg{width:18px;height:18px}.gh:hover,.gh:focus-visible{background:var(--ink);color:var(--paper)}
-.hero{max-width:66ch;margin:40px 0 28px;padding-right:120px}
+.gh{display:inline-flex;align-items:center;gap:8px;font:600 14px var(--sans);color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.gh svg{width:18px;height:18px;flex:none}.gh .ext{width:12px;height:12px}.gh:hover,.gh:focus-visible{text-decoration-color:var(--ink)}
+.hero{max-width:66ch;margin:40px 0 28px}
 .hero h1{margin:0 0 10px;font-size:48px;letter-spacing:-.02em}
 .hero .tag{font-size:20px;line-height:1.4;color:var(--ink);margin:0 0 12px}
-@media (max-width:600px){.hero{margin-top:64px;padding-right:0}.hero h1{font-size:36px}.hero .tag{font-size:18px}.gh{top:16px}}
+@media (max-width:600px){.hero{margin-top:16px}.hero h1{font-size:36px}.hero .tag{font-size:18px}}
 .start{display:grid;gap:14px;max-width:760px;margin:0 0 48px;padding:0;list-style:none}
 .start li{display:grid;grid-template-columns:34px 1fr;gap:4px 12px}
 .start .n{width:28px;height:28px;border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font:600 13px var(--mono);margin-top:1px}
@@ -95,7 +96,7 @@ p.sec{margin:0 0 18px;color:var(--ink2);max-width:70ch}
 .card h2{font-size:19px;margin:0;padding:0;border:0;display:block}.card p{margin:0;color:var(--ink2);font-size:14px}
 .card p.by{font:12px var(--mono);color:var(--muted)}
 .card .go{margin-top:auto;padding-top:10px;font-weight:600;font-size:14px}
-@media (prefers-reduced-motion:reduce){.card,.card .arrow,.gh,.code button{transition:none}}
+@media (prefers-reduced-motion:reduce){.card,.card .arrow,.code button{transition:none}}
 `;
 
 const COPY_JS = `document.querySelectorAll('.code button').forEach(b => b.addEventListener('click', async () => {
@@ -116,17 +117,17 @@ const index = `<!doctype html>
 </head>
 <body>
 <main>
-  <a class="gh" href="${REPO}" aria-label="Blueprint on GitHub">${GH_ICON}<span>GitHub</span></a>
   <div class="hero">
     <h1>Blueprint</h1>
     <p class="tag">An agent skill that generates build plans for your fabrication shop.</p>
+    <a class="gh" href="${REPO}">${GH_ICON}<span>pham-tuan-binh/blueprint on GitHub</span><svg class="ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5"/></svg></a>
   </div>
   <ol class="start">
 ${STEPS.map(st => `    <li><span class="n">${st.n}</span><div><h3>${esc(st.title)}</h3><p>${esc(st.note)}</p></div>
       <div class="code"><pre><span class="ps">${st.prompt ? '&gt; ' : '$ '}</span><code>${esc(st.code)}</code></pre><button type="button" aria-label="Copy">${COPY_ICON}</button></div></li>`).join('\n')}
   </ol>
   <h2 class="sec">Examples</h2>
-  <p class="sec">Every one was generated with the skill and passed its audit at every size its fields allow. Open one and change the sizes. Made one? <a href="${REPO}#share-your-plan">Add it here</a> with the blueprint-share skill.</p>
+  <p class="sec">Here are some examples generated with this skill.</p>
   <div class="grid">
 ${cards.map(c => `    <a class="card" href="${esc(c.id)}/">
       <span class="arrow" aria-hidden="true">${ARROW}</span>

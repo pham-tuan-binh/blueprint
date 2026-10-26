@@ -12,7 +12,6 @@ export const PAGE_CSS = `
 *{box-sizing:border-box}[hidden]{display:none!important}html{scroll-padding-top:16px;scroll-behavior:smooth}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-text-size-adjust:100%}
 a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{padding:16px}
-.top{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
 .top-in{max-width:1080px;margin:0 auto;padding:8px 16px;display:flex;gap:14px;align-items:center}
 .back{display:inline-block;text-decoration:none;color:var(--muted);font-size:14px;margin:0 0 14px}.back:hover{color:var(--ink)}
 .toc{display:flex;gap:14px;overflow-x:auto;flex:1;scrollbar-width:none}.toc a{text-decoration:none;white-space:nowrap;color:var(--ink2)}.toc a:hover{color:var(--ink)}
