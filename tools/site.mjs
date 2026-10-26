@@ -66,11 +66,13 @@ const STEPS = [
 ];
 
 const GALLERY_CSS = `
-.gh{display:inline-flex;align-items:center;gap:8px;font:600 14px var(--sans);color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
-.gh svg{width:18px;height:18px;flex:none}.gh .ext{width:12px;height:12px}.gh:hover,.gh:focus-visible{text-decoration-color:var(--ink)}
+.gh{display:inline-flex;align-items:center;gap:8px;font:500 15px/1 var(--sans);color:var(--ink2);text-decoration:none}
+.gh svg{width:18px;height:18px;flex:none}.gh .ext{width:11px;height:11px;margin-left:3px}
+.gh span{display:inline-flex;align-items:center;padding-bottom:2px;border-bottom:1px solid var(--line)}
+.gh:hover,.gh:focus-visible{color:var(--ink)}.gh:hover span,.gh:focus-visible span{border-bottom-color:var(--ink)}
 .hero{max-width:66ch;margin:40px 0 28px}
 .hero h1{margin:0 0 10px;font-size:48px;letter-spacing:-.02em}
-.hero .tag{font-size:20px;line-height:1.4;color:var(--ink);margin:0 0 12px}
+.hero .tag{font-size:20px;line-height:1.4;color:var(--ink);margin:0 0 20px}
 @media (max-width:600px){.hero{margin-top:16px}.hero h1{font-size:36px}.hero .tag{font-size:18px}}
 .start{display:grid;gap:14px;max-width:760px;margin:0 0 48px;padding:0;list-style:none}
 .start li{display:grid;grid-template-columns:34px 1fr;gap:4px 12px}
@@ -120,7 +122,7 @@ const index = `<!doctype html>
   <div class="hero">
     <h1>Blueprint</h1>
     <p class="tag">An agent skill that generates build plans for your fabrication shop.</p>
-    <a class="gh" href="${REPO}">${GH_ICON}<span>pham-tuan-binh/blueprint on GitHub</span><svg class="ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5"/></svg></a>
+    <a class="gh" href="${REPO}">${GH_ICON}<span>pham-tuan-binh/blueprint on GitHub<svg class="ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
   </div>
   <ol class="start">
 ${STEPS.map(st => `    <li><span class="n">${st.n}</span><div><h3>${esc(st.title)}</h3><p>${esc(st.note)}</p></div>
