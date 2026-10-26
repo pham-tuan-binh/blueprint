@@ -61,7 +61,7 @@ const STEPS = [
     code: 'Create build plans for a simple metal workbench.', prompt: true },
   { n: 3, title: 'Open the plan', note: 'One page to take to the shop: change the sizes in it and everything follows.',
     code: 'open plans/metal-workbench/index.html' },
-  { n: 4, title: 'Share the plan', note: 'Optional: the blueprint-share skill checks it and opens a pull request that puts it on this page, credited to you.',
+  { n: 4, title: 'Share the plan', note: 'If you want to share your work in this page\'s examples, the skill also describes how to: just tell your agent to share the plan.',
     code: 'Share my plan in plans/metal-workbench with the blueprint gallery.', prompt: true },
 ];
 
