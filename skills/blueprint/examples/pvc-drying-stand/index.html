@@ -16,7 +16,8 @@ main{max-width:1000px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-ri
 .back{margin:0 0 8px;text-decoration:none}
 h1{font-size:40px;line-height:1.15;margin:24px 0 32px;letter-spacing:-.01em;text-wrap:balance}.lede{font-size:18px;max-width:68ch;margin:0 0 24px}
 .sec{margin-top:144px}.sec>h2{display:flex;align-items:baseline;gap:14px;font-size:28px;line-height:1.2;margin:0 0 24px}
-.secn{font:400 .85em var(--mono);color:var(--muted)}h3{font-size:19px;margin:40px 0 8px}h4{font-size:15px;margin:40px 0 12px}
+.secn{color:var(--muted)}   /* same font and size as its title, so number and title read as one line */
+h3{font-size:19px;margin:40px 0 8px}h4{font-size:15px;margin:40px 0 12px}
 p,li{max-width:72ch}
 .seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
@@ -26,7 +27,7 @@ p,li{max-width:72ch}
 .contents-h{margin:48px 0 4px;font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .contents{list-style:none;margin:0 0 48px;padding:0}.contents li{max-width:none}
 .contents a,.contents .crow{display:flex;align-items:baseline;gap:10px;padding:5px 0;color:inherit;text-decoration:none;width:100%;font:inherit;background:none;border:0;cursor:pointer;text-align:left}
-.contents .cn{flex:none;width:1.4em;font:400 .9em var(--mono);color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
+.contents .cn{flex:none;width:1.6em;font-weight:600;color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
 .contents .cl{flex:1;min-width:16px;border-bottom:1.5px dotted #9aa5b1;transform:translateY(-4px)}
 .contents .cm{flex:0 1 auto;min-width:0;text-align:right;font:.82em var(--mono);color:var(--muted);align-self:center}.contents .cm svg{width:16px;height:16px;display:block}
 .contents a:hover .ct,.contents .crow:hover .ct{text-decoration:underline}
@@ -60,6 +61,8 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.q
 .doc small{display:block;color:var(--muted);font:12px var(--sans)}
 .checks td:nth-child(2){font-family:var(--sans);font-weight:600}.checks td:first-child{font-weight:700;width:2em;text-align:center}
 .checks tr.bad td{color:var(--lit)}
+.doc td.tick,.doc th.tick{text-align:center;vertical-align:middle;width:3.5em}.doc td.tick input{vertical-align:middle}.doc .box{display:inline-block;width:1.1rem;height:1.1rem;border:1.5px solid var(--ink);vertical-align:middle}
+.doc td.val{padding:0;min-width:5.5em}.doc td.val input{width:100%;border:0;background:none;padding:4px 8px;font:inherit;text-align:right;color:var(--ink)}.doc td.val input:focus{outline:2px solid var(--ink);outline-offset:-2px}
 .legend th{text-align:left;white-space:nowrap;width:1%}.legend td{text-align:left}
 .wrap{overflow-x:auto;max-width:100%}
 .sheet{display:grid;gap:0;border:1px solid var(--line);margin:8px 0}.sheet figure{margin:0;min-width:0}.sheet svg{border:0!important}
@@ -69,8 +72,8 @@ figure{margin:0}
 .piece-list{display:grid;gap:18px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
 .phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}.phases h4{margin:8px 0 0}.phases ol{margin:4px 0;padding-left:1.6em}.phases li{margin:2px 0}
 /* one left column per step: the number, every checkbox and the check and warning marks are centred in it; the title and all text start right of it */
-.step{margin-top:112px;--gut:76px;--gap:20px}.step-h{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);gap:var(--gap);align-items:start;margin-bottom:28px}.step-h>div{padding-top:var(--cap-pad,5px)}.sn{font:700 64px/1 var(--sans);text-align:center}
-.step-h h3{margin:0;font-size:22px;line-height:1.15}.step-h p{margin:11px 0 0;line-height:1.2}
+.step{margin-top:112px;--gut:76px;--gap:20px}.step-h{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);gap:var(--gap);align-items:start;margin-bottom:28px}.step-h>div{padding-top:var(--cap-pad,3px)}.sn{font:700 64px/1 var(--sans);text-align:center}
+.step-h h3{margin:0;font-size:22px;line-height:1.15}.step-h p{margin:13px 0 0;line-height:1.2}
 .tasks{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:t}
 .tasks li{display:grid;grid-template-columns:var(--gut,76px) minmax(0,1fr);gap:var(--gap,20px);align-items:start;counter-increment:t}
 .tasks label{line-height:1.6}.tasks input{font:inherit;margin:calc((1.6em - 1.1rem) / 2) 0 0;justify-self:center}   /* centred on the first line, and in the step's left column */
@@ -99,7 +102,6 @@ input[type=checkbox]:checked::after{content:"";width:.55rem;height:.28rem;border
 details.sheets{margin:40px 0 0}details.sheets summary{cursor:pointer;font-weight:600}details.sheets[open] summary{margin-bottom:12px}
 .linkish{font:inherit;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
 ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
-.foot{max-width:1000px;margin:0 auto;padding:48px 16px;color:var(--muted);font-size:13px}
 @media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px;--gut:62px;--gap:14px}.sn{font-size:52px}.step .step-h h3{font-size:18px}.step .step-h p{font-size:13px;margin-top:8px}.step .step-h>div{--cap-pad:4px}.inp input{width:84px}ul.cols{columns:1}}
 
 .piece,.jig,.nest{background:var(--paper);max-width:100%;height:auto;display:block}
@@ -120,7 +122,7 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 .nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
 
 
-.q{display:inline-block;width:1.2em;height:1.2em;margin-left:.3em;vertical-align:middle;position:relative;top:-.08em;cursor:help;user-select:none}
+.q{display:inline-block;width:1.2em;height:1.2em;margin-left:.3em;vertical-align:middle;position:relative;top:0;cursor:help;user-select:none}
 .mk{display:block;width:100%;height:100%;overflow:visible}.mk circle:first-child{stroke:var(--ink);stroke-width:1.6}.mk .ln{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.mk .dot{fill:var(--ink)}
 .mk-q circle:first-child{fill:#ffd100}.mk-ok circle:first-child{fill:#14934a}.mk-warn circle:first-child{fill:#e1251b}.mk-ok .ln,.mk-warn .ln{stroke:#fff}.mk-warn .dot{fill:#fff}
 .q:hover .mk-q circle:first-child,.q:focus-visible .mk-q circle:first-child{fill:var(--ink)}.q:hover .mk-q .ln,.q:focus-visible .mk-q .ln{stroke:#ffd100}.q:hover .mk-q .dot,.q:focus-visible .mk-q .dot{fill:#ffd100}
@@ -180,7 +182,6 @@ th .q,h4 .q,summary .q{width:15px;height:15px}
   </section>
   <section class="sec" id="cutlist"><h2><span class="secn">7</span>Cut list</h2><div id="cutlist-body"><div class="wrap"><table class="doc"><tr><th>Mark</th><th class=n>Qty</th><th>Section</th><th class=n>Long point</th><th>Left end</th><th>Right end</th><th class=n>Step</th></tr><tr><td><b>A</b> <span class="muted">Upright, upper</span></td><td class=n>2</td><td>PVC 32</td><td class=n>459</td><td>square · into the tee</td><td>square · into the elbow 90°</td><td class=n>2</td></tr><tr><td><b>B</b> <span class="muted">Foot</span></td><td class=n>4</td><td>PVC 32</td><td class=n>305</td><td>square · into the end cap</td><td>square · into the tee</td><td class=n>2</td></tr><tr><td><b>C</b> <span class="muted">Upright, lower</span></td><td class=n>2</td><td>PVC 32</td><td class=n>231</td><td>square · into the tee</td><td>square · into the tee</td><td class=n>2</td></tr><tr><td><b>D</b> <span class="muted">Rail</span></td><td class=n>2</td><td>PVC 32</td><td class=n>966</td><td>square · into the elbow 90° or into the tee</td><td>square · into the elbow 90° or into the tee</td><td class=n>3</td></tr></table></div><h3>Cutting plan</h3><p class="muted">Each bar is one stock length; cut the pieces left to right.</p><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 120" class="nest" role="img" aria-label="Cutting plan PVC 32"><text class="ps" x="0" y="16">PVC 32 · 2 x 3.00 m lengths · kerf 2</text><rect class="nb" x="0" y="30" width="720" height="26"/><rect class="nc" x="2.4" y="30" width="231.8" height="26"/><text class="nt" x="118.3" y="48" text-anchor="middle">D</text><rect class="nc" x="234.7" y="30" width="231.8" height="26"/><text class="nt" x="350.6" y="48" text-anchor="middle">D</text><rect class="nc" x="467" y="30" width="110.1" height="26"/><text class="nt" x="522.1" y="48" text-anchor="middle">A</text><rect class="nc" x="577.6" y="30" width="110.1" height="26"/><text class="nt" x="632.7" y="48" text-anchor="middle">A</text><text class="ps" x="728" y="48">off 133</text><rect class="nb" x="0" y="68" width="720" height="26"/><rect class="nc" x="2.4" y="68" width="73.2" height="26"/><text class="nt" x="39" y="86" text-anchor="middle">B</text><rect class="nc" x="76.1" y="68" width="73.2" height="26"/><text class="nt" x="112.7" y="86" text-anchor="middle">B</text><rect class="nc" x="149.8" y="68" width="73.2" height="26"/><text class="nt" x="186.4" y="86" text-anchor="middle">B</text><rect class="nc" x="223.4" y="68" width="73.2" height="26"/><text class="nt" x="260" y="86" text-anchor="middle">B</text><rect class="nc" x="297.1" y="68" width="55.5" height="26"/><text class="nt" x="324.9" y="86" text-anchor="middle">C</text><rect class="nc" x="353.1" y="68" width="55.5" height="26"/><text class="nt" x="380.9" y="86" text-anchor="middle">C</text><text class="ps" x="728" y="86">off 1295</text></svg></figure></div></section>
 </main>
-<footer class="foot"><p>PVC drying stand · v1. Generated by the blueprint skill. Check every dimension against your own stock before you cut, wear eye and hand protection, and load-test the build gently before trusting it.</p></footer>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/+esm';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm';
@@ -2064,7 +2065,7 @@ function initTips(guideHref) {
 }
 
 const Q_CSS = `
-.q{display:inline-block;width:1.2em;height:1.2em;margin-left:.3em;vertical-align:middle;position:relative;top:-.08em;cursor:help;user-select:none}
+.q{display:inline-block;width:1.2em;height:1.2em;margin-left:.3em;vertical-align:middle;position:relative;top:0;cursor:help;user-select:none}
 .mk{display:block;width:100%;height:100%;overflow:visible}.mk circle:first-child{stroke:var(--ink);stroke-width:1.6}.mk .ln{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.mk .dot{fill:var(--ink)}
 .mk-q circle:first-child{fill:${CODE.yellow}}.mk-ok circle:first-child{fill:${CODE.green}}.mk-warn circle:first-child{fill:${CODE.red}}.mk-ok .ln,.mk-warn .ln{stroke:#fff}.mk-warn .dot{fill:#fff}
 .q:hover .mk-q circle:first-child,.q:focus-visible .mk-q circle:first-child{fill:var(--ink)}.q:hover .mk-q .ln,.q:focus-visible .mk-q .ln{stroke:${CODE.yellow}}.q:hover .mk-q .dot,.q:focus-visible .mk-q .dot{fill:${CODE.yellow}}
@@ -2363,7 +2364,7 @@ function orderHtml(d) {
 }
 
 // a column is numeric (right-aligned) when every cell in it is a number or a length
-const numCol = (t, i) => i > 0 && t.rows.every(r => /^[\d\s.,/"'×x±-]+(mm|in|kg|lb|h)?$/.test(String(r[i]).trim()));
+const numCol = (t, i) => i > 0 && t.head[i] !== '✓' && !(t.fill || []).includes(i) && !(t.ticks || []).includes(i) && t.rows.every(r => /^[\d\s.,/"'×x±-]+(mm|in|kg|lb|h)?$/.test(String(r[i]).trim()));
 
 function piecesOfStep(d, n) { return d.pieces.filter(g => g.members.some(m => m.step === n)); }
 
@@ -2381,7 +2382,15 @@ function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   if (st.check) h += mark('check', annotate(st.check, seen));
   if (st.tip) h += mark('warn', annotate(st.tip, seen));
   // a plan's own table for the step: { title, head: [...], rows: [[...]] }, numbers right-aligned
-  if (st.table) h += `<h4>${esc(st.table.title || 'Table')}</h4><div class="wrap"><table class="doc"><tr>${st.table.head.map((c, i) => `<th${numCol(st.table, i) ? ' class=n' : ''}>${esc(c)}</th>`).join('')}</tr>${st.table.rows.map(r => `<tr>${r.map((c, i) => `<td${numCol(st.table, i) ? ' class=n' : ''}>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  // columns headed ✓ or listed in table.ticks are ticked, those in table.fill filled in: on the page
+  // a real checkbox or number field (kept on this device), on paper an empty box for a pen
+  if (st.table) {
+    const t = st.table, fill = new Set(t.fill || []), tick = i => t.head[i] === '✓' || (t.ticks || []).includes(i);
+    const cell = (c, i, ri) => tick(i) ? (interactive ? `<td class="tick"><input type="checkbox" data-check="tbl-${n}-${ri}-${i}" aria-label="${esc(t.head[i])}"${checked[`tbl-${n}-${ri}-${i}`] ? ' checked' : ''}></td>` : '<td class="tick"><span class="box"></span></td>')
+      : fill.has(i) ? `<td class="val">${interactive ? `<input type="number" inputmode="decimal" step="0.5" data-val="tbl-${n}-${ri}-${i}" aria-label="${esc(t.head[i])}">` : ''}</td>`
+      : `<td${numCol(t, i) ? ' class=n' : ''}>${esc(c)}</td>`;
+    h += `<h4>${esc(t.title || 'Table')}</h4><div class="wrap"><table class="doc"><tr>${t.head.map((c, i) => `<th${numCol(t, i) || fill.has(i) ? ' class=n' : tick(i) ? ' class=tick' : ''}>${esc(c)}</th>`).join('')}</tr>${t.rows.map((r, ri) => `<tr>${t.head.map((_, i) => cell(r[i] ?? '', i, ri)).join('')}</tr>`).join('')}</table></div>`;
+  }
   for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
     h += `<h4>Print: ${esc(pr.name)}${printQty(pr) > 1 ? ` x${printQty(pr)}` : ''}${q('print')}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}${printCuts(d, pr)}<p>${dl(pr)}</p>${pr.note ? mark('warn', esc(pr.note)) : ''}`;
   }
@@ -2843,6 +2852,7 @@ function mountPlan(plan) {
   let given = fromHash.given;
   let d = null;
   const ticks = store.get(key + ':ticks', {});
+  const vals = store.get(key + ':vals', {});
 
   // ---------------------------------------------------------------- form
   const form = $('#size-form');
@@ -2974,6 +2984,7 @@ function mountPlan(plan) {
     $('#legend-body').innerHTML = legendHtml(d);
     $('#order-body').innerHTML = orderHtml(d);
     $('#steps-body').innerHTML = d.model.steps.map(st => stepHtml(d, st, { interactive: true, checked: ticks })).join('');
+    document.querySelectorAll('[data-val]').forEach(el => { if (vals[el.dataset.val] != null) el.value = vals[el.dataset.val]; });
     $('#cutlist-body').innerHTML = cutListHtml(d);
     document.querySelectorAll('.unit-len').forEach(el => (el.textContent = u.lenUnit));
     viewer?.setModel(d);
@@ -3030,6 +3041,13 @@ function mountPlan(plan) {
     try { save(`${plan.id}-${pr.id}.stl`, stlOf(await printGeometry(pr), pr)); }
     catch (err) { alert('Could not make the STL: ' + err.message + '. Download the .scad and export it from OpenSCAD.'); }
     b.innerHTML = label;
+  });
+  // measured values typed into a step's table, kept on this device like the ticks
+  document.addEventListener('input', e => {
+    const id = e.target.dataset?.val;
+    if (!id) return;
+    if (e.target.value === '') delete vals[id]; else vals[id] = e.target.value;
+    store.set(key + ':vals', vals);
   });
   document.addEventListener('change', e => {
     const c = e.target.closest('[data-check]');

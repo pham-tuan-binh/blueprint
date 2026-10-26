@@ -12,7 +12,7 @@ node $SKILL/scripts/blueprint.mjs test   # once per kit change: the frame solver
 ## The commands must pass
 
 - **audit passed.** Every kit check and plan check at every min, max, all-min, all-max, a 12-step sweep of each field with the others at their max and at their min, and 40 random sizes, in both units. A failing case is a design bug at a size the page allows: fix the design so it adapts, or narrow the range only if the thing stops making sense there.
-- **capture passed.** No console errors, a 3D view that is neither blank nor all ink, a field that changes the cut list and the URL, a pass in the other units with nothing of the first left in the plan's own numbers, no sideways scroll at 390 px. The PDF prints in the plan's own units.
+- **capture passed.** The layout audit clean (every number, checkbox, mark and icon within 1 px of its text), no console errors, a 3D view that is neither blank nor all ink, a field that changes the cut list and the URL, a pass in the other units with nothing of the first left in the plan's own numbers, no sideways scroll at 390 px. The PDF prints in the plan's own units.
 
 ## Read the shots like a builder
 

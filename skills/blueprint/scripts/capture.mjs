@@ -9,13 +9,14 @@
 //
 // Writes PNGs (desktop, phone, the size panel, materials, drawings, every step, cut
 // list, the other units) and, with --pdf, the printed pack. Fails on any console error, a
-// blank 3D view, sideways scroll on a phone, an input field that does not change
+// blank 3D view, sideways scroll on a phone, a number or mark more than 1 px off its text, an input field that does not change
 // the plan, or a units switch that leaves millimetres behind. Read every PNG.
 import { execSync } from 'node:child_process';
 import { resolve, join, dirname } from 'node:path';
 import { mkdirSync, existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { findPlaywright, launchChromium, hasPdftoppm, PLAYWRIGHT_FIX } from './env.mjs';
+import { layoutAudit, summarise } from './layout.mjs';
 
 const args = process.argv.slice(2);
 const page0 = args.find(a => !a.startsWith('--'));
@@ -54,6 +55,9 @@ const text = (p, sel) => p.$eval(sel, el => el.innerText).catch(() => '');
 // ---------------------------------------------------------------- desktop
 const p = await open({ width: 1280, height: 900 });
 await p.screenshot({ path: join(out, 'desktop.png') });
+// layout: every number, checkbox, mark and icon centred on the text beside it, within 1 px
+const layout = async (pg, label) => { for (const line of summarise(await pg.evaluate(layoutAudit))) problems.push(`layout (${label}): ${line}`); };
+await layout(p, 'page, desktop');
 const ink = await p.evaluate(() => {
   const c = document.querySelector('#viewer canvas');
   if (!c) return -1;
@@ -187,6 +191,7 @@ await p.close();
     g.on('pageerror', e => problems.push(`guide: page error: ${e.message}`));
     g.on('console', m => { if (m.type() === 'error') problems.push(`guide: console: ${m.text()}`); });
     await g.goto(pathToFileURL(gfile).href, { waitUntil: 'networkidle' });
+    await layout(g, `guide, ${vp.width < 500 ? 'phone' : 'desktop'}`);
     await g.screenshot({ path: join(out, vp.width < 500 ? 'guide-phone.png' : 'guide.png'), fullPage: true });
     if (vp.width < 500 && (await g.evaluate(() => document.documentElement.scrollWidth)) > 392) problems.push('guide: scrolls sideways on a phone');
     await g.close();
@@ -195,6 +200,7 @@ await p.close();
 
 // ---------------------------------------------------------------- phone
 const ph = await open({ width: 390, height: 844 });
+await layout(ph, 'page, phone');
 await ph.screenshot({ path: join(out, 'phone.png') });
 await ph.screenshot({ path: join(out, 'phone-full.png'), fullPage: true });
 const sw = await ph.evaluate(() => document.documentElement.scrollWidth);

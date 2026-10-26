@@ -24,6 +24,7 @@ The full rules are in `skills/blueprint/SKILL.md` ("How it looks and reads"); in
 ## Engineering rules
 
 - Every plan must pass its audit at every size its fields allow, and its capture: `node skills/blueprint/scripts/blueprint.mjs check plans/<id>/design.mjs`. Fix the design, never a check.
+- After any change to the page, the guide or the site, capture every example: its layout audit must be clean (numbers, checkboxes, marks and icons within 1 px of their text, measured on the ink). Look at screenshots too, but trust the measurements.
 - After a kit change, keep green: `blueprint.mjs test`, the audit of every plan and example, `node tools/site.mjs`, and the capture of each example. Existing plans should build to the same checks unless the change means to move them.
 - The official examples live only in `skills/blueprint/examples/`; `plans/` is only for shared plans. Never keep a second copy of a plan.
 - Plans contributed through `blueprint-share` add exactly one file, `plans/<id>/design.mjs`.

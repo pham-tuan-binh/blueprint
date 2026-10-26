@@ -31,6 +31,7 @@ export function mountPlan(plan) {
   let given = fromHash.given;
   let d = null;
   const ticks = store.get(key + ':ticks', {});
+  const vals = store.get(key + ':vals', {});
 
   // ---------------------------------------------------------------- form
   const form = $('#size-form');
@@ -162,6 +163,7 @@ export function mountPlan(plan) {
     $('#legend-body').innerHTML = legendHtml(d);
     $('#order-body').innerHTML = orderHtml(d);
     $('#steps-body').innerHTML = d.model.steps.map(st => stepHtml(d, st, { interactive: true, checked: ticks })).join('');
+    document.querySelectorAll('[data-val]').forEach(el => { if (vals[el.dataset.val] != null) el.value = vals[el.dataset.val]; });
     $('#cutlist-body').innerHTML = cutListHtml(d);
     document.querySelectorAll('.unit-len').forEach(el => (el.textContent = u.lenUnit));
     viewer?.setModel(d);
@@ -218,6 +220,13 @@ export function mountPlan(plan) {
     try { save(`${plan.id}-${pr.id}.stl`, stlOf(await printGeometry(pr), pr)); }
     catch (err) { alert('Could not make the STL: ' + err.message + '. Download the .scad and export it from OpenSCAD.'); }
     b.innerHTML = label;
+  });
+  // measured values typed into a step's table, kept on this device like the ticks
+  document.addEventListener('input', e => {
+    const id = e.target.dataset?.val;
+    if (!id) return;
+    if (e.target.value === '') delete vals[id]; else vals[id] = e.target.value;
+    store.set(key + ':vals', vals);
   });
   document.addEventListener('change', e => {
     const c = e.target.closest('[data-check]');

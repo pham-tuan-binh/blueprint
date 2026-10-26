@@ -17,7 +17,8 @@ main{max-width:1000px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-ri
 .back{margin:0 0 8px;text-decoration:none}
 h1{font-size:40px;line-height:1.15;margin:24px 0 32px;letter-spacing:-.01em;text-wrap:balance}.lede{font-size:18px;max-width:68ch;margin:0 0 24px}
 .sec{margin-top:144px}.sec>h2{display:flex;align-items:baseline;gap:14px;font-size:28px;line-height:1.2;margin:0 0 24px}
-.secn{font:400 .85em var(--mono);color:var(--muted)}h3{font-size:19px;margin:40px 0 8px}h4{font-size:15px;margin:40px 0 12px}
+.secn{color:var(--muted)}   /* same font and size as its title, so number and title read as one line */
+h3{font-size:19px;margin:40px 0 8px}h4{font-size:15px;margin:40px 0 12px}
 p,li{max-width:72ch}
 .seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
@@ -27,7 +28,7 @@ p,li{max-width:72ch}
 .contents-h{margin:48px 0 4px;font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .contents{list-style:none;margin:0 0 48px;padding:0}.contents li{max-width:none}
 .contents a,.contents .crow{display:flex;align-items:baseline;gap:10px;padding:5px 0;color:inherit;text-decoration:none;width:100%;font:inherit;background:none;border:0;cursor:pointer;text-align:left}
-.contents .cn{flex:none;width:1.4em;font:400 .9em var(--mono);color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
+.contents .cn{flex:none;width:1.6em;font-weight:600;color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
 .contents .cl{flex:1;min-width:16px;border-bottom:1.5px dotted #9aa5b1;transform:translateY(-4px)}
 .contents .cm{flex:0 1 auto;min-width:0;text-align:right;font:.82em var(--mono);color:var(--muted);align-self:center}.contents .cm svg{width:16px;height:16px;display:block}
 .contents a:hover .ct,.contents .crow:hover .ct{text-decoration:underline}
@@ -61,6 +62,8 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.q
 .doc small{display:block;color:var(--muted);font:12px var(--sans)}
 .checks td:nth-child(2){font-family:var(--sans);font-weight:600}.checks td:first-child{font-weight:700;width:2em;text-align:center}
 .checks tr.bad td{color:var(--lit)}
+.doc td.tick,.doc th.tick{text-align:center;vertical-align:middle;width:3.5em}.doc td.tick input{vertical-align:middle}.doc .box{display:inline-block;width:1.1rem;height:1.1rem;border:1.5px solid var(--ink);vertical-align:middle}
+.doc td.val{padding:0;min-width:5.5em}.doc td.val input{width:100%;border:0;background:none;padding:4px 8px;font:inherit;text-align:right;color:var(--ink)}.doc td.val input:focus{outline:2px solid var(--ink);outline-offset:-2px}
 .legend th{text-align:left;white-space:nowrap;width:1%}.legend td{text-align:left}
 .wrap{overflow-x:auto;max-width:100%}
 .sheet{display:grid;gap:0;border:1px solid var(--line);margin:8px 0}.sheet figure{margin:0;min-width:0}.sheet svg{border:0!important}
@@ -70,8 +73,8 @@ figure{margin:0}
 .piece-list{display:grid;gap:18px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
 .phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}.phases h4{margin:8px 0 0}.phases ol{margin:4px 0;padding-left:1.6em}.phases li{margin:2px 0}
 /* one left column per step: the number, every checkbox and the check and warning marks are centred in it; the title and all text start right of it */
-.step{margin-top:112px;--gut:76px;--gap:20px}.step-h{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);gap:var(--gap);align-items:start;margin-bottom:28px}.step-h>div{padding-top:var(--cap-pad,5px)}.sn{font:700 64px/1 var(--sans);text-align:center}
-.step-h h3{margin:0;font-size:22px;line-height:1.15}.step-h p{margin:11px 0 0;line-height:1.2}
+.step{margin-top:112px;--gut:76px;--gap:20px}.step-h{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);gap:var(--gap);align-items:start;margin-bottom:28px}.step-h>div{padding-top:var(--cap-pad,3px)}.sn{font:700 64px/1 var(--sans);text-align:center}
+.step-h h3{margin:0;font-size:22px;line-height:1.15}.step-h p{margin:13px 0 0;line-height:1.2}
 .tasks{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:t}
 .tasks li{display:grid;grid-template-columns:var(--gut,76px) minmax(0,1fr);gap:var(--gap,20px);align-items:start;counter-increment:t}
 .tasks label{line-height:1.6}.tasks input{font:inherit;margin:calc((1.6em - 1.1rem) / 2) 0 0;justify-self:center}   /* centred on the first line, and in the step's left column */
@@ -100,7 +103,6 @@ input[type=checkbox]:checked::after{content:"";width:.55rem;height:.28rem;border
 details.sheets{margin:40px 0 0}details.sheets summary{cursor:pointer;font-weight:600}details.sheets[open] summary{margin-bottom:12px}
 .linkish{font:inherit;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
 ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
-.foot{max-width:1000px;margin:0 auto;padding:48px 16px;color:var(--muted);font-size:13px}
 @media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px;--gut:62px;--gap:14px}.sn{font-size:52px}.step .step-h h3{font-size:18px}.step .step-h p{font-size:13px;margin-top:8px}.step .step-h>div{--cap-pad:4px}.inp input{width:84px}ul.cols{columns:1}}
 ${SHOP_CSS}
 ${Q_CSS}
@@ -164,7 +166,6 @@ export function pageHtml(d, { script = '', title, description, back = null, guid
   </section>
   <section class="sec" id="cutlist"><h2><span class="secn">7</span>Cut list</h2><div id="cutlist-body">${cutListHtml(d)}</div></section>
 </main>
-<footer class="foot"><p>${esc(plan.name)}${plan.version ? ' · v' + esc(plan.version) : ''}. ${esc(plan.footer || 'Generated by the blueprint skill. Check every dimension against your own stock before you cut, wear eye and hand protection, and load-test the build gently before trusting it.')}</p></footer>
 <script type="module">
 ${script}
 </script>

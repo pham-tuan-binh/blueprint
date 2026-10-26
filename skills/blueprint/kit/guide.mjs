@@ -131,7 +131,7 @@ export function initTips(guideHref) {
 }
 
 export const Q_CSS = `
-.q{display:inline-block;width:1.2em;height:1.2em;margin-left:.3em;vertical-align:middle;position:relative;top:-.08em;cursor:help;user-select:none}
+.q{display:inline-block;width:1.2em;height:1.2em;margin-left:.3em;vertical-align:middle;position:relative;top:0;cursor:help;user-select:none}
 .mk{display:block;width:100%;height:100%;overflow:visible}.mk circle:first-child{stroke:var(--ink);stroke-width:1.6}.mk .ln{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.mk .dot{fill:var(--ink)}
 .mk-q circle:first-child{fill:${CODE.yellow}}.mk-ok circle:first-child{fill:${CODE.green}}.mk-warn circle:first-child{fill:${CODE.red}}.mk-ok .ln,.mk-warn .ln{stroke:#fff}.mk-warn .dot{fill:#fff}
 .q:hover .mk-q circle:first-child,.q:focus-visible .mk-q circle:first-child{fill:var(--ink)}.q:hover .mk-q .ln,.q:focus-visible .mk-q .ln{stroke:${CODE.yellow}}.q:hover .mk-q .dot,.q:focus-visible .mk-q .dot{fill:${CODE.yellow}}

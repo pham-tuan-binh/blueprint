@@ -100,4 +100,7 @@ skills/blueprint-share/
 
 A plan is a pure function from its params to a model (nodes, members, plates, parts, loads, steps). The kit solves how every member end is cut and joined, groups identical pieces under one mark, nests the cuts into stock lengths, runs the load cases, and lays out the pack. Because every plan goes through the same kit and must pass the same audit, every plan comes out with the same sections, drawings and checks.
 
-Plans are a starting point, not an engineer's sign-off. Check your stock, wear eye and hand protection, and load-test gently before you trust a build.
+
+## License
+
+MIT, see [LICENSE](LICENSE).

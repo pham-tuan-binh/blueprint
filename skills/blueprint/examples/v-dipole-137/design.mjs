@@ -340,7 +340,7 @@ export const plan = {
     // u.len rounds metric to whole millimetres; drill sizes and print clearances need tenths
     const fine = v => u.fine(v, { u: true });
     const fEdge = [137.1, 137.9];
-    const clipRows = Array.from({ length: a.nC }, (_, i) => [`Clip ${i + 1}`, u.len(a.gap * (i + 1))]);
+    const clipRows = Array.from({ length: a.nC }, (_, i) => [`Clip ${i + 1}`, u.len(a.gap * (i + 1)), '', '']);
     const steps = [
       { n: 1, phase: 'Fabricate', title: 'Print the hub and the lid', hours: 1, tasks: [
         `Print the hub, then the lid (files below). Queue the ${nClips} clips and 2 tip caps from step 5. PETG or ASA, not PLA.`,
@@ -361,7 +361,7 @@ export const plan = {
         'Push each into its socket until it bottoms.',
         'Grub screw in each insert until it bears, then a quarter turn.',
       ], check: `Tip to tip ${u.len(2 * a.rTube * s)} ${u.tol(5)}. Arms do not turn or pull out. Tips level ${u.tol(3)} on a flat table.` },
-      { n: 4, phase: 'Fabricate', title: 'Element wires: cut, strip and clamp', hours: 1, tasks: [
+      { n: 4, phase: 'Fabricate', title: 'Element wires', hours: 1, tasks: [
         `Straighten the ${wireName(u, p.wire)} wire: one end in a vise, pull the other until it lies dead straight. Cut two wires ({mark:wire-E}).`,
         ins
           ? `Strip ${u.len(stripIn, { u: true })} at the inner end only. Do not nick the copper.`
@@ -371,7 +371,7 @@ export const plan = {
         'On each insert: ring terminal, penny washer over terminal and wire, M3 × 8 screw. Tighten until the wire flattens.',
       ], check: `Gap ${u.len(GAP)} ${u.tol(1)}. Wires stay put when tugged. Each wire to its pin under 1 Ω; pin to body still open.`,
         tip: `Set the gap before you tighten. The wires are ${u.len(allow, { u: true })} long on purpose: step 8 trims them.` },
-      { n: 5, phase: 'Fabricate', title: 'Clips and tip caps', hours: 0.5, table: { title: 'Clip centres along each arm', head: ['Clip', 'From the hub arm end'], rows: clipRows }, tasks: [
+      { n: 5, phase: 'Fabricate', title: 'Clips and tip caps', hours: 0.5, table: { title: 'Clip centres along each arm', head: ['Clip', 'From the hub arm end', 'East', 'West'], rows: clipRows, ticks: [2, 3] }, tasks: [
         `Print ${nClips} clips and 2 tip caps if not done. A clip must click onto an offcut and grip.`,
         `From the tip end: ${a.nC} clips onto each wire, mouths down, then a tip cap.`,
         'Cap over the arm end until it bottoms. A dab of neutral-cure silicone.',
