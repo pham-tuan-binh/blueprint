@@ -103,6 +103,7 @@ The kit is in `kit/`; a plan never imports it (the build script bundles both int
 | `kit/fea.mjs` | 3D beam frame solver, two bending stiffnesses per section. Proven by `blueprint.mjs test`. |
 | `kit/shop.mjs` | SVG drawings: third-angle sheets (GA and per-step jigs) at one scale with dimensions, cut sheets with edge marks, plate drawings with holes, cutting plans. |
 | `kit/pack.mjs`, `kit/page.mjs` | The page sections and the standalone HTML shell, print styles included. |
+| `kit/guide.mjs` | The guide written beside every plan (`guide.html`, "How to read this plan", with figures generated from the plan: a marked joint, a bay's diagonals, a cut sheet, real joint close-ups) and the `?` explainers in the steps. |
 | `kit/viewer.mjs` | The 3D view (three.js): orthographic, four greys by facing, ink outlines, the current step lit in red, a stress view. |
 | `kit/app.mjs` | The page runtime: input fields, units switch, URL state, live re-render, step ticks saved on the device. |
 
@@ -121,8 +122,22 @@ Put new plans in `plans/<id>/design.mjs` in the user's project (or wherever they
 - **Prove what it holds.** At least one load case for its job (spread over what carries it) and one for abuse (a point load, a sideways shove). Safety factor 2 on yield for furniture and fixtures, 3 for anything a person stands on or hangs from. A deflection limit where sag matters (a bench top: span/300). A tip check for anything taller than 1.5 × its depth or pushed at height (`references/structure.md`).
 - **Every part is in a step and on the bill.** Plates, feet, bolts, screws, paint, wire and discs: the person buys from the materials list, so if it is not there they will not have it.
 - **Tolerances a person can hold.** ±1 mm cut, diagonals equal within 2-3 mm. Say how to check it, not just the number.
-- **The look is the kit's; keep it.** Light paper only, like a printed drawing: never a dark theme, whatever the device prefers. Monochrome ink on paper, one red accent for what to look at, no drop or offset shadows. Something clickable says so with an icon (an arrow, a printer, a link), not a shadow. No headers of any kind: no bar, no nav, and nothing pinned to the top of the page or its corners (not a GitHub button, not a units switch, not a menu). A plan opens on its title like a document, with its sections in a numbered Contents block (the steps nested under Steps), the same as the front of the printed pack; a gallery of plans is a landing page that opens on its headline. Links and controls sit in the flow of the page where a document would put them: a source link under the title or in the footer, a control in the panel it controls. Every label on a drawing (joint ids, dimensions) sits in its own paper-coloured box so it reads over lines and dark members. If you change the kit, keep both.
 - **Honest about limits.** If a check only passes because it is anchored, braced or loaded carefully, say so in the check and the step.
+
+## How it looks and reads: an IKEA guide
+
+The kit draws the page; these are the rules it follows, and the ones your text must follow too. If you change the kit, keep every one.
+
+- **Clear above all.** A builder finds what they need at once. If something does not help someone build the thing, leave it out.
+- **Generated, not hand-made.** Every drawing, table, number and figure comes from `design.mjs` through the kit: jigs, cut sheets, joint close-ups, the contents, the guide's figures. Never write SVG or HTML by hand in a plan; if a figure is missing, add a generator to `kit/shop.mjs` that reads the plan.
+- **Space, not boxes.** Lots of white space. Sections ~144 px apart, steps ~112 px, step numbers 64 px bold. Sections and steps separate by space and big numbers, never by rules or boxed panels.
+- **Minimal elements.** Black ink on white paper, printed-looking: never a dark theme, whatever the device prefers. No shadows, gradients, coloured fills or decorative borders; one red accent only in the 3D view, for the selected part or step. Icons only where they carry meaning: ✓ a check to pass before moving on, ! a warning, a circled ? an explainer, the open-in-new-tab icon on a link that opens a new page, a printer for print. Something clickable says so with an icon, not a shadow.
+- **Minimal text.** Short imperative tasks (`references/steps.md`). Leave out what an experienced builder can infer. Teaching belongs in the guide (`guide.html`, "How to read this plan", generated beside every plan by `kit/guide.mjs`), reached through the `?` explainers, not in the steps.
+- **No header of any kind.** No top bar, no nav, no logo, no version line, nothing pinned to the top or its corners (not a GitHub button, not a units switch, not a menu). Every page opens with its title, then the start-here link to the guide, then a numbered Contents list with dotted leaders. A gallery of plans is a landing page that opens on its headline. Links and controls sit in the flow of the page where a document would put them: a source link under the title or in the footer, a control in the panel it controls.
+- **No lede, no facts grid.** The plan's summary is for the gallery card; the page opens on the title. The totals are one line at the top of the materials list.
+- **Labels on drawings** sit in their own white boxes so they read over members and lines.
+- **The 3D model** in the anatomy style: orthographic, four greys by face direction, thin outlines, one red accent.
+- **Phone and paper.** 16 px side gutter, no sideways scroll at 390 px; print styles hide the controls and print the folded cut sheets open.
 
 ## References
 

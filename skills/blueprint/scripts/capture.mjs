@@ -13,7 +13,7 @@
 // the plan, or a units switch that leaves millimetres behind. Read every PNG.
 import { execSync } from 'node:child_process';
 import { resolve, join, dirname } from 'node:path';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { findPlaywright, launchChromium, hasPdftoppm, PLAYWRIGHT_FIX } from './env.mjs';
 
@@ -124,11 +124,11 @@ if (await p.$('[data-stl]')) {
 
 // ---------------------------------------------------------------- the other units
 // the page opens in the plan's units; switch to the other system and check nothing
-// of the first is left in the plan's own numbers (bought-part specs are exempt)
+// of the first is left in the plan's own numbers (bought parts keep their trade names)
 const home = await p.evaluate(() => window.__blueprint.d.units.system);
 const other = home === 'imperial' ? 'metric' : 'imperial';
-const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain, .spec').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
-const SECTIONS = ['#facts', '#checks-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'];
+const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain, .spec, .bought').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
+const SECTIONS = ['#checks-body', '#bom-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'];
 await p.click(`[data-units="${other}"]`);
 await p.waitForTimeout(600);
 const left = other === 'imperial' ? /(?<![\d.])\d+(\.\d+)?\s?mm\b(?![²2])/g : /\d+(\s\d+\/\d+)?"/g;
@@ -167,6 +167,30 @@ await p.close();
   if (lum < 0.85) problems.push(`dark mode: the page turns dark (background luminance ${lum.toFixed(2)}); it must stay light paper`);
   await dk.screenshot({ path: join(out, 'dark-mode-device.png') });
   await dk.close();
+}
+
+// ---------------------------------------------------------------- explainers and the guide
+// a "?" opens its bubble; the guide beside the page opens light, without errors, and fits a phone
+{
+  const pq = await open({ width: 1000, height: 800 });
+  const q = await pq.$('#steps-body .q');
+  if (!q) problems.push('no "?" explainers in the steps');
+  else {
+    await q.click();
+    if (!(await pq.evaluate(() => { const b = document.querySelector('.qpop'); return b && !b.hidden && b.textContent.length > 10; }))) problems.push('a "?" does not open its explanation');
+  }
+  await pq.close();
+  const gfile = join(dirname(file), 'guide.html');
+  if (!existsSync(gfile)) problems.push('no guide.html beside the page (build writes it)');
+  else for (const vp of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+    const g = await browser.newPage({ viewport: vp });
+    g.on('pageerror', e => problems.push(`guide: page error: ${e.message}`));
+    g.on('console', m => { if (m.type() === 'error') problems.push(`guide: console: ${m.text()}`); });
+    await g.goto(pathToFileURL(gfile).href, { waitUntil: 'networkidle' });
+    await g.screenshot({ path: join(out, vp.width < 500 ? 'guide-phone.png' : 'guide.png'), fullPage: true });
+    if (vp.width < 500 && (await g.evaluate(() => document.documentElement.scrollWidth)) > 392) problems.push('guide: scrolls sideways on a phone');
+    await g.close();
+  }
 }
 
 // ---------------------------------------------------------------- phone

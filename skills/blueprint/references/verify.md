@@ -18,7 +18,7 @@ node $SKILL/scripts/blueprint.mjs test   # once per kit change: the frame solver
 
 Open every PNG in `shots/`. For each, ask:
 
-1. **desktop.png**: is it instantly the thing? Does the 3D model look like a real, well-made object (legs on the floor, top flat, nothing floating or poking through)? Do the facts make sense (mass, load, safety factor, cost)? Light paper, even on a device set to dark mode? No header of any kind (no bar, no nav, nothing pinned to the top or its corners): does the page open on its title, with a Contents block listing the numbered sections and steps, and every link and control in the flow of the page? No drop or offset shadows anywhere; buttons and links show they are clickable with an icon?
+1. **desktop.png**: is it instantly the thing? Does the 3D model look like a real, well-made object (legs on the floor, top flat, nothing floating or poking through)? Do the facts make sense (mass, load, safety factor, cost)? Light paper, even on a device set to dark mode? No header of any kind (no bar, no nav, nothing pinned to the top or its corners): does the page open on its title, then the start-here link to the guide, then a Contents list with dotted leaders, and every link and control in the flow of the page? Space, not boxes: big step numbers, ✓ and ! marks, no boxed panels or rules between sections? No drop or offset shadows anywhere; buttons and links show they are clickable with an icon?
 2. **size.png**: are the fields the ones a person would change, in the order they think, with ranges that make sense? Are the defaults a sensible, common size?
 3. **checks.png** and **materials.png**: all pass, and does each result read as a real number with a reason? Is the tightest margin where you expected it?
 4. **drawings.png**: does the general arrangement show the whole thing in three views at one scale, with the overall dimensions matching the fields?
@@ -30,7 +30,8 @@ Open every PNG in `shots/`. For each, ask:
 9. **phone.png / phone-full.png**: readable at 390 px, fields usable, drawings legible when zoomed?
 10. **pdf-N.png** (the printed pages of plan.pdf): each step starts on a new page, no controls printed, drawings not split across pages?
 11. **prints** (if any): does each printed part look right in the 3D view, holes and bores where they should be, and sized for what it holds at this size (clearance per `references/prints.md`)? Did capture download a real STL and .scad for each (it fails if not)? Is the printing in an early step?
-12. **every variant** you captured with `--hash`: does each step still read right with the option or the extra member (the steel top's welding step, the middle legs)?
+12. **guide.png / guide-phone.png** (the guide beside the plan): do its figures show this plan (the marked joint, the bay's diagonals, a real cut sheet, real joint close-ups), and only the sections that apply (no welding section for a glued PVC frame)? Is every task in the steps short enough that the explanation lives behind a `?`, not in the task?
+13. **every variant** you captured with `--hash`: does each step still read right with the option or the extra member (the steel top's welding step, the middle legs)?
 
 ## Then change the size
 

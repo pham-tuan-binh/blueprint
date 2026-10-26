@@ -74,12 +74,63 @@ function tag(x, y, text, size, { cls, anchor = 'start', rotate = 0 } = {}) {
   return rotate ? `<g transform="rotate(${rotate} ${f1(x)} ${f1(y)})">${box}${t}</g>` : box + t;
 }
 
+// A member as slices about 40 mm long, each with its own depth and its own outline: the
+// edges along the member, and the end faces on the first and last slice only. A hairline
+// in the fill colour hides the seams between slices.
+const SLICE = 40;
+function hullIdx(P) {
+  const idx = P.map((q, i) => i).sort((a, b) => P[a][0] - P[b][0] || P[a][1] - P[b][1]);
+  const cr = (o, a, b) => (P[a][0] - P[o][0]) * (P[b][1] - P[o][1]) - (P[a][1] - P[o][1]) * (P[b][0] - P[o][0]);
+  const lo = [], up = [];
+  for (const q of idx) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (const q of idx.slice().reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  return lo.slice(0, -1).concat(up.slice(0, -1));
+}
+function memberSlices(it, V) {
+  const c = it.pts;
+  const len = Math.max(...[0, 1, 2, 3].map(k => Math.hypot(...c[k + 4].map((v, i) => v - c[k][i]))));
+  const n = Math.max(1, Math.ceil(len / SLICE));
+  const at = (k, t) => c[k].map((v, i) => v + (c[k + 4][i] - v) * t);
+  // flat to the view (its depth the same along it) or seen end-on (a leg from above): one
+  // depth after all, so draw it whole; only a member sloping toward the viewer needs slices
+  const a0 = V.pr(at(0, 0)), a1 = V.pr(at(0, 1));
+  if (Math.abs(V.depth(at(0, 1)) - V.depth(at(0, 0))) < 1 || Math.hypot(a1[0] - a0[0], a1[1] - a0[1]) < 1)
+    return [{ ...it, hull: hull2(c.map(V.pr)), depth: c.reduce((s, q) => s + V.depth(q), 0) / 8 }];
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const t0 = i / n, t1 = (i + 1) / n;
+    const R = [0, 1, 2, 3].flatMap(k => [at(k, t0), at(k, t1)]).map(V.pr), h = hullIdx(R);   // index k*2 + (0: t0, 1: t1)
+    let edges = '';
+    for (let e = 0; e < h.length; e++) {
+      const a = h[e], b = h[(e + 1) % h.length], ea = a % 2, eb = b % 2;
+      if (ea !== eb || (ea === 0 && i === 0) || (ea === 1 && i === n - 1)) edges += `M${f1(R[a][0])} ${f1(R[a][1])}L${f1(R[b][0])} ${f1(R[b][1])}`;
+    }
+    const mid = (t0 + t1) / 2, ctr = at(0, mid).map((v, j) => (v + at(2, mid)[j]) / 2);
+    out.push({ ...it, hull: h.map(j => R[j]), depth: V.depth(ctr), edges });
+  }
+  return out;
+}
+
 // One orthographic view with overall dimensions. now(id) marks the parts of this step.
-function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null, bare = false }) {
+// overlay(V, fs) adds marks of a figure's own; win { c, r } crops to a close-up round c.
+function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null, bare = false, overlay = null, win = null }) {
   const V = VIEWS[view];
-  let polys = items.map(it => ({ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }))
+  // in the flat views a member is drawn as short slices, each sorted by its own depth, so a
+  // sloped member passing over or under another overlaps right (a whole member has no one depth)
+  let polys = items.flatMap(it => (view !== 'iso' && it.kind === 'member' && it.pts.length === 8) ? memberSlices(it, V)
+    : [{ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }])
     .sort((a, b) => a.depth - b.depth);
   if (view === 'iso') polys = isoOrder(polys);
+  const draw = p => {
+    const c = `${now(p) ? 'jn' : 'jo'} k-${p.kind}`, pts = p.hull.map(q => f1(q[0]) + ',' + f1(q[1])).join(' ');
+    return p.edges == null ? `<polygon class="${c}" points="${pts}"/>` : `<polygon class="${c} f" points="${pts}"/>${p.edges ? `<path class="${c} e" d="${p.edges}"/>` : ''}`;
+  };
+  if (win) {
+    const [cx, cy] = V.pr(win.c), r = win.r, fs = r / 9;
+    let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${[cx - r, cy - r * 0.75, r * 2, r * 1.5].map(f1).join(' ')}" class="${cls} close" style="--fs:${f1(fs)}px" role="img" aria-label="${esc(title)}">`;
+    for (const p of polys) s += draw(p);
+    return s + (overlay ? overlay(V, fs) : '') + '</svg>';
+  }
   const all = polys.flatMap(p => p.hull);
   const x0 = Math.min(...all.map(p => p[0])), x1 = Math.max(...all.map(p => p[0]));
   const y0 = Math.min(...all.map(p => p[1])), y1 = Math.max(...all.map(p => p[1]));
@@ -93,7 +144,7 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
   const dy0 = Math.min(...nowPts.map(p => p[1])), dy1 = Math.max(...nowPts.map(p => p[1]));
   const vb = bare ? [x0 - pad, y0 - pad, x1 - x0 + pad * 2, y1 - y0 + pad * 2] : [x0 - pad, y0 - pad * 1.2, x1 - x0 + pad * 2.2, y1 - y0 + pad * 2.6];
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(f1).join(' ')}" class="${cls}" style="--fs:${f1(fs)}px" data-w="${f1(vb[2])}" role="img" aria-label="${esc(title || V.title)}">`;
-  for (const p of polys) s += `<polygon class="${now(p) ? 'jn' : 'jo'} k-${p.kind}" points="${p.hull.map(q => f1(q[0]) + ',' + f1(q[1])).join(' ')}"/>`;
+  for (const p of polys) s += draw(p);
   if (dims && nowPts.length) {
     const a = fs * 0.5, off = fs * 2.2, showH = dx1 - dx0 > 1, showV = dy1 - dy0 > 1;
     const yb = y1 + off, xr = x1 + off;
@@ -119,7 +170,8 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
     const [x, y] = V.pr(l.p);
     s += `<circle class="jp" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.28)}"/>` + tag(x + fs * 0.7, y - fs * 0.85, l.name, fs * 0.8, { cls: 'jl' });
   }
-  if (!bare) s += `<text class="jt" x="${f1(vb[0] + fs * 0.6)}" y="${f1(vb[1] + fs * 1.6)}">${esc(title || V.title)}</text>`;
+  if (overlay) s += overlay(V, fs);
+  if (!bare) s += tag(vb[0] + fs * 0.6, vb[1] + fs * 1.2, title || V.title, fs * 0.8, { cls: 'jt' });
   return s + '</svg>';
 }
 
@@ -163,6 +215,72 @@ export function jigSheet(d, st, views) {
   const pts = stepNodes(d, st.n);
   // points: false draws no point labels (bars laid with a spacer, not by coordinates)
   return sheet(items, views, { now: it => it.step === st.n, labels: st.points === false ? [] : pts, dimPts: pts.map(l => l.p), title: v => `Step ${st.n}: ${VIEWS[v].title}`, u: d.units });
+}
+
+// ---------------------------------------------------------------- guide figures
+// Figures for the guide, generated from the plan so they change with it.
+
+// a step's jig with one joint ringed and its coordinates written out
+export function markedJig(d, st, view, name) {
+  const items = solids(d, { upTo: st.n, only: st.alone ? x => x.step === st.n : null }), u = d.units;
+  const q = d.model.nodes[name];
+  const overlay = (V, fs) => {
+    const [x, y] = V.pr(q);
+    return `<circle class="gmk" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.9)}"/>` +
+      tag(x + fs * 1.3, y + fs * 2.2, `${name}: x ${u.len(q[0])} · y ${u.len(q[1])} · z ${u.len(q[2])}`, fs * 0.8, { cls: 'jl' });
+  };
+  return sheet(items, [view], { now: it => it.step === st.n, labels: [], dims: false, overlay, title: () => `Step ${st.n}: ${VIEWS[view].title}`, u });
+}
+
+// the four corner joints of a step in one view, when they make a rectangle
+export function bayOf(d, st, view) {
+  const V = VIEWS[view], pts = stepNodes(d, st.n).map(l => ({ ...l, q: V.pr(l.p) }));
+  if (pts.length < 4) return null;
+  const xs = pts.map(p => p.q[0]), ys = pts.map(p => p.q[1]);
+  const corner = (x, y) => pts.find(p => Math.abs(p.q[0] - x) < 1 && Math.abs(p.q[1] - y) < 1);
+  const [a, b, c, e] = [[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)], [Math.max(...xs), Math.min(...ys)], [Math.min(...xs), Math.max(...ys)]].map(([x, y]) => corner(x, y));
+  if (!a || !b || !c || !e || Math.max(...xs) - Math.min(...xs) < 50 || Math.max(...ys) - Math.min(...ys) < 50) return null;
+  // a closed frame: a member (fitted by now) along each of the four sides
+  const segs = d.model.members.filter(m => m.step <= st.n).map(m => [V.pr(d.joints[m.id].A), V.pr(d.joints[m.id].B)]);
+  const covered = (P, Q) => {
+    const L = Math.hypot(Q[0] - P[0], Q[1] - P[1]), ux = (Q[0] - P[0]) / L, uy = (Q[1] - P[1]) / L;
+    return segs.some(([S, T]) => {
+      const off = p => Math.abs((p[0] - P[0]) * uy - (p[1] - P[1]) * ux), at = p => (p[0] - P[0]) * ux + (p[1] - P[1]) * uy;
+      return off(S) < 30 && off(T) < 30 && Math.max(at(S), at(T)) - Math.min(at(S), at(T)) > L * 0.8;
+    });
+  };
+  if (![[a, c], [c, b], [b, e], [e, a]].every(([P, Q]) => covered(P.q, Q.q))) return null;
+  return { a: a.p, b: b.p, c: c.p, e: e.p, diag: Math.hypot(b.q[0] - a.q[0], b.q[1] - a.q[1]) };
+}
+
+// that bay with both diagonals dashed: equal means square
+export function diagJig(d, st, view, bay) {
+  const items = solids(d, { upTo: st.n, only: st.alone ? x => x.step === st.n : null }), u = d.units;
+  const overlay = (V, fs) => {
+    const [A, B, C, E] = [bay.a, bay.b, bay.c, bay.e].map(V.pr);
+    return `<path class="gdg" d="M${f1(A[0])} ${f1(A[1])}L${f1(B[0])} ${f1(B[1])}M${f1(C[0])} ${f1(C[1])}L${f1(E[0])} ${f1(E[1])}"/>` +
+      tag((A[0] + B[0]) / 2, (A[1] + B[1]) / 2 - fs * 0.6, `${u.len(bay.diag)} = ${u.len(bay.diag)}`, fs * 0.8, { cls: 'jl', anchor: 'middle' });
+  };
+  return sheet(items, [view], { now: it => it.step === st.n, labels: [], dims: false, overlay, title: () => `Step ${st.n}: ${VIEWS[view].title}`, u });
+}
+
+// a close-up of one real joint, from the side that shows both members in their plane
+// labels: [{ id, text }] put each member's mark on it, a little way from the joint
+export function jointCloseup(d, ids, at, view, labels = []) {
+  const items = solids(d, { only: x => ids.includes(x.id) });
+  const r = Math.max(...ids.map(id => Math.max(d.joints[id]?.hu || 20, d.joints[id]?.hw || 20))) * 5;
+  const overlay = (V, fs) => {
+    const [cx, cy] = V.pr(at);
+    let s = `<circle class="jp" cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(fs * 0.25)}"/>`;
+    for (const l of labels) {
+      const j = d.joints[l.id], far = [j.A, j.B].sort((a, b) => Math.hypot(...b.map((v, i) => v - at[i])) - Math.hypot(...a.map((v, i) => v - at[i])))[0];
+      const dv = far.map((v, i) => v - at[i]), L = Math.hypot(...dv) || 1, p = at.map((v, i) => v + (dv[i] / L) * r * 0.62);
+      const [x, y] = V.pr(p);
+      s += tag(x, y + fs * 0.3, l.text, fs * 0.9, { cls: 'jl', anchor: 'middle' });
+    }
+    return s;
+  };
+  return viewSvg(items, view, { win: { c: at, r }, cls: 'jig', title: 'Joint close-up', overlay });
 }
 
 // one undimensioned view for a gallery card
@@ -343,10 +461,13 @@ export const SHOP_CSS = `
 .pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
+.jn.f{stroke:var(--now);stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
 .ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
 .lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}
-.jp{fill:var(--ink)}.jl{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}.jt{font:700 calc(var(--fs) * 1.1) var(--sans);fill:var(--ink)}
+.jp{fill:var(--ink)}.jl{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}.jt{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}
+.gmk{fill:none;stroke:var(--ink);stroke-width:calc(var(--fs) * .14)}.gdg{fill:none;stroke:var(--ink);stroke-width:calc(var(--fs) * .1);stroke-dasharray:calc(var(--fs) * .6) calc(var(--fs) * .35)}
+.close{background:var(--paper)}
 .nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
 `;

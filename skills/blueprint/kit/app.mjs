@@ -4,9 +4,10 @@
 // between metric (default) and imperial without changing the design.
 import { derive } from './derive.mjs';
 import { makeUnits, esc } from './core.mjs';
-import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel, contentsHtml } from './pack.mjs';
+import { checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel, contentsHtml } from './pack.mjs';
 import { createViewer, printGeometry } from './viewer.mjs';
 import { scadOf, bedBox } from './print.mjs';
+import { initTips } from './guide.mjs';
 
 const $ = s => document.querySelector(s);
 const store = {
@@ -113,13 +114,27 @@ export function mountPlan(plan) {
     $('#viewer').innerHTML = `<p class="muted pad">3D view unavailable (${esc(e.message)}). The drawings below show the same build.</p>`;
   }
   document.querySelectorAll('[data-cam]').forEach(b => b.addEventListener('click', () => viewer?.view(b.dataset.cam)));
-  const badge = $('#step-badge');
-  function showStep(n) {
-    viewer?.setStep(n, n);
-    badge.hidden = n == null;
-    if (n != null) $('#step-badge-text').textContent = `After step ${n}: ${d.model.steps.find(s => s.n === n)?.title || ''}`;
+  // the step viewer: sticky beside the steps on a wide screen, a panel the 3D button opens on a
+  // phone. It follows the step you are reading: the build as it stands after that step, its parts lit.
+  let stepViewer = null, stepNow = null;
+  function currentStep() {
+    const els = [...document.querySelectorAll('#steps-body .step')];
+    let cur = els[0];
+    for (const el of els) if (el.getBoundingClientRect().top < innerHeight * 0.4) cur = el;
+    return cur ? +cur.id.slice(5) : null;
   }
-  $('#step-badge-off').addEventListener('click', () => showStep(null));
+  function followSteps(force) {
+    const n = currentStep();
+    if (n == null || (n === stepNow && !force)) return;
+    stepNow = n;
+    $('#step-3d-cap').textContent = `${n}  ${d.model.steps.find(s => s.n === n)?.title || ''}`;
+    stepViewer?.setStep(n, n);
+  }
+  let ticking = false;
+  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; followSteps(); }); } }, { passive: true });
+  const show3d = on => { document.body.classList.toggle('show-3d', on); $('#toggle-3d').setAttribute('aria-pressed', on); store.set(key + ':show3d', on); };
+  $('#toggle-3d').addEventListener('click', () => show3d(!document.body.classList.contains('show-3d')));
+  new IntersectionObserver(([e]) => document.body.classList.toggle('in-steps', e.isIntersecting)).observe($('#steps'));
   $('#show-stress').addEventListener('change', e => {
     if (!e.target.checked) return viewer?.setStress(null);
     const map = {};
@@ -136,12 +151,11 @@ export function mountPlan(plan) {
       return;
     }
     const u = d.units;
-    $('#notes').innerHTML = d.notes.length ? `<p class="warn">${esc(d.notes.join('. '))}.</p>` : '';
+    const bad = d.checks.filter(c => !c.pass);
+    $('#notes').innerHTML = (d.notes.length ? `<p class="warn">${esc(d.notes.join('. '))}.</p>` : '') +
+      (bad.length ? `<p class="warn">${bad.length} check${bad.length > 1 ? 's' : ''} fail at this size: ${esc(bad.map(c => c.name).join('; '))}. <a href="#checks">Checks</a></p>` : '');
     $('#built-for').textContent = paramsSummary(d);
-    $('#facts').innerHTML = factsHtml(d);
     $('#contents-body').innerHTML = contentsHtml(d);
-    $('#status').className = 'status ' + (d.ok ? 'ok' : 'bad');
-    $('#status').textContent = d.ok ? `✓ All ${d.checks.length} checks pass` : `✗ ${d.checks.filter(c => !c.pass).length} check(s) failing`;
     $('#checks-body').innerHTML = checksHtml(d);
     $('#bom-body').innerHTML = bomHtml(d);
     $('#drawings-body').innerHTML = drawingsHtml(d);
@@ -151,6 +165,7 @@ export function mountPlan(plan) {
     $('#cutlist-body').innerHTML = cutListHtml(d);
     document.querySelectorAll('.unit-len').forEach(el => (el.textContent = u.lenUnit));
     viewer?.setModel(d);
+    if (stepViewer) { stepViewer.setModel(d); stepViewer.setStep(stepNow, stepNow); }
     if ($('#show-stress').checked) $('#show-stress').dispatchEvent(new Event('change'));
     writeHash();
     document.dispatchEvent(new CustomEvent('blueprint:render', { detail: { ok: d.ok } }));
@@ -167,13 +182,11 @@ export function mountPlan(plan) {
   document.querySelectorAll('[data-units]').forEach(b => b.addEventListener('click', () => {
     system = b.dataset.units; store.set(key + ':units', system); render(); renderForm();
   }));
-  $('#print').addEventListener('click', () => window.print());
-  document.addEventListener('click', e => {
-    const b = e.target.closest('[data-show-step]');
-    if (!b) return;
-    showStep(+b.dataset.showStep);
-    $('#model').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-  });
+  // the print row sits in the contents, which re-renders: listen on the document
+  document.addEventListener('click', e => { if (e.target.closest('#print')) window.print(); });
+  // folded cut sheets print open
+  addEventListener('beforeprint', () => document.querySelectorAll('details.sheets').forEach(x => (x.open = true)));
+  initTips('guide.html');
   // downloads for 3D prints: the STL is cut from the part at the current size, in mm,
   // moved so it sits on the bed at the origin; the .scad is its OpenSCAD source
   const save = (name, blob) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
@@ -214,5 +227,12 @@ export function mountPlan(plan) {
 
   render();
   renderForm();
+  show3d(!!store.get(key + ':show3d', false));
+  followSteps(true);
+  // the step viewer second, after the first frame, so the page never waits on two builds at once
+  requestAnimationFrame(() => setTimeout(() => {
+    try { stepViewer = createViewer($('#viewer-steps')); stepViewer.setModel(d); stepViewer.setStep(stepNow, stepNow); }
+    catch (e) { $('#viewer-steps').innerHTML = '<p class="muted pad">3D view unavailable.</p>'; }
+  }, 50));
   window.__blueprint = { get d() { return d; }, render, setParams(p) { given = { ...given, ...p }; render(); renderForm(); }, setUnits(s) { system = s; render(); renderForm(); } };
 }

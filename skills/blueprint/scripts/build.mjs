@@ -3,6 +3,7 @@
 //
 //   node scripts/build.mjs path/to/design.mjs [--out path/to/index.html] [--units imperial]
 //
+// Also writes guide.html beside it (how to read the plan, linked from its "?" marks).
 // Renders every section once in Node with the default params (so the file reads
 // and prints without JavaScript), then inlines the kit and the design as one
 // module script that re-renders on every input. The only network fetch is
@@ -12,7 +13,7 @@ import { dirname, resolve, join, basename } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const KIT = resolve(dirname(fileURLToPath(import.meta.url)), '../kit');
-const ORDER = ['core', 'print', 'joints', 'fea', 'derive', 'shop', 'pack', 'viewer', 'app'];
+const ORDER = ['core', 'print', 'joints', 'fea', 'derive', 'shop', 'guide', 'pack', 'viewer', 'app'];
 
 // Turn one ES module into a scoped block: imports from sibling kit modules become
 // destructures of earlier blocks, URL imports are hoisted to the top of the bundle.
@@ -49,10 +50,13 @@ async function main() {
   const mod = await import(pathToFileURL(designPath).href + '?t=' + Date.now());
   const plan = mod.plan || mod.default;
   const { derive } = await import(pathToFileURL(join(KIT, 'derive.mjs')).href);
-  const { pageHtml } = await import(pathToFileURL(join(KIT, 'page.mjs')).href);
+  const { pageHtml, PAGE_CSS } = await import(pathToFileURL(join(KIT, 'page.mjs')).href);
+  const { guideHtml } = await import(pathToFileURL(join(KIT, 'guide.mjs')).href);
   const d = derive(plan, {}, opt('units') || plan.units || 'metric');
   const html = pageHtml(d, { script: bundle(designPath) });
   writeFileSync(out, html);
+  // the guide sits next to the page: "How to read this plan", figures from this plan
+  writeFileSync(join(dirname(out), 'guide.html'), guideHtml(d, { pageCss: PAGE_CSS, back: basename(out) }));
   for (const c of d.checks) console.log(`  ${c.pass ? '✓' : '✗'} ${c.name}: ${c.value}`);
   const bad = d.checks.filter(c => !c.pass);
   console.log(`wrote ${out} (${(html.length / 1024).toFixed(0)} KB) · ${d.model.members.length} members, ${d.pieces.length} piece marks, ${d.model.steps.length} steps · ${bad.length ? bad.length + ' FAILING checks: ' + bad.map(c => c.name).join('; ') : 'all ' + d.checks.length + ' checks pass'}`);

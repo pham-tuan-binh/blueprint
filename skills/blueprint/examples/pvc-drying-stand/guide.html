@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en" style="color-scheme:light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>How to read this plan: PVC drying stand</title>
+<style>
+:root{--paper:#fff;--ink:#14171a;--ink2:#3d4651;--muted:#5b6470;--line:#d5dade;--th:#f2f4f6;--face:#e1e4e7;--now:#4a4f57;--old:#e6e8eb;--oldline:#a9afb6;--lit:#d23f45;--okc:#14171a;
+--sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:light}
+*{box-sizing:border-box}[hidden]{display:none!important}html{scroll-padding-top:16px;scroll-behavior:smooth}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+a{color:inherit}code{font:.88em var(--mono);background:var(--th);padding:.05em .35em}.muted{color:var(--muted)}.pad{padding:16px}
+main{max-width:1000px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right)) 80px max(16px,env(safe-area-inset-left))}
+.back{display:inline-block;text-decoration:none;color:var(--muted);font-size:14px;margin:0 0 8px}.back:hover{color:var(--ink)}
+h1{font-size:40px;line-height:1.15;margin:24px 0 32px;letter-spacing:-.01em;text-wrap:balance}.lede{font-size:18px;max-width:68ch;margin:0 0 24px}
+.sec{margin-top:144px}.sec>h2{display:flex;align-items:baseline;gap:14px;font-size:28px;line-height:1.2;margin:0 0 24px}
+.secn{font:400 .85em var(--mono);color:var(--muted)}h3{font-size:19px;margin:40px 0 8px}h4{font-size:15px;margin:40px 0 12px}
+p,li{max-width:72ch}
+.seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.btn{font:600 14px var(--sans);background:none;color:var(--ink);border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover,.seg button:hover{background:var(--th)}.btn svg{width:15px;height:15px;flex:none}.btn.sm{font-size:12px;padding:3px 8px;font-family:var(--mono)}.dls{display:inline-flex;gap:6px;flex-wrap:wrap}
+.warn{font-weight:600}
+.contents-h{margin:48px 0 4px;font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.contents{list-style:none;margin:0 0 48px;padding:0}.contents li{max-width:none}
+.contents a,.contents .crow{display:flex;align-items:baseline;gap:10px;padding:5px 0;color:inherit;text-decoration:none;width:100%;font:inherit;background:none;border:0;cursor:pointer;text-align:left}
+.contents .cn{flex:none;width:1.4em;font:400 .9em var(--mono);color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
+.contents .cl{flex:1;min-width:16px;border-bottom:1.5px dotted #9aa5b1;transform:translateY(-4px)}
+.contents .cm{flex:0 1 auto;min-width:0;text-align:right;font:.82em var(--mono);color:var(--muted);align-self:center}.contents .cm svg{width:16px;height:16px;display:block}
+.contents a:hover .ct,.contents .crow:hover .ct{text-decoration:underline}
+.split{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:24px;align-items:start}
+@media (max-width:880px){.split{grid-template-columns:1fr}}
+.viewer-box{position:relative;border:1px solid var(--line);aspect-ratio:4/3;background:#fbfbfa}
+.viewer{position:absolute;inset:0}.viewer canvas{display:block}
+.cams{position:absolute;left:12px;bottom:12px;display:flex;border:1px solid var(--ink);background:var(--paper)}
+.cams button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;border-right:1px solid var(--line);padding:6px 11px;cursor:pointer}.cams button:last-child{border-right:0}
+.cams button:hover{background:var(--th)}
+.pick{font-size:14px;margin:8px 0 0}
+.viewer-ctl{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0 0;font-size:15px}.viewer-ctl label{display:flex;gap:8px;align-items:center}.viewer-ctl input{accent-color:var(--ink);width:1.05rem;height:1.05rem}
+.size{border:1px solid var(--ink);padding:14px 16px 16px}
+.size h2{margin:0;padding:0;border:0;font-size:19px}.size-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 4px}
+.size fieldset{border:0;padding:0;margin:10px 0 0}.size legend{font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0;margin:0 0 4px}
+.field{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.field>span:first-child{font-weight:600;font-size:14px}.field small{grid-column:1/-1;color:var(--muted);font:12px var(--mono)}
+.inp{display:inline-flex;align-items:center;border:1px solid var(--ink);background:var(--paper)}
+.inp input{width:96px;font:600 15px var(--mono);border:0;background:none;color:var(--ink);padding:5px 6px;text-align:right}
+.inp i{font:13px var(--mono);font-style:normal;color:var(--muted);padding:0 8px 0 2px}
+.field select{font:600 14px var(--sans);border:1px solid var(--ink);background:var(--paper);color:var(--ink);padding:5px 6px;max-width:190px}
+.field.check{grid-template-columns:auto 1fr;justify-content:start}.field.check input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.q:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.size-act{display:flex;gap:8px;margin:12px 0 0;flex-wrap:wrap}
+.built{font:12px var(--mono);color:var(--muted);margin:10px 0 0}
+.totals{font:14px var(--mono);color:var(--ink2);margin:0 0 8px;max-width:none}
+.doc{border-collapse:collapse;font:13px/1.45 var(--mono);margin:8px 0;min-width:100%}
+.doc td,.doc th{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}.doc .n{text-align:right;white-space:nowrap}
+.doc th{background:var(--th);font-weight:700}
+.doc small{display:block;color:var(--muted);font:12px var(--sans)}
+.checks td:nth-child(2){font-family:var(--sans);font-weight:600}.checks td:first-child{font-weight:700;width:2em;text-align:center}
+.checks tr.bad td{color:var(--lit)}
+.legend th{text-align:left;white-space:nowrap;width:1%}.legend td{text-align:left}
+.wrap{overflow-x:auto;max-width:100%}
+.sheet{display:grid;gap:0;border:1px solid var(--line);margin:8px 0}.sheet figure{margin:0;min-width:0}.sheet svg{border:0!important}
+.sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr;max-width:620px}.sheet.print{max-width:520px}
+figure{margin:0}
+.views svg,.piece-list svg,figure>svg{border:1px solid var(--line);width:100%;height:auto;display:block}
+.piece-list{display:grid;gap:18px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}.phases h4{margin:8px 0 0}.phases ol{margin:4px 0;padding-left:1.6em}.phases li{margin:2px 0}
+.step{margin-top:112px}.step-h{display:flex;align-items:center;gap:24px;margin-bottom:28px}.sn{font:700 64px/1 var(--sans);min-width:1.2em}
+.step-h h3{margin:0;font-size:22px}.step-h p{margin:4px 0 0}
+.tasks{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:t}
+.tasks li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;counter-increment:t}
+.tasks input{margin:.22rem 0 0}
+.tasks label::before{content:counter(t) ". ";font:600 .85rem var(--mono);color:var(--muted)}
+.tasks li:has(input:checked) label{color:var(--muted);text-decoration:line-through}
+/* square checkboxes, drawn: ink on paper, a tick when done */
+input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:none;width:1.1rem;height:1.1rem;border:1.5px solid var(--ink);border-radius:0;background:var(--paper);display:inline-grid;place-content:center;cursor:pointer}
+input[type=checkbox]:checked{background:var(--ink)}
+input[type=checkbox]:checked::after{content:"";width:.55rem;height:.28rem;border:2px solid var(--paper);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+.gate,.note{display:flex;align-items:center;gap:12px;max-width:none;margin:24px 0}
+.ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1.5px solid var(--ink);border-radius:50%;font:700 14px/1 var(--sans)}
+.note .ic{background:var(--ink);color:var(--paper)}
+/* the steps with a 3D view beside them that follows the step you are reading; on a phone a panel the 3D button opens */
+.steps-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,40%);gap:56px;align-items:start;width:min(1280px,calc(100vw - 32px));margin-left:calc(50% - min(640px,50vw - 16px))}
+.step-3d{position:sticky;top:24px;margin-top:112px}.step-3d .viewer-box{aspect-ratio:auto;height:calc(100vh - 110px)}
+.step-3d-cap{margin:12px 0 0;font-weight:600;white-space:pre}
+.toggle-3d{display:none}
+@media (max-width:900px){
+  .steps-grid{display:block;width:auto;margin-left:0}
+  .step-3d{display:none;position:fixed;inset:auto 0 0 0;margin:0;z-index:20;background:var(--paper);border-top:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+  .step-3d .viewer-box{height:36vh}.step-3d-cap{margin-top:6px;font-size:.9rem}
+  body.show-3d.in-steps .step-3d{display:block}body.show-3d{padding-bottom:calc(36vh + 64px)}
+  .toggle-3d{position:fixed;z-index:21;right:max(16px,env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font:700 15px var(--sans);cursor:pointer}
+  body.in-steps .toggle-3d{display:block}
+  body.show-3d .toggle-3d{background:var(--ink);color:var(--paper);bottom:calc(36vh + 72px + env(safe-area-inset-bottom))}
+}
+details.sheets{margin:40px 0 0}details.sheets summary{cursor:pointer;font-weight:600}details.sheets[open] summary{margin-bottom:12px}
+.linkish{font:inherit;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
+ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
+.foot{max-width:1000px;margin:0 auto;padding:48px 16px;color:var(--muted);font-size:13px}
+@media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px}.sn{font-size:48px}.inp input{width:84px}ul.cols{columns:1}}
+
+.piece,.jig,.nest{background:var(--paper);max-width:100%;height:auto;display:block}
+.pt{font:700 24px var(--mono);fill:var(--ink)}.pq{font:400 20px var(--mono);fill:var(--muted)}
+.ps{font:14px var(--sans);fill:var(--ink2)}.pm2{font:12px var(--mono);fill:var(--muted)}
+.pk{font:700 20px var(--mono);fill:var(--ink)}.pm{font:700 15px var(--mono);fill:var(--ink)}.pe{font:12px var(--mono);fill:var(--muted)}
+.pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
+.ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
+.jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
+.jn.f{stroke:var(--now);stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
+.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
+.dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
+.lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}
+.jp{fill:var(--ink)}.jl{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}.jt{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}
+.gmk{fill:none;stroke:var(--ink);stroke-width:calc(var(--fs) * .14)}.gdg{fill:none;stroke:var(--ink);stroke-width:calc(var(--fs) * .1);stroke-dasharray:calc(var(--fs) * .6) calc(var(--fs) * .35)}
+.close{background:var(--paper)}
+.nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
+
+
+.q{display:inline-flex;align-items:center;justify-content:center;width:1.15em;height:1.15em;margin-left:.3em;border:1.3px solid currentColor;border-radius:50%;font:700 .72em/1 var(--mono);vertical-align:middle;position:relative;top:-.1em;cursor:help;user-select:none;color:var(--ink);opacity:.75}
+.q:hover,.q:focus-visible{opacity:1;background:var(--ink);color:var(--paper)}
+th .q,h4 .q,summary .q{font-size:.62rem;width:1.35em;height:1.35em}
+.qpop{position:fixed;z-index:50;max-width:min(320px,calc(100vw - 16px));background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);padding:8px 12px;font:14px/1.45 var(--sans);text-align:left;white-space:normal}
+.qpop p{margin:0 0 4px}.qpop a{color:var(--ink);font-weight:600}
+.guide-cta{display:flex;align-items:center;gap:14px;margin:0 0 8px;padding:12px 16px;border:1.5px solid var(--ink);color:var(--ink);text-decoration:none;background:var(--paper)}
+.guide-cta:hover{background:var(--th)}
+.guide-cta .gq{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid currentColor;border-radius:50%;font:700 22px/1 var(--mono)}
+.guide-cta b{display:block;font-size:17px}.guide-cta small{display:block;font-size:13px;color:var(--ink2);margin-top:2px}.guide-cta .arr{margin-left:auto;flex:none;width:22px;height:22px}
+@media print{.q,.qpop,.guide-cta{display:none!important}}
+
+@media print{
+  :root{--ink:#000;--ink2:#222;--muted:#555;--line:#bbb;--th:#eee;--face:#e4e4e4;--now:#444;--old:#eee;--oldline:#aaa;--lit:#000;color-scheme:light}
+  .dls,.back,.seg,.viewer-box,.step-3d,.toggle-3d,.viewer-ctl,.pick,.size-act,#size-form,.cams,.crow{display:none!important}
+  .contents{break-after:page}.size>p.muted{display:none}
+  .split{display:block}.size{border:1px solid #000}.sec{margin-top:48px}.steps-grid{display:block;width:auto;margin:0}
+  .step{break-before:page;margin-top:0}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}
+  details.sheets>summary{list-style:none;font-weight:700}details::details-content{content-visibility:visible;display:block}a{text-decoration:none}main{padding-top:0}
+}
+
+.gfig{margin:40px 0}.gfig figcaption{color:var(--muted);font-size:14px;margin-top:8px;max-width:68ch}
+.gfig .sheet{max-width:760px}.gpiece{max-width:760px;margin:24px 0}.gpiece svg{border:1px solid var(--line);width:100%;height:auto}
+.trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}.trio .gfig{margin:16px 0}.trio svg{border:1px solid var(--line);width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+<main>
+  <h1>How to read this plan</h1>
+  <p class="lede">PVC drying stand: what the plan leaves out. Read once; after that the <span class="q" aria-hidden="true" style="pointer-events:none">?</span> marks remind you.</p>
+  <nav aria-label="Contents"><p class="contents-h">Contents</p><ol class="contents"><li><a href="#start"><span class="cn">1</span><span class="ct">How the plan works</span><span class="cl" aria-hidden="true"></span><span class="cm">parts of a step</span></a></li><li><a href="#tools"><span class="cn">2</span><span class="ct">Tools you need</span><span class="cl" aria-hidden="true"></span><span class="cm">what to have</span></a></li><li><a href="#coords"><span class="cn">3</span><span class="ct">Coordinates</span><span class="cl" aria-hidden="true"></span><span class="cm">x, y, z from the datum</span></a></li><li><a href="#jig"><span class="cn">4</span><span class="ct">Jig drawings</span><span class="cl" aria-hidden="true"></span><span class="cm">dark = now, light = done</span></a></li><li><a href="#square"><span class="cn">5</span><span class="ct">Squareness</span><span class="cl" aria-hidden="true"></span><span class="cm">diagonals</span></a></li><li><a href="#stock"><span class="cn">6</span><span class="ct">Buying stock</span><span class="cl" aria-hidden="true"></span><span class="cm">1 section</span></a></li><li><a href="#cut"><span class="cn">7</span><span class="ct">Cut sheets</span><span class="cl" aria-hidden="true"></span><span class="cm">marks, long point</span></a></li><li><a href="#joints"><span class="cn">8</span><span class="ct">Joint types</span><span class="cl" aria-hidden="true"></span><span class="cm">into a fitting</span></a></li><li><a href="#glue"><span class="cn">9</span><span class="ct">Dry fit and cement</span><span class="cl" aria-hidden="true"></span><span class="cm">dry fit first</span></a></li><li><a href="#checks"><span class="cn">10</span><span class="ct">The checks</span><span class="cl" aria-hidden="true"></span><span class="cm">what they prove</span></a></li><li><a href="#tol"><span class="cn">11</span><span class="ct">Tolerances</span><span class="cl" aria-hidden="true"></span><span class="cm">how close is close enough</span></a></li><li><a href="#safety"><span class="cn">12</span><span class="ct">Safety</span><span class="cl" aria-hidden="true"></span><span class="cm">before you start</span></a></li><li><a href="#glossary"><span class="cn">13</span><span class="ct">Glossary</span><span class="cl" aria-hidden="true"></span><span class="cm">every term</span></a></li><li><a href="index.html"><span class="cn"></span><span class="ct">Back to the plan</span><span class="cl" aria-hidden="true"></span><span class="cm">the steps</span></a></li></ol></nav>
+<section class="sec" id="start"><h2><span class="secn">1</span>How the plan works</h2>
+<p>5 steps, in order. Dry fit, check, then cement.</p>
+<div class="wrap"><table class="doc"><tr><th>In a step</th><th></th></tr>
+<tr><td>1</td><td>step number, title, time for one person</td></tr>
+<tr><td>1. 2. 3.</td><td>tasks, in order</td></tr>
+<tr><td>✓</td><td>pass this before the next step</td></tr>
+<tr><td>!</td><td>a warning</td></tr>
+<tr><td>Jig</td><td>this step's parts, dark; earlier ones light</td></tr><tr><td>Joint positions</td><td>those points, from the datum</td></tr><tr><td>Pieces</td><td>one cut sheet per piece mark</td></tr>
+
+</table></div>
+<p><b>Make it yours</b> changes the sizes: every number on the plan follows. The <b>3D view beside the steps</b> follows the step you are reading: the build as it stands after it, that step's parts lit (on a phone, tap <b>3D</b>).</p></section>
+<section class="sec" id="tools"><h2><span class="secn">2</span>Tools you need</h2><ul><li>PVC pipe cutter or fine hacksaw and mitre box</li><li>Deburring tool or file</li><li>Tape measure, marker</li><li>Spirit level</li></ul></section>
+<section class="sec" id="coords"><h2><span class="secn">3</span>Coordinates</h2>
+<p>Every position is from the <b>datum</b>: x from the centre line of the left upright, y from the front end of the foot bars, z up from the floor.</p>
+<figure class="gfig"><div class="sheet one"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="-174.2 -833.9 1379.1 1048.4" class="jig" style="--fs:30.6px" data-w="1379.1" role="img" aria-label="Step 2: Top"><polygon class="jn k-member" points="-16,-308 16,-308 16,-3 -16,-3"/><polygon class="jn k-member" points="-16,-647 16,-647 16,-342 -16,-342"/><polygon class="jn k-member" points="984,-308 1016,-308 1016,-3 984,-3"/><polygon class="jn k-member" points="984,-647 1016,-647 1016,-342 984,-342"/><polygon class="jn k-hardware" points="-21,-364 21,-364 21,-286 -21,-286"/><polygon class="jn k-hardware" points="979,-364 1021,-364 1021,-286 979,-286"/><polygon class="jn k-hardware" points="-21,-22 21,-22 21,0 -21,0"/><polygon class="jn k-hardware" points="-21,-650 21,-650 21,-628 -21,-628"/><polygon class="jn k-hardware" points="979,-22 1021,-22 1021,0 979,0"/><polygon class="jn k-hardware" points="979,-650 1021,-650 1021,-628 979,-628"/><polygon class="jn k-hardware" points="-21,-346 21,-346 21,-304 -21,-304"/><polygon class="jn k-hardware" points="979,-346 1021,-346 1021,-304 979,-304"/><polygon class="jn k-member" points="-16,-341 16,-341 16,-309 -16,-309"/><polygon class="jn k-member" points="984,-341 1016,-341 1016,-309 984,-309"/><polygon class="jn k-hardware" points="-21,-346 21,-346 21,-304 -21,-304"/><polygon class="jn k-hardware" points="0,-346 39,-346 39,-304 0,-304"/><polygon class="jn k-hardware" points="979,-346 1021,-346 1021,-304 979,-304"/><polygon class="jn k-hardware" points="961,-346 1000,-346 1000,-304 961,-304"/><polygon class="jn k-member" points="-16,-341 16,-341 16,-309 -16,-309"/><polygon class="jn k-member" points="984,-341 1016,-341 1016,-309 984,-309"/><circle class="gmk" cx="0" cy="-3" r="27.6"/><rect class="lbox" x="33" y="40.4" width="322.7" height="31.9" rx="5.4"/><text class="jl" x="39.8" y="64.4" text-anchor="start">LF0: x 0 · y 3 · z 21</text><rect class="lbox" x="-162.7" y="-821.1" width="175.5" height="31.9" rx="5.4"/><text class="jt" x="-155.8" y="-797.1" text-anchor="start">Step 2: Top</text></svg></figure></div><figcaption>One joint, <code>LF0</code>: where the centre lines of its members meet.</figcaption></figure>
+<ol><li>Mark the datum lines on your table or floor.</li><li>Measure x along one, then y square to it.</li><li>Mark each point, then set the parts on the marks.</li></ol>
+<p>Dimensions marked <code>℄</code> are centre to centre.</p></section>
+<section class="sec" id="jig"><h2><span class="secn">4</span>Jig drawings</h2><p>Each step's jig shows the parts to fit now in dark, the parts already there in light, and every joint labelled. The joint table under it gives the same points as numbers.</p></section>
+<section class="sec" id="square"><h2><span class="secn">5</span>Squareness</h2>
+<figure class="gfig"><div class="sheet one"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="-174.2 -983.9 1379.1 1198.4" class="jig" style="--fs:30.6px" data-w="1379.1" role="img" aria-label="Step 3: Front"><polygon class="jo k-hardware" points="-21,-42 21,-42 21,0 -21,0"/><polygon class="jo k-hardware" points="979,-42 1021,-42 1021,0 979,0"/><polygon class="jo k-member" points="-16,-37 16,-37 16,-5 -16,-5"/><polygon class="jo k-member" points="984,-37 1016,-37 1016,-5 984,-5"/><polygon class="jo k-member" points="-16,-269.3 16,-269.3 16,-38 -16,-38"/><polygon class="jo k-member" points="-16,-762 16,-762 16,-303.3 -16,-303.3"/><polygon class="jo k-member" points="984,-269.3 1016,-269.3 1016,-38 984,-38"/><polygon class="jo k-member" points="984,-762 1016,-762 1016,-303.3 984,-303.3"/><polygon class="jn k-member" points="17,-795 983,-795 983,-763 17,-763"/><polygon class="jn k-member" points="17,-302.3 983,-302.3 983,-270.3 17,-270.3"/><polygon class="jo k-hardware" points="-21,-42 21,-42 21,0 -21,0"/><polygon class="jo k-hardware" points="-21,-60 21,-60 21,-21 -21,-21"/><polygon class="jo k-hardware" points="-21,-325.3 21,-325.3 21,-247.3 -21,-247.3"/><polygon class="jo k-hardware" points="0,-307.3 39,-307.3 39,-265.3 0,-265.3"/><polygon class="jo k-hardware" points="979,-42 1021,-42 1021,0 979,0"/><polygon class="jo k-hardware" points="979,-60 1021,-60 1021,-21 979,-21"/><polygon class="jo k-hardware" points="979,-325.3 1021,-325.3 1021,-247.3 979,-247.3"/><polygon class="jo k-hardware" points="961,-307.3 1000,-307.3 1000,-265.3 961,-265.3"/><polygon class="jn k-hardware" points="-21,-779 21,-779 21,-740 -21,-740"/><polygon class="jn k-hardware" points="0,-800 39,-800 39,-758 0,-758"/><polygon class="jn k-hardware" points="979,-779 1021,-779 1021,-740 979,-740"/><polygon class="jn k-hardware" points="961,-800 1000,-800 1000,-758 961,-758"/><polygon class="jo k-member" points="-16,-37 16,-37 16,-5 -16,-5"/><polygon class="jo k-member" points="984,-37 1016,-37 1016,-5 984,-5"/><polygon class="jo k-hardware" points="-21,-42 21,-42 21,0 -21,0"/><polygon class="jo k-hardware" points="979,-42 1021,-42 1021,0 979,0"/><path class="gdg" d="M17 -779L983 -286.3M983 -779L17 -286.3"/><rect class="lbox" x="412.2" y="-575.1" width="175.5" height="31.9" rx="5.4"/><text class="jl" x="500" y="-551" text-anchor="middle">1084 = 1084</text><rect class="lbox" x="-162.7" y="-971.1" width="205" height="31.9" rx="5.4"/><text class="jt" x="-155.8" y="-947.1" text-anchor="start">Step 3: Front</text></svg></figure></div><figcaption>Both diagonals of a rectangle. Equal = square.</figcaption></figure>
+<p>Not equal: push the long diagonal until they match, then check again.</p></section>
+<section class="sec" id="stock"><h2><span class="secn">6</span>Buying stock</h2><p>The materials list says how many lengths to buy; the cutting plan shows which pieces come out of each. Reject bent or damaged lengths. Write the piece mark on every piece as you cut it.</p></section>
+<section class="sec" id="cut"><h2><span class="secn">7</span>Cut sheets</h2>
+<div class="gpiece"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 190" class="piece square" role="img" aria-label="Cut sheet, piece A"><text class="pt" x="10" y="28">A</text><text class="pq" x="36" y="28">x2</text><text class="ps" x="10" y="52">Upright, upper · PVC 32 · step 2</text><text class="ps pm2" x="10" y="72">up-Lhi, up-Rhi</text><text class="pk" x="750" y="28" text-anchor="end">459 mm</text><text class="ps" x="750" y="52" text-anchor="end">long point</text><rect class="pf" x="10" y="92" width="590" height="22"/><path class="dl" d="M10 120v18M600 120v18M10 130H600"/><text class="pm" x="305" y="150" text-anchor="middle">459, square both ends</text><text class="ps" x="10" y="174">Left end: into the tee · Right end: into the elbow 90°</text></svg></div>
+<ol><li>Measure the long point from a square end.</li><li>Mark it all the way round.</li><li>Cut on the waste side. Deburr.</li></ol>
+<p><code>x4</code> = cut four the same. Long point = overall length. Each end says how it is cut and what it meets.</p></section>
+<section class="sec" id="joints"><h2><span class="secn">8</span>Joint types</h2>
+<div class="trio"><figure class="gfig"><svg xmlns="http://www.w3.org/2000/svg" viewBox="225 -105 200 150" class="jig close" style="--fs:11.1px" role="img" aria-label="Joint close-up"><polygon class="jn k-member" points="3,-37 308,-37 308,-5 3,-5"/><polygon class="jn k-member" points="342,-37 647,-37 647,-5 342,-5"/><polygon class="jn k-member" points="309,-269.3 341,-269.3 341,-38 309,-38"/><polygon class="jn k-hardware" points="286,-42 364,-42 364,0 286,0"/><polygon class="jn k-hardware" points="304,-60 346,-60 346,-21 304,-21"/><polygon class="jn k-hardware" points="304,-325.3 346,-325.3 346,-247.3 304,-247.3"/><polygon class="jn k-hardware" points="304,-307.3 346,-307.3 346,-265.3 304,-265.3"/><polygon class="jn k-hardware" points="304,-307.3 346,-307.3 346,-265.3 304,-265.3"/><polygon class="jn k-hardware" points="286,-42 364,-42 364,0 286,0"/><polygon class="jn k-hardware" points="304,-60 346,-60 346,-21 304,-21"/><polygon class="jn k-hardware" points="304,-325.3 346,-325.3 346,-247.3 304,-247.3"/><circle class="jp" cx="325" cy="-30" r="2.8"/><rect class="lbox" x="257.2" y="-34.7" width="11.6" height="13" rx="2.2"/><text class="jl" x="263" y="-24.9" text-anchor="middle">B</text><rect class="lbox" x="381.2" y="-34.7" width="11.6" height="13" rx="2.2"/><text class="jl" x="387" y="-24.9" text-anchor="middle">B</text><rect class="lbox" x="319.2" y="-98.5" width="11.6" height="13" rx="2.2"/><text class="jl" x="325" y="-88.7" text-anchor="middle">C</text></svg><figcaption><b>into a fitting</b> · B (foot) into the tee</figcaption></figure></div>
+<p><b>into a fitting</b>: push the pipe in until it bottoms out.</p></section>
+<section class="sec" id="glue"><h2><span class="secn">9</span>Dry fit and cement</h2>
+<ol><li>Dry fit everything. Check it.</li><li>Draw a line across each joint so it goes back the same way.</li><li>One joint at a time: primer, cement on both parts, push home with a quarter turn to the line, hold 30 seconds.</li></ol></section>
+<section class="sec" id="checks"><h2><span class="secn">10</span>The checks</h2>
+<p>Every size the fields allow is checked before you see it: every joint can be made, nothing floats or clashes, pieces fit the stock, and it holds its loads. A <b>safety factor</b> of 2 means it would take twice the load before the metal bends for good. <b>Sag</b> is how far it moves under the rated load.</p>
+<p>A plan is a starting point, not an engineer's sign-off. Load-test it gently.</p></section>
+<section class="sec" id="tol"><h2><span class="secn">11</span>Tolerances</h2><p>cut ±1 mm; pipe fully home in every socket Out of tolerance: fix it now, before the next step.</p></section>
+<section class="sec" id="safety"><h2><span class="secn">12</span>Safety</h2><ul>
+<li>Eye protection for every cut. Ear protection for saws and grinders.</li>
+
+<li>Primer and cement: ventilate, gloves, no flames.</li>
+
+<li>Load-test gently before you trust it.</li></ul></section>
+<section class="sec" id="glossary"><h2><span class="secn">13</span>Glossary</h2><div class="wrap"><table class="doc"><tr><td><a href="#coords">datum</a></td><td>Datum: the zero every position is measured from. The legend says where x, y and z start.</td></tr><tr><td><a href="#coords">joint positions</a></td><td>Where the members' centre lines meet, measured from the datum. Mark each one before you place the parts.</td></tr><tr><td><a href="#coords">℄</a></td><td>℄ = a centre-line dimension: from the middle of one member to the middle of the other, not outside to outside.</td></tr><tr><td><a href="#jig">jig</a></td><td>This step's parts, full layout: dark = fit now, light = already there. Set the parts on the marked points.</td></tr><tr><td><a href="#jig">plumb</a></td><td>Exactly vertical. Check two faces with a level.</td></tr><tr><td><a href="#square">diag</a></td><td>Measure corner to corner both ways. Equal = square. Not equal: push the long diagonal until they match.</td></tr><tr><td><a href="#start">check</a></td><td>A gate: pass it before the next step. Fixing it later costs far more.</td></tr><tr><td><a href="#start">warn</a></td><td>A warning: read it before you start the step.</td></tr><tr><td><a href="#cut">mark</a></td><td>Piece mark: one letter per different piece. Write it on each piece as you cut it.</td></tr><tr><td><a href="#cut">long point</a></td><td>Long point: the overall length of the piece, tip to tip.</td></tr><tr><td><a href="#cut">marks</a></td><td>Distances from the square end of the stock to the cut, one per edge. Mark every edge, join the marks, cut.</td></tr><tr><td><a href="#cut">sheets</a></td><td>One cut sheet per piece mark: its length and how each end is cut.</td></tr><tr><td><a href="#cut">deburr</a></td><td>Take the sharp edge off with a file or a deburring tool.</td></tr><tr><td><a href="#joints">mitre</a></td><td>Two members of the same size cut at the same angle so they meet on the middle line, like a picture frame.</td></tr><tr><td><a href="#joints">butt</a></td><td>This end is cut square and sits flat against the face of the other member.</td></tr><tr><td><a href="#joints">flush</a></td><td>Where sizes differ, the end stops level with the outside of the other member.</td></tr><tr><td><a href="#joints">fitting</a></td><td>The pipe goes into a bought fitting (a tee, an elbow, a cap) until it bottoms out in the socket.</td></tr><tr><td><a href="#start">tack</a></td><td>A small spot of weld that just holds parts in place. Easy to break and redo, unlike a full weld.</td></tr><tr><td><a href="#start">weld out</a></td><td>Welding every joint all the way round, in short runs spread around the frame so the heat does not pull it out of shape.</td></tr><tr><td><a href="#glue">cement</a></td><td>Solvent cement melts the pipe and fitting together. Primer first, then cement, push home with a quarter turn. It sets in seconds.</td></tr><tr><td><a href="#glue">dry fit</a></td><td>Put everything together without glue first, so a mistake costs nothing.</td></tr><tr><td><a href="#start">print</a></td><td>Print the part with the settings shown, the way it says to lay it on the bed. The .stl is the part at this size.</td></tr><tr><td><a href="#stock">stock</a></td><td>Bought lengths. The cutting plan shows which pieces come out of which length.</td></tr><tr><td><a href="#checks">safety factor</a></td><td>Safety factor: how many times the load it could take before the metal starts to bend for good. 2 or more for furniture, 3 for anything a person stands on.</td></tr><tr><td><a href="#checks">sag</a></td><td>How far the loaded part moves under the rated load. Small enough that you will not notice it.</td></tr><tr><td><a href="#tol">tol</a></td><td>± is how far off you may be and still be right.</td></tr><tr><td><a href="#checks">load test</a></td><td>Load it a little at a time up to the rated load, watching for movement, before you trust it.</td></tr></table></div></section>
+</main>
+<script>function initTips(guideHref) {
+  if (window.__tips) return;
+  window.__tips = true;
+  const pop = document.createElement('div');
+  pop.className = 'qpop'; pop.hidden = true; pop.setAttribute('role', 'tooltip');
+  document.body.append(pop);
+  let cur = null, pinned = false, hideT = 0;
+  const place = el => {
+    const r = el.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+    const x = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 8));
+    let y = r.bottom + 8;
+    if (y + h > innerHeight - 8) y = Math.max(8, r.top - h - 8);
+    pop.style.left = x + 'px'; pop.style.top = y + 'px';
+  };
+  const show = (el, pin) => {
+    clearTimeout(hideT); cur = el; pinned = pin;
+    pop.textContent = '';
+    const p = document.createElement('p'); p.textContent = el.dataset.tip; pop.append(p);
+    if (el.dataset.more) {
+      const a = document.createElement('a');
+      a.href = guideHref + '#' + el.dataset.more; a.textContent = 'More in the guide →';
+      if (guideHref) { a.target = '_blank'; a.rel = 'noopener'; }
+      pop.append(a);
+    }
+    pop.hidden = false; place(el);
+  };
+  const hide = () => { pop.hidden = true; cur = null; pinned = false; };
+  document.addEventListener('pointerover', e => {
+    if (e.pointerType !== 'mouse') return;
+    if (e.target.closest('.qpop')) { clearTimeout(hideT); return; }
+    const el = e.target.closest('.q');
+    if (el && !pinned) show(el, false);
+  });
+  document.addEventListener('pointerout', e => {
+    if (e.pointerType !== 'mouse' || pinned) return;
+    if (e.target.closest('.q, .qpop')) hideT = setTimeout(hide, 300);
+  });
+  // capture, so a "?" inside a label or summary does not also tick or fold it
+  document.addEventListener('click', e => {
+    const el = e.target.closest('.q');
+    if (el) { e.preventDefault(); e.stopPropagation(); if (cur === el && pinned) hide(); else show(el, true); return; }
+    if (!e.target.closest('.qpop')) hide();
+  }, true);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hide();
+    const el = e.target.closest?.('.q');
+    if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); show(el, true); }
+  });
+  addEventListener('scroll', () => { if (cur) place(cur); }, { passive: true });
+  addEventListener('resize', () => { if (cur) place(cur); });
+}; initTips('');</script>
+</body>
+</html>

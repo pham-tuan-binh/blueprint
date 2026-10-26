@@ -163,69 +163,68 @@ export const plan = {
     const shelfClear = zTop - h - (zLow + h + shelfT);
     const steps = [];
     steps.push({ n: 1, phase: 'Fabricate', title: 'Cut, deburr, foot plates', hours: 3, tasks: [
-      'Safety glasses, gloves and hearing protection from here on. Use bare or oiled tube, never galvanised.',
-      'Cut every piece from the cutting plan, square ends; check each cut with a square.',
-      'Deburr every end and write its piece mark on it in marker.',
-      `Lay the pieces out by mark and count them against the cut list: ${nLegs} legs ({mark:leg-FL}), ${members.length - nLegs} rails.`,
-      `Cut ${nLegs} foot plates ${u.len(footS)} × ${u.len(footS)} from ${u.len(footT, { u: true })} plate and drill a ${u.len(13, { u: true })} hole in the centre of each.`,
-    ], check: `Every piece within ${u.tol(1)} of its long point on the cut list.` });
+      'Cut every piece from the cutting plan, ends square.',
+      'Deburr each end. Write its piece mark on it.',
+      `Count against the cut list: ${nLegs} legs ({mark:leg-FL}), ${members.length - nLegs} rails.`,
+      `${nLegs} foot plates ${u.len(footS)} × ${u.len(footS)} from ${u.len(footT, { u: true })} plate. Drill ${u.len(13, { u: true })} in the centre.`,
+    ], check: `Every piece ${u.tol(1)} of its long point.`, tip: 'Glasses, gloves, ear protection. Bare or oiled tube only, never galvanised.' });
     steps.push({ n: 2, phase: 'Fabricate', title: 'Two end frames (tack)', hours: 2, views: ['side'], tasks: [
-      'Lay two legs ({mark:leg-FL}) flat on the welding table, parallel, outer faces against a straight edge.',
-      `Fit a short rail ({mark:end-L-top}) between them at the top, its top face flush with the leg tops, and a second one lower down with its centre line ${u.len(zLow - z0)} up from the leg bottoms.`,
-      `Set the outside width to ${u.len(D)} at the top and the bottom, clamp each joint square, tack each joint on two faces.`,
-      'Build the second end frame on top of the first so the two match.',
-    ], check: `Diagonals of each frame equal within ${u.len(2, { u: true })}; both frames the same within ${u.tol(1)}; flat on the table at all four corners.` });
+      'Two legs ({mark:leg-FL}) flat on the table, parallel.',
+      `Short rails ({mark:end-L-top}) between them: one flush with the leg tops, one ${u.len(zLow - z0)} up to its centre line.`,
+      `Outside width ${u.len(D)}. Clamp square. Tack each joint on two faces.`,
+      'Build the second frame on top of the first.',
+    ], check: `Diagonals equal ${u.tol(2)}. Both frames the same ${u.tol(1)}.` });
     steps.push({ n: 3, phase: 'Fabricate', title: mid ? 'Join the end frames, middle legs (tack)' : 'Join the end frames (tack)', hours: mid ? 3 : 2, tasks: [
-      'Stand both end frames up on the table, top ends up, and brace each with a clamp to a square.',
+      'Stand both end frames up. Clamp each to a square.',
       mid
-        ? `Stand the two middle legs ({mark:leg-FM}) with their centre lines ${u.len(xm)} from the left end, front and back, and clamp each long rail ({mark:long-F-top-left}) between an end frame and a middle leg.`
-        : `Clamp the long rails ({mark:long-F-top}) between the end frames: top rails flush with the leg tops, lower rails at the same height as the lower end rails.`,
-      `Set the outside length to ${u.len(L)} on the top and the bottom rails.`,
-      'Tack the top long rails first, then the lower ones, one tack per joint.',
-      'Measure the top diagonals, nudge the frame until they are equal, then tack every joint on two faces.',
-    ], check: `Top diagonals equal within ${u.len(3, { u: true })}; every leg plumb within ${u.tol(1)} over its height; the frame sits on all ${nLegs} legs without rocking.`,
-      tip: 'Tack only: the frame is welded out in step 5, once every rail is in.' });
+        ? `Middle legs ({mark:leg-FM}) ${u.len(xm)} from the left end, front and back. Long rails ({mark:long-F-top-left}) between frames and middle legs.`
+        : `Long rails ({mark:long-F-top}) between the frames: top ones flush with the leg tops, lower ones level with the lower end rails.`,
+      `Outside length ${u.len(L)}, top and bottom.`,
+      'Tack the top rails, then the lower ones.',
+      'Equal the top diagonals, then tack every joint on two faces.',
+    ], check: `Top diagonals equal ${u.tol(3)}. Legs plumb ${u.tol(1)}. Stands on all ${nLegs} legs without rocking.`,
+      tip: 'No welding until step 5.' });
     steps.push({ n: 4, phase: 'Fabricate', title: 'Cross rails (tack)', hours: 1, tasks: [
-      `Mark the cross rail positions on the top long rails, front and back: ${crossX.map(x => u.len(x)).join(', ')} from the left end to the centre line of each cross rail.`,
-      'Fit a short rail ({mark:end-L-top}) as a cross rail at each mark, between the top long rails, top face flush with them, square to the front rail, and tack both ends.',
-      centre && `Fit the lower centre rail ({mark:centre-low}) between the middle of the two lower end rails, top flush with them, and tack both ends.`,
-    ], check: `Cross rails flush with the top within ${u.tol(1)} (lay a straight edge across), and ${u.len(bay)} apart centre to centre within ${u.tol(2)}.` });
+      `Mark the top long rails at ${crossX.map(x => u.len(x)).join(', ')} from the left end.`,
+      'A short rail ({mark:end-L-top}) at each mark, flush with the top. Tack both ends.',
+      centre && 'Lower centre rail ({mark:centre-low}) between the lower end rails, flush. Tack both ends.',
+    ], check: `Flush with the top ${u.tol(1)}. ${u.len(bay)} apart centre to centre ${u.tol(2)}.` });
     steps.push({ n: 5, phase: 'Fabricate', title: 'Weld out the frame', hours: 3, tasks: [
-      'Re-check the top diagonals and the leg plumb before any weld; fix them while it is only tacked.',
-      'Weld every joint all round in short runs, alternating diagonally opposite corners so the heat does not pull the frame out of square.',
-      'Weld the top frame joints first, then the lower frame, then the cross rails. Leave it clamped until cold.',
-      'Grind the welds on the top faces of the top frame and the lower frame flush, so the bars sit flat.',
-    ], check: `Top diagonals still equal within ${u.len(3, { u: true })}; a straight edge across the rail tops shows no gap over ${u.len(1, { u: true })}.`,
-      tip: 'Ventilate: weld fumes from mill scale and paint are toxic.' });
+      'Check the top diagonals and the plumb first.',
+      'Weld out in short runs, diagonally opposite corners in turn.',
+      'Top frame, then lower frame, then cross rails. Clamped until cold.',
+      'Grind the welds on the rail tops flush.',
+    ], check: `Top diagonals still equal ${u.tol(3)}. A straight edge across the rails shows no gap over ${u.len(1, { u: true })}.`,
+      tip: 'Ventilate: fumes from mill scale and paint are toxic.' });
     steps.push({ n: 6, phase: 'Fabricate', title: p.shelf ? 'Top and shelf bars' : 'Top bars', hours: p.shelf ? 4 : 3, views: ['top', 'side'], points: false,
       table: { title: 'Bars', head: ['Where', 'Bars', 'Runs', 'Gap', 'First centre line'], rows: [
         ['Top', `{mark:top-bar-1} x${top.n}`, 'left to right', u.fine(top.gap), `${u.len(BAR.bu / 2)} from the front`],
         ...(p.shelf ? [['Shelf', `{mark:shelf-bar-1} x${shelfBars.n}`, 'front to back', u.len(shelfBars.gap), `${u.len(shelfXs[0])} from the left end`]] : []),
       ] }, tasks: [
-      `Lay the ${top.n} top bars ({mark:top-bar-1}) flat on the top frame, running the length, ends flush with the frame ends.`,
-      `Put the outer two flush with the front and back of the frame and space the rest evenly: ${u.fine(top.gap, { u: true })} gaps (cut a spacer block to that width and use it at both ends of every bar).`,
-      'Tack each bar to the end rails at both ends, checking the gaps as you go, then tack it to every cross rail.',
-      ...(p.shelf ? [`Lay the ${shelfBars.n} shelf bars ({mark:shelf-bar-1}) flat across the lower long rails, front to back, ends flush with the front and back of the frame, between the legs with ${u.len(shelfBars.gap, { u: true })} gaps (the same gap next to each leg). Tack both ends of each.`] : []),
-      `Stitch-weld each bar to every rail it crosses, ${u.len(25, { u: true })} on each side, working from the middle bar outward (${crossings} crossings).`,
-      'Grind any weld that stands proud of a bar top flush.',
-    ], check: `Gaps equal within ${u.len(1, { u: true })}; a straight edge laid across the bars rocks nowhere; no bar moves when you lever it with a bar.`,
-      tip: 'Weld the crossings in an even pattern, never one bar end to end: the top stays flat.' });
+      `${top.n} top bars ({mark:top-bar-1}) flat on the frame, lengthwise, ends flush.`,
+      `Outer two flush front and back. ${u.fine(top.gap, { u: true })} gaps between: cut a spacer block that wide.`,
+      'Tack each bar at both ends, then to every cross rail.',
+      ...(p.shelf ? [`${shelfBars.n} shelf bars ({mark:shelf-bar-1}) across the lower long rails, ends flush, ${u.len(shelfBars.gap, { u: true })} gaps. Tack both ends.`] : []),
+      `Stitch-weld every crossing, ${u.len(25, { u: true })} each side, middle bar outward (${crossings} crossings).`,
+      'Grind proud welds flush.',
+    ], check: `Gaps equal ${u.tol(1)}. A straight edge across the bars rocks nowhere.`,
+      tip: 'Never weld one bar end to end: the top bows.' });
     steps.push({ n: 7, phase: 'Fabricate', title: 'Foot plates', hours: 1, tasks: [
-      `Weld an M12 nut on the top face of each foot plate, centred over the ${u.len(13, { u: true })} hole: thread a bolt through both to hold it straight while you weld.`,
-      `Lay the bench on its back (two people). Centre a foot plate on the bottom of each leg, nut inside the tube, and weld it all round.`,
-      'Chase each nut with an M12 tap or run a bolt in and out to clear spatter.',
+      `Weld an M12 nut over each plate's hole. A bolt through both keeps it straight.`,
+      'Bench on its back (two people). A plate centred under each leg, nut inside. Weld all round.',
+      'Run a bolt in and out of each nut to clear spatter.',
     ], check: 'A bolt screws into every nut by hand, straight.' });
     steps.push({ n: 8, phase: 'Finish', title: 'Clean and paint', hours: 2, tasks: [
-      'Degrease, wire-brush the welds, and sand any mill scale on show.',
-      'Prime and paint with two coats of enamel, getting the paint into the gaps between the bars; let it dry overnight.',
-      'Leave the bar tops bare and oiled instead if you want a metal working surface.',
-    ], check: 'No bare steel left except the oiled bar tops; paint dry to the touch.' });
+      'Degrease. Wire-brush the welds.',
+      'Prime. Two coats of enamel, into the bar gaps. Dry overnight.',
+      'Or leave the bar tops bare and oiled.',
+    ], check: 'No bare steel but the oiled tops. Dry to the touch.' });
     steps.push({ n: 9, phase: 'Assemble', title: 'Feet, anchors and load test', hours: 2, tasks: [
-      `Screw a levelling foot into each leg and set each to ${u.len(lev)} under the foot plate.`,
-      'Stand it in place and level it with the feet: a level on the top, front to back and end to end. Lock each foot with its nut.',
-      `Mark the anchor hole of every foot base on the floor, move the bench, drill for the M8 anchors, set them, and bolt every foot down (${nLegs} anchors).`,
-      `Load it gradually, in steps of about a quarter, up to ${u.mass(p.load)} spread over the top, and leave it an hour.`,
-    ], check: `Level within ${u.tol(1)} over the length; does not move or lift when pushed hard at the top edge; no visible sag or cracked weld after the load test.` });
+      `Levelling foot in each leg, ${u.len(lev)} under the plate.`,
+      'Level the top both ways with the feet. Lock the nuts.',
+      `Drill and set the M8 anchors at the foot holes. Bolt every foot down (${nLegs}).`,
+      `Load-test: a quarter at a time up to ${u.mass(p.load)} over the top. Leave it an hour.`,
+    ], check: `Level ${u.tol(1)}. Does not move when pushed at the top edge. No sag, no cracked weld.` });
 
     return {
       sections: { SHS, BAR },

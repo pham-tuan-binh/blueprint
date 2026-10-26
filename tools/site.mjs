@@ -20,6 +20,7 @@ const OUT = resolve(ROOT, outIdx >= 0 ? args[outIdx + 1] : '_site');
 const imp = f => import(pathToFileURL(join(SKILL, f)).href);
 const { derive } = await imp('kit/derive.mjs');
 const { pageHtml, PAGE_CSS } = await imp('kit/page.mjs');
+const { guideHtml } = await imp('kit/guide.mjs');
 const { thumbSvg } = await imp('kit/shop.mjs');
 const { esc } = await imp('kit/core.mjs');
 const { bundle } = await imp('scripts/build.mjs');
@@ -42,6 +43,7 @@ for (const { id, file } of designs) {
   if (bad.length) { console.error(`${id}: ${bad.length} failing check(s): ${bad.map(c => c.name).join('; ')}`); process.exit(1); }
   mkdirSync(join(OUT, id), { recursive: true });
   writeFileSync(join(OUT, id, 'index.html'), pageHtml(d, { script: bundle(file), back: { href: '../', label: 'All plans' } }));
+  writeFileSync(join(OUT, id, 'guide.html'), guideHtml(d, { pageCss: PAGE_CSS, back: './' }));
   cards.push({
     id, plan, thumb: thumbSvg(d),
   });
