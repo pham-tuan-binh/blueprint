@@ -5,7 +5,7 @@ Read this when the plan passes `check`. The person who builds it finds faults by
 ```bash
 node $SKILL/scripts/blueprint.mjs check plans/<id>/design.mjs --hash "top=steel" --hash "length=2400"
 #   build, audit, capture --pdf, then one capture per --hash into shots/<hash>/: must end "check passed"
-#   a --hash for every option and every size where the design changes (values in mm / kg, bools 1/0)
+#   a --hash for every option and every size where the design changes: param ids from design.mjs, values in mm / kg, bools 1/0
 node $SKILL/scripts/blueprint.mjs test   # once per kit change: the frame solver against textbook beams
 ```
 

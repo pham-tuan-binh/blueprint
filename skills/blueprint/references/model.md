@@ -1,6 +1,6 @@
 # The design.mjs schema
 
-Read this when writing `design.mjs`. `examples/shelf-rack/design.mjs` is the whole shape in about 150 lines: read it top to bottom first.
+Read this when writing `design.mjs`. `examples/shelf-rack/design.mjs` (in the skill folder) is the whole shape in about 150 lines: read it top to bottom first.
 
 ## Contents
 

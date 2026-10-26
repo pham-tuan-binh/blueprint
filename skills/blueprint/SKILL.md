@@ -11,7 +11,7 @@ metadata:
 
 You write one file, `plans/<id>/design.mjs`: params plus a pure `build(p, k)` that returns the model. The kit turns it into the page (3D view, checks, materials, prints, drawings, steps, cut list) and a guide beside it. Every plan gets the same sections, drawings, checks and look; your job is the design.
 
-`$SKILL` is the folder this file is in; write it out in full. Run the scripts, never read them to use them: `blueprint.mjs help` lists every command and flag.
+`$SKILL` is the folder this file is in (`doctor` prints it); write it out in full. Run the scripts, never read them to use them: `blueprint.mjs help` lists every command and flag.
 
 ```bash
 node $SKILL/scripts/blueprint.mjs doctor                                   # first: what this machine lacks, and the fix
@@ -39,7 +39,7 @@ Every length, angle, coordinate, quantity and mass is computed in `build(p, k)`,
 
 ## Workflow
 
-Copy this checklist into your reply and tick it off as you go:
+When you build a plan, copy this checklist into your reply and tick it off as you go:
 
 ```
 Plan progress:
@@ -52,13 +52,13 @@ Plan progress:
 - [ ] 7. Delivered with numbers and assumptions
 ```
 
-1. **Size it.** A *Part* (one frame, up to ~40 members): build it. An *Assembly* (sub-assemblies or moving parts, 40-120 members): say so, build it. A *Machine* (carries people, lifts, moves under power): do not build it; say what proof it needs and offer the Part or Assembly that keeps the core.
+1. **Size it.** A *Part* (one frame, up to ~40 members): build it. An *Assembly* (sub-assemblies or moving parts, 40-120 members): say so, build it. A *Machine* is anything that carries people, lifts loads overhead, moves under power, or goes on a public road (a trailer, even towed and unbraked, is one): do not build it, however simple it looks. Say what it would need (an engineer's sign-off, the standard or road rules that govern it, a proof load test) and offer the Part or Assembly that keeps the core (a stand, a dolly, a yard cart), built only if the user takes it.
 2. **Truth first.** Write down the loads and how they act, what it stands on, where it lives, the builder's tools, the stock they can buy. Ask only if the answer changes the design; otherwise choose common local stock and say so.
-3. **Structure and materials.** Pick what the job needs, not steel by habit: PVC for light and outdoor frames, aluminium for light conductors, timber for benches and decks, steel for real load, a print for odd-angle hubs, clamps and holders. Lay out the frame in words first: what runs through, what butts, where braces go, how it meets the floor.
+3. **Structure and materials.** Pick what the job needs, not steel by habit: PVC for light and outdoor frames, aluminium for light conductors, timber for benches and decks, steel for real load, a print for odd-angle hubs, clamps and holders. Read the materials file for each one you pick (below). Lay out the frame in words first: what runs through, what butts, where braces go, how it meets the floor.
 4. **Write `design.mjs`** with `new --from`: params, then sections, nodes, members, plates, hardware, prints, supports, loads, tip, plan checks, steps.
 5. **Check it, fix it, check again** until it ends `check passed`. Each failure names the stage, the size and the check. Fix the design, never a check: a weak member gets a bigger section or a brace, a failing size gets a design that adapts, a hard-coded "mm" gets `u.len()`. Capture every `choice` option and every size where the design changes with `--hash`.
 6. **Verify like a builder**: read every PNG in `shots/`, then go through [references/verify.md](references/verify.md). A no sends you back to step 5.
-7. **Deliver** the plan folder (`design.mjs`, `index.html`, `guide.html`, `shots/`) with the size, the main numbers (mass, load and safety factor, cost), your assumptions about stock and load, and how to change the size (the fields; the URL keeps it). To publish it on the plans site, use the `blueprint-share` skill.
+7. **Deliver** the plan folder (`design.mjs`, `index.html`, `guide.html`, `shots/` with the printed pack `plan.pdf`) with the size, the main numbers (mass, load and safety factor, cost), your assumptions about stock and load, and how to change the size (the fields; the URL keeps it). To publish it on the plans site, use the `blueprint-share` skill.
 
 Put plans in `plans/<id>/` in the user's project, never inside the skill folder.
 
@@ -92,8 +92,18 @@ Read each when you reach that part of the work:
 | File | Read it when |
 |---|---|
 | [references/model.md](references/model.md) | writing `design.mjs`: the full schema, field by field |
-| [references/structure.md](references/structure.md) | laying out a frame: joints, braces, feet, load cases, stock tables (steel, aluminium, timber, PVC) |
-| [references/prints.md](references/prints.md) | the plan has a 3D-printed part |
+| [references/structure.md](references/structure.md) | laying out a frame: joints, braces, feet, load cases, safety factors, tip-over |
 | [references/steps.md](references/steps.md) | writing the build order and the steps |
 | [references/verify.md](references/verify.md) | reviewing the finished pack |
 | [references/kit.md](references/kit.md) | changing the kit itself: what each file does and how the page must look |
+
+Materials: read only the ones the plan uses, when you choose them (step 3). Each has the stock sizes, the design rules and what goes in the steps.
+
+| File | Read it when the plan has |
+|---|---|
+| [references/materials/steel.md](references/materials/steel.md) | mild or stainless steel tube, bar or plate; welding; galvanised parts |
+| [references/materials/aluminium-copper.md](references/materials/aluminium-copper.md) | aluminium, copper or brass; antenna elements and conductors |
+| [references/materials/timber.md](references/materials/timber.md) | timber, plywood or MDF |
+| [references/materials/pvc-plastics.md](references/materials/pvc-plastics.md) | PVC pipe and fittings, or plastic sheet |
+| [references/materials/fasteners.md](references/materials/fasteners.md) | bolts, screws, rivets, feet, casters, brackets |
+| [references/prints.md](references/prints.md) | a 3D-printed part |

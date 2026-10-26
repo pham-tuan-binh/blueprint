@@ -83,7 +83,8 @@ One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions
 ```
 skills/blueprint/
   SKILL.md            the workflow and rules the agent follows
-  references/         the design.mjs schema, structure and stock, prints, steps, the review checklist, the kit
+  references/         the design.mjs schema, structure and loads, prints, steps, the review checklist, the kit
+    materials/        one file per material (steel, aluminium and copper, timber, PVC and plastics, fasteners), read only when used
   kit/                one pipeline from a design to the page: joints, analysis, drawings, page, 3D viewer
   scripts/
     blueprint.mjs     the one command: doctor, examples, new, build, audit, capture, check, test

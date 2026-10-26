@@ -39,10 +39,10 @@ prints: [{
 
 ## Design rules
 
-| | |
+| Rule | Value |
 |---|---|
 | Walls | 3 perimeters at least (1.2 mm on a 0.4 nozzle); 2.5-4 mm round a clamped or pushed-in bore |
-| Pipe or rod bore | diameter + 0.3 to 0.5 (push fit); + 0.8 (sliding) |
+| Pipe or rod bore | diameter + 0.3 to 0.5 (push fit); + 0.8 (sliding); a split clamp: diameter + 0.2, with a 2-3 mm slot and a bolt across it to close it |
 | Bolt holes | + 0.3 (M3 3.3, M4 4.3, M5 5.3). Threads: heat-set inserts or a nut trap, not tapped plastic |
 | Connector holes | SMA bulkhead 6.4; BNC 9.6; 6 mm panel jack 6.3 |
 | Overhangs | 45° or less, or a chamfer; `supports: true` only when there is no way round it |
@@ -50,6 +50,8 @@ prints: [{
 | Outdoors | ASA or PETG, 4 walls, 40% infill or more. PLA creeps and softens in the sun |
 
 Fits and walls are yours to prove: a plan check for each bore against what it takes and the thinnest clamped wall, sizes in `u.fine()`.
+
+The frame solver does not analyse prints. When a print carries load (an arm, a bracket, a hook), prove it with a plan check by hand: bending stress M / Z at its root at most a quarter of the filament's strength (PLA 50, PETG 45, ASA 40, PA 60 MPa along the layers; halve it across them). If it cannot pass, it is not a print's job.
 
 ## What the kit does with it
 
