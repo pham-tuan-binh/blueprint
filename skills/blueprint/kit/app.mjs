@@ -4,7 +4,7 @@
 // between metric (default) and imperial without changing the design.
 import { derive } from './derive.mjs';
 import { makeUnits, esc } from './core.mjs';
-import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel } from './pack.mjs';
+import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel, contentsHtml } from './pack.mjs';
 import { createViewer } from './viewer.mjs';
 
 const $ = s => document.querySelector(s);
@@ -138,6 +138,7 @@ export function mountPlan(plan) {
     $('#notes').innerHTML = d.notes.length ? `<p class="warn">${esc(d.notes.join('. '))}.</p>` : '';
     $('#built-for').textContent = paramsSummary(d);
     $('#facts').innerHTML = factsHtml(d);
+    $('#contents-body').innerHTML = contentsHtml(d);
     $('#status').className = 'status ' + (d.ok ? 'ok' : 'bad');
     $('#status').textContent = d.ok ? `✓ All ${d.checks.length} checks pass` : `✗ ${d.checks.filter(c => !c.pass).length} check(s) failing`;
     $('#checks-body').innerHTML = checksHtml(d);

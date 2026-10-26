@@ -2,19 +2,19 @@
 // renders every section once in Node (so the file reads and prints without
 // JavaScript), then the inlined runtime takes over and re-renders on every input.
 import { esc } from './core.mjs';
-import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary } from './pack.mjs';
+import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, contentsHtml } from './pack.mjs';
 import { SHOP_CSS } from './shop.mjs';
 
 // Light paper only, like a printed drawing: no dark theme, whatever the device prefers.
 export const PAGE_CSS = `
 :root{--paper:#fbfbfa;--ink:#16181b;--ink2:#3a3f46;--muted:#666d75;--line:#d7dade;--th:#f0f1f2;--face:#e1e4e7;--now:#4a4f57;--old:#e6e8eb;--oldline:#a9afb6;--lit:#d23f45;--okc:#1d6b3a;
 --sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:light}
-*{box-sizing:border-box}[hidden]{display:none!important}html{scroll-padding-top:64px}
+*{box-sizing:border-box}[hidden]{display:none!important}html{scroll-padding-top:16px;scroll-behavior:smooth}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-text-size-adjust:100%}
 a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{padding:16px}
 .top{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
 .top-in{max-width:1080px;margin:0 auto;padding:8px 16px;display:flex;gap:14px;align-items:center}
-.brand{font-weight:700;text-decoration:none;white-space:nowrap}.back{text-decoration:none;color:var(--muted);white-space:nowrap;font-size:14px}.back:hover{color:var(--ink)}
+.back{display:inline-block;text-decoration:none;color:var(--muted);font-size:14px;margin:0 0 14px}.back:hover{color:var(--ink)}
 .toc{display:flex;gap:14px;overflow-x:auto;flex:1;scrollbar-width:none}.toc a{text-decoration:none;white-space:nowrap;color:var(--ink2)}.toc a:hover{color:var(--ink)}
 .seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
@@ -40,7 +40,14 @@ p,li{max-width:75ch}
 .pick{font-size:14px;margin:6px 0 0}
 .viewer-ctl{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 0;font-size:14px}.viewer-ctl label{display:flex;gap:6px;align-items:center}
 .size{border:1.5px solid var(--ink);padding:14px 16px 16px}
-.size h2{margin:0 0 4px;padding:0;border:0;font-size:19px}
+.size h2{margin:0;padding:0;border:0;font-size:19px}.size-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 4px}
+.toc-box{margin:28px 0 0;border:1.5px solid var(--ink);padding:14px 18px 16px}
+.toc-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 6px}.toc-h h2{margin:0;padding:0;border:0;font-size:19px}
+.contents{list-style:none;margin:0;padding:0;columns:2 300px;column-gap:40px}
+.contents li{break-inside:avoid}.contents a{display:flex;align-items:baseline;gap:8px;text-decoration:none;color:var(--ink);padding:3px 0}
+.contents a:hover .ct{text-decoration:underline}.contents .cn{font:13px var(--mono);color:var(--muted);min-width:2.2em}
+.contents li:not(.sub) .ct{font-weight:600}.contents .sub a{padding-left:16px;font-size:14px}.contents .sub .cn{min-width:2.6em}
+.contents .cl{flex:1;border-bottom:1px dotted var(--oldline);transform:translateY(-4px);min-width:12px}.contents .cm{font:12px var(--mono);color:var(--muted);white-space:nowrap}
 .size fieldset{border:0;padding:0;margin:10px 0 0}.size legend{font:12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0;margin:0 0 4px}
 .field{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
 .field>span:first-child{font-weight:600;font-size:14px}.field small{grid-column:1/-1;color:var(--muted);font:12px var(--mono)}
@@ -81,7 +88,8 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 ${SHOP_CSS}
 @media print{
   :root{--paper:#fff;--ink:#000;--ink2:#222;--muted:#555;--line:#bbb;--th:#eee;--face:#e4e4e4;--now:#444;--old:#eee;--oldline:#aaa;--lit:#000;color-scheme:light}
-  .top,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step],[data-show-wrap]{display:none!important}
+  .top,.back,#print,.seg,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step],[data-show-wrap]{display:none!important}
+  .toc-box{break-after:page}.size>p.muted{display:none}
   .split{display:block}.size{border:1px solid #000}
   .step{break-before:page}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}details.sheets{border:0;padding:0}
   details.sheets>summary{list-style:none;font-weight:700}a{text-decoration:none}main{padding-top:0}
@@ -102,16 +110,8 @@ export function pageHtml(d, { script = '', title, description, back = null } = {
 <style>${PAGE_CSS}</style>
 </head>
 <body>
-<header class="top"><div class="top-in">
-  ${back ? `<a class="back" href="${esc(back.href)}">← ${esc(back.label)}</a>` : ''}<a class="brand" href="#top">${esc(plan.short || plan.name)}</a>
-  <nav class="toc" aria-label="Sections">
-    <a href="#size">Size</a><a href="#checks">Checks</a><a href="#bom">Materials</a><a href="#drawings">Drawings</a><a href="#legend">Legend</a><a href="#steps">Steps</a><a href="#cutlist">Cut list</a>
-  </nav>
-  <div class="seg" role="group" aria-label="Units"><button type="button" data-units="metric" aria-pressed="${!d.units.imperial}">mm</button><button type="button" data-units="imperial" aria-pressed="${d.units.imperial}">in</button></div>
-  <button type="button" class="btn" id="print"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6V2h8v4M4 12H2.5V6h11v6H12M4 9.5h8V14H4z"/></svg>Print</button>
-</div></header>
 <main id="top">
-  <p class="kicker">Build plan${plan.version ? ' · v' + esc(plan.version) : ''}</p>
+  ${back ? `<a class="back" href="${esc(back.href)}">← ${esc(back.label)}</a>` : ''}
   <h1>${esc(plan.name)}</h1>
   <p class="lede">${esc(plan.summary || '')}</p>
   <p id="status" class="status ${d.ok ? 'ok' : 'bad'}">${d.ok ? `✓ All ${d.checks.length} checks pass` : `✗ ${d.checks.filter(c => !c.pass).length} check(s) failing`}</p>
@@ -127,7 +127,7 @@ export function pageHtml(d, { script = '', title, description, back = null } = {
       <div class="pick" id="pick" hidden></div>
     </div>
     <section class="size" id="size" aria-labelledby="size-h">
-      <h2 id="size-h">Make it yours</h2>
+      <div class="size-h"><h2 id="size-h">Make it yours</h2><div class="seg" role="group" aria-label="Units"><button type="button" data-units="metric" aria-pressed="${!d.units.imperial}">mm</button><button type="button" data-units="imperial" aria-pressed="${d.units.imperial}">in</button></div></div>
       <p class="muted" style="margin:0">Change a number and the whole plan, drawings, cut list and checks follow.</p>
       <form id="size-form" onsubmit="return false"></form>
       <div class="size-act"><button type="button" class="btn" id="reset"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2v3h3"/></svg>Reset</button><button type="button" class="btn" id="copy-link"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.8 2.8 0 0 1 4 4l-1 1M9 11.5l-1 1a2.8 2.8 0 0 1-4-4l1-1"/></svg><span>Copy link</span></button></div>
@@ -136,6 +136,10 @@ export function pageHtml(d, { script = '', title, description, back = null } = {
     </section>
   </div>
   <dl class="facts" id="facts">${factsHtml(d)}</dl>
+  <nav class="toc-box" aria-labelledby="contents-h">
+    <div class="toc-h"><h2 id="contents-h">Contents</h2><button type="button" class="btn" id="print"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6V2h8v4M4 12H2.5V6h11v6H12M4 9.5h8V14H4z"/></svg>Print the plan</button></div>
+    <div id="contents-body">${contentsHtml(d)}</div>
+  </nav>
   <section id="checks"><h2><span class="secn">1</span>Checks</h2><div id="checks-body">${checksHtml(d)}</div></section>
   <section id="bom"><h2><span class="secn">2</span>Materials</h2><div id="bom-body">${bomHtml(d)}</div></section>
   <section id="drawings"><h2><span class="secn">3</span>Drawings</h2><p class="muted">Overall dimensions. Every number on this page is from the same model as the 3D view.</p><div id="drawings-body">${drawingsHtml(d)}</div></section>
@@ -144,7 +148,7 @@ export function pageHtml(d, { script = '', title, description, back = null } = {
   <section id="steps"><h2><span class="secn">6</span>Steps</h2><p class="muted">Ticks save on this device. "Show in 3D" shows the build after that step, the new parts lit.</p><div id="steps-body">${steps.map(st => stepHtml(d, st, { interactive: true })).join('')}</div></section>
   <section id="cutlist"><h2><span class="secn">7</span>Cut list</h2><div id="cutlist-body">${cutListHtml(d)}</div></section>
 </main>
-<footer class="foot"><p>${esc(plan.footer || 'Generated by the blueprint skill. Check every dimension against your own stock before you cut, wear eye and hand protection, and load-test the build gently before trusting it.')}</p></footer>
+<footer class="foot"><p>${esc(plan.name)}${plan.version ? ' · v' + esc(plan.version) : ''}. ${esc(plan.footer || 'Generated by the blueprint skill. Check every dimension against your own stock before you cut, wear eye and hand protection, and load-test the build gently before trusting it.')}</p></footer>
 <script type="module">
 ${script}
 </script>

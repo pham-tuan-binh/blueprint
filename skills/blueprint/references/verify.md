@@ -19,7 +19,7 @@ node scripts/capture.mjs plans/<id>/index.html --hash "top=steel" --out plans/<i
 
 Open every PNG in `shots/`. For each, ask:
 
-1. **desktop.png**: is it instantly the thing? Does the 3D model look like a real, well-made object (legs on the floor, top flat, nothing floating or poking through)? Do the facts make sense (mass, load, safety factor, cost)? Light paper, even on a device set to dark mode? No drop or offset shadows anywhere; buttons and links show they are clickable with an icon?
+1. **desktop.png**: is it instantly the thing? Does the 3D model look like a real, well-made object (legs on the floor, top flat, nothing floating or poking through)? Do the facts make sense (mass, load, safety factor, cost)? Light paper, even on a device set to dark mode? No header bar: does the page open on its title, with a Contents block listing the numbered sections and steps? No drop or offset shadows anywhere; buttons and links show they are clickable with an icon?
 2. **size.png**: are the fields the ones a person would change, in the order they think, with ranges that make sense? Are the defaults a sensible, common size?
 3. **checks.png** and **materials.png**: all pass, and does each result read as a real number with a reason? Is the tightest margin where you expected it?
 4. **drawings.png**: does the general arrangement show the whole thing in three views at one scale, with the overall dimensions matching the fields?
