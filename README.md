@@ -54,7 +54,7 @@ node $B check plans/welding-cart/design.mjs         # build + audit + capture: "
 
 ## The plans site
 
-Every plan in `plans/` is published to GitHub Pages by `.github/workflows/pages.yml`: it runs the solver test and every plan's audit, builds each plan into its own page with `tools/site.mjs`, and lists them all on a front page. To add a plan, add `plans/<id>/design.mjs` (made with the skill, passing its audit); nothing else changes. Build the site locally with `node tools/site.mjs` and open `_site/index.html` through a local server (`npx http-server _site`).
+Every plan in `plans/` is published to GitHub Pages by `.github/workflows/pages.yml`: it runs the solver test and every plan's audit, builds each plan (and each of the skill's examples) into its own page with `tools/site.mjs`, and puts them on a landing page that shows how to install and use the skill. To add a plan, add `plans/<id>/design.mjs` (made with the skill, passing its audit); nothing else changes. Build the site locally with `node tools/site.mjs` and open `_site/index.html` through a local server (`npx http-server _site`).
 
 One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions.
 
