@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blueprint share"
+  short_description: "Open a PR that adds your blueprint build plan to the public plans site"
+  default_prompt: "Use the blueprint-share skill to add my plan in plans/<id>/design.mjs to the blueprint plans site."

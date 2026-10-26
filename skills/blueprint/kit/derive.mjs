@@ -61,7 +61,13 @@ function plateAt(model) {
   return p => model.plates.find(pl => [0, 1, 2].every(i => Math.abs(p[i] - pl.c[i]) <= pl.s[i] / 2 + 1.5));
 }
 
-function groupPieces(model, joints, onPlate = () => null) {
+// a bought fitting (a PVC tee, a clamp, a socket) a free end sits in: its shape box holds the end
+function fittingAt(model) {
+  const fits = fitBoxesOf(model);
+  return p => fits.find(f => [0, 1, 2].every(i => p[i] >= f.b[0][i] && p[i] <= f.b[1][i]))?.h;
+}
+
+function groupPieces(model, joints, onPlate = () => null, inFitting = () => null) {
   const groups = new Map();
   for (const m of model.members) {
     const j = joints[m.id];
@@ -86,7 +92,9 @@ function groupPieces(model, joints, onPlate = () => null) {
       const end = (e, X) => {
         const r = describeEnd(e, ref);
         const pl = e.kind === 'free' && onPlate(X);
-        return pl ? { ...r, how: `onto ${pl.mark} (${pl.name.toLowerCase()})` } : r;
+        if (pl) return { ...r, how: `onto ${pl.mark} (${pl.name.toLowerCase()})` };
+        const fit = e.kind === 'free' && inFitting(X);
+        return fit ? { ...r, how: `into the ${fit.name.split(",")[0].toLowerCase()}` } : r;
       };
       const da = end(j.ends.A, j.A), db = end(j.ends.B, j.B);
       const key = pm => JSON.stringify(pm.edges.map(e => [Math.round(e.a * 2) / 2, Math.round(e.b * 2) / 2]).sort((x, y) => x[0] - y[0] || x[1] - y[1]));
@@ -94,6 +102,11 @@ function groupPieces(model, joints, onPlate = () => null) {
       const [x, y] = flip ? [db, da] : [da, db];
       ends[0].push(x); ends[1].push(y);
     }
+    // pieces cut square at both ends, mirrored in the frame (a foot into a cap at the front
+    // and at the back), read the same either way round: put each pair in one order
+    const h0 = new Set(ends[0].map(e => e.how)), h1 = new Set(ends[1].map(e => e.how));
+    if (h0.size > 1 && [...ends[0], ...ends[1]].every(e => e.square) && [...h0].every(h => h1.has(h)))
+      ends[0].forEach((x, i) => { const y = ends[1][i]; if (x.how > y.how) [ends[0][i], ends[1][i]] = [y, x]; });
     g.endText = ends.map(es => {
       const angs = [...new Set(es.map(e => e.ang))], hows = [...new Set(es.map(e => e.how))];
       const joined = hows.length > 1 && hows.every(h => h.startsWith('butt onto ')) ? 'butt onto ' + hows.map(h => h.slice(10)).join(' or ') : hows.join(' or ');
@@ -144,6 +157,20 @@ function shapeBox(sh) {
   }
   return null;
 }
+// one box per piece of a bought part: a shape list of lists is one list per piece; a flat
+// list with qty pieces splits evenly (a tee drawn as two cylinders, x2: four cylinders)
+export function partBoxes(h, pad = 1.5) {
+  const sh = h.shape;
+  if (!sh) return [];
+  let pieces = [sh];
+  if (Array.isArray(sh) && sh.length && sh.every(Array.isArray)) pieces = sh;
+  else if (Array.isArray(sh) && (h.qty || 1) > 1 && sh.length % (h.qty || 1) === 0) {
+    const k = sh.length / h.qty;
+    pieces = Array.from({ length: h.qty }, (_, i) => sh.slice(i * k, i * k + k));
+  }
+  return pieces.map(shapeBox).filter(Boolean).map(b => ({ h, b: [b[0].map(v => v - pad), b[1].map(v => v + pad)] }));
+}
+const fitBoxesOf = model => model.hardware.flatMap(h => partBoxes(h));
 const plateBox = pl => [pl.c.map((v, i) => v - pl.s[i] / 2), pl.c.map((v, i) => v + pl.s[i] / 2)];
 const boxGap = (A, B) => Math.max(0, ...[0, 1, 2].map(i => Math.max(A[0][i] - B[1][i], B[0][i] - A[1][i])));
 const memberBox = j => { const c = memberCorners(j); return [[0, 1, 2].map(i => Math.min(...c.map(q => q[i]))), [0, 1, 2].map(i => Math.max(...c.map(q => q[i])))]; };
@@ -230,13 +257,30 @@ function geometryChecks(model, joints, sites, ref) {
   }
   const half = j => Math.max(j.hu, j.hw), halfMin = j => Math.min(j.hu, j.hw);
   const clashes = [], adj = new Map();
+  // two pipes that meet in a fitting are close at their centre lines without touching:
+  // one ends inside the fitting's shape and the other reaches into it
+  const fitBoxes = fitBoxesOf(model).map(f => f.b);
+  const inBox = (b, p) => [0, 1, 2].every(i => p[i] >= b[0][i] && p[i] <= b[1][i]);
+  const segHitsBox = (b, a, c) => {
+    let t0 = 0, t1 = 1;
+    for (let i = 0; i < 3; i++) {
+      const dd = c[i] - a[i];
+      if (Math.abs(dd) < 1e-9) { if (a[i] < b[0][i] || a[i] > b[1][i]) return false; continue; }
+      let lo = (b[0][i] - a[i]) / dd, hi = (b[1][i] - a[i]) / dd;
+      if (lo > hi) [lo, hi] = [hi, lo];
+      t0 = Math.max(t0, lo); t1 = Math.min(t1, hi);
+      if (t0 > t1) return false;
+    }
+    return true;
+  };
+  const meetInFitting = (A, B) => fitBoxes.some(b => ((inBox(b, A.A) || inBox(b, A.B)) && segHitsBox(b, B.A, B.B)) || ((inBox(b, B.A) || inBox(b, B.B)) && segHitsBox(b, A.A, A.B)));
   const link = (a, b) => { (adj.get(a) || adj.set(a, new Set()).get(a)).add(b); (adj.get(b) || adj.set(b, new Set()).get(b)).add(a); };
   for (let i = 0; i < ids.length; i++) for (let k = i + 1; k < ids.length; k++) {
     const A = joints[ids[i]], B = joints[ids[k]];
     if (sharesSite.has(A.id + '|' + B.id)) { link(A.id, B.id); continue; }
     const d = segDist(A.A, A.B, B.A, B.B);
     if (d <= half(A) + half(B) + 1) link(A.id, B.id);
-    if (d < halfMin(A) + halfMin(B) - 1) clashes.push(`${ref(A.id)} passes through ${ref(B.id)} (${A.id}, ${B.id})`);
+    if (d < halfMin(A) + halfMin(B) - 1 && !meetInFitting(A, B)) clashes.push(`${ref(A.id)} passes through ${ref(B.id)} (${A.id}, ${B.id})`);
   }
   // plates and hardware touch a member, a plate, or name what they sit on
   const boxes = {};
@@ -283,7 +327,7 @@ export function derive(plan, given = {}, system) {
   }
   const plateGroups = [...pg.values()].sort((a, b) => a.step - b.step);
   plateGroups.forEach((g, i) => { g.mark = 'P' + (i + 1); for (const pl of model.plates) if (g.ids.includes(pl.id)) pl.mark = g.mark; });
-  const { pieces, markOf, ref } = groupPieces(model, joints, plateAt(model));
+  const { pieces, markOf, ref } = groupPieces(model, joints, plateAt(model), fittingAt(model));
   // step text may name a piece by its mark: {mark:leg-FL} becomes "A"
   const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { if (!markOf[id]) throw new Error(`{mark:${id}}: no member "${id}"`); return markOf[id]; }) : t);
   for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); if (st.table) st.table.rows = st.table.rows.map(r => r.map(c => fill(String(c)))); }
@@ -308,6 +352,7 @@ export function derive(plan, given = {}, system) {
     weld += (4 * (j.hu + j.hw)) * (c.kind === 'miter' ? 0.5 : 1);
   }
   d.weld = { length: weld, joins };
+  d.fitBoxes = fitBoxesOf(model).map(f => f.b);
 
   // loads
   let loadErr = null;

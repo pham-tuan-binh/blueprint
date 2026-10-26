@@ -343,78 +343,76 @@ export const plan = {
     const clipRows = Array.from({ length: a.nC }, (_, i) => [`Clip ${i + 1}`, u.len(a.gap * (i + 1))]);
     const steps = [
       { n: 1, phase: 'Fabricate', title: 'Print the hub and the lid', hours: 1, tasks: [
-        `Print the feed hub and the pocket lid from the files below (settings and orientation with each), then queue the ${nClips} wire clips and 2 tip caps from step 5. PETG or ASA, not PLA: it lives outdoors.`,
-        'Start the hub first: it takes a few hours, and steps 2 and 3 can start while it runs.',
-        'Clean the strings out of the arm sockets, the wire channels, the SMA hole and the mast socket. Push a scrap of the wire through each channel: it must slide.',
-        `Melt an M3 heat-set insert with a soldering iron into each of the six ${fine(4)} holes, flush with the face: two in the pocket floor (wire clamps), two from underneath into the arm sockets (grub screws), two on the top face behind the pocket (lid).`,
-      ], check: `A conduit offcut pushes into each arm socket to the bottom by hand; the mast pipe pushes into its socket to the end; all six inserts square and flush within ${u.tol(0.5)}.`,
-        tip: 'A socket that came out tight is opened with a file or a drill turned by hand, never forced: forcing the tube in splits the hub along its layers.' },
+        `Print the hub, then the lid (files below). Queue the ${nClips} clips and 2 tip caps from step 5. PETG or ASA, not PLA.`,
+        'Start steps 2 and 3 while it prints.',
+        'Clear strings from the sockets, channels and holes. A scrap of wire must slide through each channel.',
+        `Melt an M3 heat-set insert into each ${fine(4)} hole, flush: two in the pocket, two under the arm sockets, two behind the pocket.`,
+      ], check: `Conduit and mast push into their sockets by hand. Inserts flush ${u.tol(0.5)}.`,
+        tip: 'A tight socket: open it with a file. Never force the tube: the hub splits along its layers.' },
       { n: 2, phase: 'Fabricate', title: 'Wire the SMA jack', hours: 0.5, tasks: [
-        `Cut two tails of hook-up wire ${u.len(50, { u: true })} long, strip ${u.len(4, { u: true })} at each end, and solder an M3 ring terminal on one end of each.`,
-        'Slip the solder tag over the thread of the SMA jack. Solder one tail to the centre solder cup (east wire) and the other to the solder tag (shield, west wire).',
-        `Push the jack, thread first, down through the hole in the floor of the small well behind the pocket, so it points down under the hub; fit the lock washer and nut from underneath and tighten with a spanner while holding the jack body: it must not turn.`,
-        'Lead the centre tail to the east clamp insert (right, looking north) and the tag tail to the west one, ring terminals over the inserts.',
-      ], check: 'Multimeter: centre pin to jack body open circuit (no short); centre pin to the east ring terminal and jack body to the west ring terminal both under 1 Ω.',
-        tip: 'Heat the solder cup briefly, and solder before the jack goes in the hub: the jack\'s insulator and the PETG both soften if the iron stays on.' },
+        `Two hook-up wire tails, ${u.len(50, { u: true })}. Strip ${u.len(4, { u: true })} each end. An M3 ring terminal on one end of each.`,
+        'Solder tag over the jack thread. One tail to the centre cup (east), one to the tag (west).',
+        'Jack down through the well behind the pocket. Lock washer and nut from under; hold the body, tighten.',
+        'Centre tail to the east insert, tag tail to the west one.',
+      ], check: 'Multimeter: centre pin to body open; each pin to its ring terminal under 1 Ω.',
+        tip: 'Solder before the jack goes in: the insulator and the PETG soften under a slow iron.' },
       { n: 3, phase: 'Fabricate', title: 'Arms', hours: 0.5, tasks: [
-        `Cut the two arms ({mark:arm-E}) from the ${u.len(aOD, { u: true })} conduit with a fine saw, square, to the length on the cut sheet; deburr inside and out.`,
-        'Push each arm into its socket on the hub until it bottoms.',
-        'Turn a grub screw into each insert under the sockets until it bears on the arm, then a quarter turn more: snug, not cracking the tube.',
-      ], check: `Both arms bottomed in their sockets; arm tip to arm tip ${u.len(2 * a.rTube * s)} ${u.tol(5)}; neither arm turns or pulls out by hand; with the hub on a flat table both arm tips the same height within ${u.len(3, { u: true })}.`,
-        tip: 'The arms only carry the wire and the wind on it; the clips and the tip caps follow the arm, so an arm that sits askew puts the wire askew.' },
+        `Cut two arms ({mark:arm-E}) from ${u.len(aOD, { u: true })} conduit, square. Deburr.`,
+        'Push each into its socket until it bottoms.',
+        'Grub screw in each insert until it bears, then a quarter turn.',
+      ], check: `Tip to tip ${u.len(2 * a.rTube * s)} ${u.tol(5)}. Arms do not turn or pull out. Tips level ${u.tol(3)} on a flat table.` },
       { n: 4, phase: 'Fabricate', title: 'Element wires: cut, strip and clamp', hours: 1, tasks: [
-        `Pull a length of the ${wireName(u, p.wire)} wire straight: clamp one end in a vise and pull the other with pliers until it stretches slightly and lies dead straight. Then cut the two element wires ({mark:wire-E}) to the length on the cut sheet, square, with side cutters.`,
+        `Straighten the ${wireName(u, p.wire)} wire: one end in a vise, pull the other until it lies dead straight. Cut two wires ({mark:wire-E}).`,
         ins
-          ? `Leave the insulation on, except the inner end: strip ${u.len(stripIn, { u: true })} there, without nicking the copper.`
-          : 'Strip all the insulation off: slit it along its length with a sharp knife held flat and peel it off, without nicking the copper. Wipe the copper clean.',
-        'Feed the inner end of each wire into the channel at the outer end of the hub arm, along the top of the arm, until it comes out in the pocket and lies in the groove in the pocket floor.',
-        `Slide the wires until their inner ends are ${u.len(GAP, { u: true })} apart (calipers across the pocket).`,
-        'Over each insert: the ring terminal (centre tail on the east, tag tail on the west), then the penny washer over the terminal and the wire, then the M3 × 8 screw. Tighten until the washer bites the wire flat in its groove.',
-      ], check: `Inner ends ${u.len(GAP)} ${u.tol(1)} apart; each wire stays put when you tug it firmly; multimeter: SMA centre pin to the east wire and jack body to the west wire both under 1 Ω, and centre pin to jack body still open circuit.`,
-        tip: `The element length is measured from the wire's inner end, so set the ${u.len(GAP, { u: true })} gap before you tighten. The cut sheet length is ${u.len(allow, { u: true })} over the design length on purpose: tuning in step 8 trims it.` },
+          ? `Strip ${u.len(stripIn, { u: true })} at the inner end only. Do not nick the copper.`
+          : 'Strip all the insulation: slit it lengthwise, peel it off. Do not nick the copper.',
+        'Feed each inner end through its arm channel into the pocket groove.',
+        `Inner ends ${u.len(GAP, { u: true })} apart.`,
+        'On each insert: ring terminal, penny washer over terminal and wire, M3 × 8 screw. Tighten until the wire flattens.',
+      ], check: `Gap ${u.len(GAP)} ${u.tol(1)}. Wires stay put when tugged. Each wire to its pin under 1 Ω; pin to body still open.`,
+        tip: `Set the gap before you tighten. The wires are ${u.len(allow, { u: true })} long on purpose: step 8 trims them.` },
       { n: 5, phase: 'Fabricate', title: 'Clips and tip caps', hours: 0.5, table: { title: 'Clip centres along each arm', head: ['Clip', 'From the hub arm end'], rows: clipRows }, tasks: [
-        `Print the ${nClips} wire clips and 2 tip caps (files below) if they are not done yet. Clean the wire hole of each with a scrap of the wire, and snap one clip onto a conduit offcut: it must click on and grip.`,
-        `From the tip end, thread ${a.nC} clips onto each wire, mouths down, then a tip cap, socket toward the hub.`,
-        'Push each tip cap over the end of its arm until the tube bottoms in the cap, with the wire coming straight out of the end wall; a dab of neutral-cure silicone in the socket keeps it on.',
-        `Lay the wire straight along the top of the arm. Mark the clip centres on each arm, measured from the end face of the hub's arm socket (table below), and snap each clip down onto the arm on its mark, the wire through its hole.`,
-        `Pull the wire gently from the tip so it lies straight on the arm from the hub to the cap, and leave the tip standing ${u.len(a.ls, { u: true })} out past the cap.`,
-      ], check: `Each wire lies on top of its arm all the way, no kinks; clips on their marks within ${u.len(5, { u: true })}; each tip stands ${u.len(a.ls)} ${u.tol(3)} past its cap; wire tip to wire tip ${u.len(2 * (r0 + Lcut) * s)} ${u.tol(5)}.`,
-        tip: 'The clips hold the wire on the arm and slide along it; they do not have to clamp it, since the screw in the hub holds the wire\'s end.' },
+        `Print ${nClips} clips and 2 tip caps if not done. A clip must click onto an offcut and grip.`,
+        `From the tip end: ${a.nC} clips onto each wire, mouths down, then a tip cap.`,
+        'Cap over the arm end until it bottoms. A dab of neutral-cure silicone.',
+        'Mark the clip centres (table). Snap each clip onto the arm on its mark.',
+        `Pull the wire straight. Tip ${u.len(a.ls, { u: true })} past the cap.`,
+      ], check: `No kinks. Clips on their marks ${u.tol(5)}. Tips ${u.len(a.ls)} ${u.tol(3)} past the caps. Tip to tip ${u.len(2 * (r0 + Lcut) * s)} ${u.tol(5)}.` },
       { n: 6, phase: 'Fabricate', title: 'Mast and hub', hours: 1, tasks: [
-        `Cut the mast ({mark:mast}) to length from the ${u.len(OD, { u: true })} PVC pipe with a fine saw, square; deburr inside and out.`,
-        `Mark a line ${u.len(sd / 2, { u: true })} down from the top end and drill a ${fine(4.3)} hole straight through the pipe on it, across a diameter.`,
-        'Push the hub onto the top of the mast until the pipe bottoms in the socket, turn it until the cross holes line up, and fit the M4 bolt with a washer each side and the nyloc nut.',
-        `Mark the clamp positions on the mast: ${u.len(CLAMP_LOW)} and ${u.len(CLAMP_HIGH, { u: true })} up from the bottom end.`,
-      ], check: `Mast within ${tol} of its length; the hub does not turn or lift on the mast by hand; both arms level when the mast is held plumb (a spirit level on each arm).` },
+        `Cut the mast ({mark:mast}) from ${u.len(OD, { u: true })} PVC pipe, square. Deburr.`,
+        `Drill ${fine(4.3)} straight through, ${u.len(sd / 2, { u: true })} below the top.`,
+        'Hub onto the mast until it bottoms. Holes in line. M4 bolt, washers, nyloc nut.',
+        `Mark the clamps ${u.len(CLAMP_LOW)} and ${u.len(CLAMP_HIGH, { u: true })} up from the bottom.`,
+      ], check: `Mast ${tol} of its length. Hub does not turn or lift. Arms level with the mast plumb.` },
       { n: 7, phase: 'Assemble', title: coil ? 'Coax and coil choke' : 'Coax and ferrite choke', hours: 0.5, tasks: [
-        'Screw the SMA plug of the coax onto the jack under the hub, finger tight, then an eighth of a turn with a spanner.',
-        'Wrap the SMA joint in self-amalgamating tape, stretched, half lapped, from the hub underside down onto the cable; then a layer of PVC tape over it against UV.',
+        'Coax SMA plug onto the jack: finger tight, then an eighth of a turn.',
+        'Self-amalgamating tape over the joint, half lapped. PVC tape over it.',
         coil
-          ? `Directly under the hub socket, wind ${turns} tight turns of the coax round the mast, side by side (about ${u.len(turns * COAX_D, { u: true })} of mast), and hold the coil with tape at each end.`
-          : `Snap the three ferrite cores onto the coax as close under the hub as they will go, touching each other, and hold them with a cable tie each side.`,
-        `Run the coax down the mast and cable-tie it every ${u.len(200, { u: true })}; leave a drip loop where it leaves the mast.`,
+          ? `${turns} tight turns of coax round the mast right under the hub (about ${u.len(turns * COAX_D, { u: true })}). Tape each end.`
+          : 'Three ferrite cores on the coax right under the hub, touching. A cable tie each side.',
+        `Coax down the mast, a cable tie every ${u.len(200, { u: true })}. A drip loop where it leaves.`,
       ], check: coil
-        ? `${turns} turns, tight against each other and against the mast, starting within ${u.len(50, { u: true })} of the hub; nothing slides when you tug the cable.`
-        : `Three cores closed and latched, within ${u.len(50, { u: true })} of the hub; nothing slides when you tug the cable.` },
+        ? `${turns} turns, tight, starting ${u.len(50, { u: true })} or less under the hub. Nothing slides.`
+        : `Three cores latched, ${u.len(50, { u: true })} or less under the hub. Nothing slides.` },
       { n: 8, phase: 'Tune and install', title: 'Tune with a NanoVNA', hours: 1, tasks: [
-        'Clamp the mast upright in the open, elements at least 1.5 times their own length from walls, metal and people (a temporary post, a fence, a tripod).',
-        'Calibrate the NanoVNA (open, short, load) at the end of its own short lead, then connect the far end of the antenna coax.',
-        `Sweep 120 to 160 MHz and read the frequency of the lowest SWR. The aim is ${g.f.toFixed(1)} MHz ±1 MHz; as cut, the wires are long, so expect the dip a little low${ins ? ' (with the insulation on, the length is an estimate: the dip can land a few MHz off)' : ''}.`,
-        `If the dip is low, the wires are long: snip the same amount off the tip of each wire with side cutters, about ${fine(mmPerMHz)} for each MHz, and sweep again. Snip less than you think, a few millimetres at a time.`,
-        `If the dip is high, the wires are short: leave them if SWR at ${fEdge[0]} and ${fEdge[1]} MHz is under 2; otherwise cut a new pair ${fine(mmPerMHz)} longer for each MHz it is high (the clips and caps slide off and go back on).`,
+        'Mast upright in the open, clear of walls, metal and people.',
+        'Calibrate the NanoVNA (open, short, load). Connect the antenna coax.',
+        `Sweep 120 to 160 MHz. Aim: lowest SWR at ${g.f.toFixed(1)} MHz ±1 MHz. As cut, expect it low${ins ? ' (insulated: it can land a few MHz off)' : ''}.`,
+        `Low: snip both tips equally, about ${fine(mmPerMHz)} per MHz. Sweep again.`,
+        `High: fine if SWR at ${fEdge[0]} and ${fEdge[1]} MHz is under 2; else cut a new pair ${fine(mmPerMHz)} longer per MHz.`,
         g.f < 143
-          ? 'No NanoVNA? An SWR meter needs a transmitter, and you may not transmit at 137 MHz. A licensed operator can read SWR at 144 and 146 MHz instead: it should be low at 144 and rise toward 146.'
-          : 'No NanoVNA? An SWR meter needs a transmitter: only a licensed operator may use one, and only inside an amateur band.',
-      ], check: `SWR minimum within ±1 MHz of ${g.f.toFixed(1)} MHz and SWR under 2 from ${fEdge[0]} to ${fEdge[1]} MHz; both wires stand out past their caps by the same amount within ${tol}.`,
-        tip: 'Trim both wires equally and a little at a time: a millimetre is easy to take off and impossible to put back. Bend nothing at the tips: a hooked tip changes the length.' },
+          ? 'No NanoVNA: a licensed operator can read SWR at 144 and 146 MHz. Low at 144, rising to 146.'
+          : 'No NanoVNA: only a licensed operator may use an SWR meter, inside an amateur band.',
+      ], check: `SWR minimum ±1 MHz of ${g.f.toFixed(1)} MHz. Under 2 from ${fEdge[0]} to ${fEdge[1]} MHz. Both tips equal ${tol}.`,
+        tip: 'Trim a little at a time: a millimetre cannot be put back. Bend nothing at the tips.' },
       { n: 9, phase: 'Tune and install', title: 'Seal, mount and point it', hours: 1.5, tasks: [
-        'Fill the pocket with neutral-cure silicone (not acetic: it corrodes the joints) over the screws, the wire ends and the jack, run a bead where each wire enters its channel, lay the lid on, and screw it down with the two M3 × 8 screws.',
-        `Fix the mast to its post, rail or wall bracket with the two U-bolt clamps on the marks, ${u.len(CLAMP_LOW)} and ${u.len(CLAMP_HIGH, { u: true })} up from the bottom end. Both clamps tight: the wind check counts on them.`,
-        'Turn the mast so the V opens toward north or south (true north: correct a compass for the local declination). East-west passes are what the open side faces away from.',
-        'Set the mast plumb so both arms are level, and put it where it sees as much of the sky as you can, above the roof line if possible and away from other antennas.',
-        'Run the coax to the receiver with the drip loop below the entry point.',
-      ], check: 'Opening within 10° of north or south; each arm level within 3° (a spirit level bubble inside the lines); the mast does not move when you shake it at the hub.',
-        tip: 'Mount it lower rather than in a place where the mast cannot be clamped at both marks: the wind check assumes two tight clamps on a post that does not move.' },
+        'Fill the pocket with neutral-cure silicone (not acetic). A bead at each channel. Lid on, two M3 × 8 screws.',
+        `Two U-bolt clamps on the marks, ${u.len(CLAMP_LOW)} and ${u.len(CLAMP_HIGH, { u: true })} up. Both tight.`,
+        'V open to true north or south.',
+        'Mast plumb, arms level, as much sky as possible, away from other antennas.',
+        'Coax to the receiver, drip loop below the entry.',
+      ], check: 'Open within 10° of north or south. Arms level within 3°. No movement when shaken at the hub.',
+        tip: 'Both clamps tight on a post that does not move: the wind check counts on them.' },
     ];
 
     const cutWhy = ins

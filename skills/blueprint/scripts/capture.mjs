@@ -11,11 +11,11 @@
 // list, the other units) and, with --pdf, the printed pack. Fails on any console error, a
 // blank 3D view, sideways scroll on a phone, an input field that does not change
 // the plan, or a units switch that leaves millimetres behind. Read every PNG.
-import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
 import { resolve, join, dirname } from 'node:path';
 import { mkdirSync, existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { findPlaywright, launchChromium, hasPdftoppm, PLAYWRIGHT_FIX } from './env.mjs';
 
 const args = process.argv.slice(2);
 const page0 = args.find(a => !a.startsWith('--'));
@@ -25,16 +25,11 @@ const file = resolve(page0);
 const out = resolve(opt('out', join(dirname(file), 'shots')));
 mkdirSync(out, { recursive: true });
 
-function loadPlaywright() {
-  const require = createRequire(import.meta.url);
-  const tries = [() => require('playwright'), () => require(join(execSync('npm root -g').toString().trim(), 'playwright'))];
-  for (const t of tries) { try { return t(); } catch { /* next */ } }
-  console.error('playwright not found: npm i -g playwright (and a Chromium it can launch)');
-  process.exit(2);
-}
-const { chromium } = loadPlaywright();
-const exe = ['/opt/pw-browsers/chromium', process.env.CHROMIUM_PATH].find(p => p && existsSync(p) && !p.endsWith('/chromium'));
-const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'], ...(exe ? { executablePath: exe } : {}) });
+const pw = findPlaywright();
+if (!pw) { console.error(`playwright not found. Fix: ${PLAYWRIGHT_FIX}\nThen: node scripts/blueprint.mjs doctor`); process.exit(2); }
+let browser;
+try { browser = await launchChromium(pw); }
+catch (e) { console.error(`${e.message}\nFix: ${e.fix}`); process.exit(2); }
 const problems = [];
 const url = pathToFileURL(file).href + (opt('hash', '') ? '#' + opt('hash', '').replace(/^#/, '') : '');
 
@@ -129,22 +124,21 @@ if (await p.$('[data-stl]')) {
 
 // ---------------------------------------------------------------- the other units
 // the page opens in the plan's units; switch to the other system and check nothing
-// of the first is left in the plan's own numbers (bought-part specs are exempt)
+// of the first is left in the plan's own numbers (bought parts keep their trade names)
 const home = await p.evaluate(() => window.__blueprint.d.units.system);
 const other = home === 'imperial' ? 'metric' : 'imperial';
-const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain, .spec').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
-const ownAll = async () => (await Promise.all(['#facts', '#checks-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'].map(ownText))).join('\n');
+const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain, .spec, .bought').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
+const SECTIONS = ['#checks-body', '#bom-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'];
 await p.click(`[data-units="${other}"]`);
 await p.waitForTimeout(600);
-const all = await ownAll();
-if (other === 'imperial') {
-  if (!/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
-  const mm = all.match(/(?<![\d.])\d+(\.\d+)?\s?mm\b(?![²2])/g);
-  if (mm) problems.push(`imperial: still shows millimetres (${mm.slice(0, 3).join(', ')})`);
-} else {
-  const ins = all.match(/\d+(\s\d+\/\d+)?"/g);
-  if (ins) problems.push(`metric: still shows inches (${ins.slice(0, 3).join(', ')})`);
+const left = other === 'imperial' ? /(?<![\d.])\d+(\.\d+)?\s?mm\b(?![²2])/g : /\d+(\s\d+\/\d+)?"/g;
+for (const sel of SECTIONS) {
+  const t = await ownText(sel), hits = t.match(left);
+  if (!hits) continue;
+  const at = t.indexOf(hits[0]), ctx = t.slice(Math.max(0, at - 40), at + 20).replace(/\s+/g, ' ').trim();
+  problems.push(`${other}: ${sel.replace(/^#|-body$/g, '')} still shows ${other === 'imperial' ? 'millimetres' : 'inches'} (${hits.slice(0, 3).join(', ')}) in "…${ctx}…": format it with u.len() / u.tol() in design.mjs`);
 }
+if (other === 'imperial' && !/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
 await shot(p, '#model', `${other}-model.png`);
 await shot(p, '#cutlist', `${other}-cutlist.png`);
 await shot(p, '#steps-body .step:nth-child(2)', `${other}-step-2.png`);
@@ -155,8 +149,8 @@ if (args.includes('--pdf')) {
   await p.emulateMedia({ media: 'print' });
   await p.pdf({ path: join(out, 'plan.pdf'), format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '12mm', left: '10mm', right: '10mm' } });
   // pages as images, so the print layout can be read too
-  try { execSync(`pdftoppm -r 50 -png "${join(out, 'plan.pdf')}" "${join(out, 'pdf')}"`); }
-  catch { console.log('note: pdftoppm not found, so plan.pdf pages were not rendered to PNG (install poppler-utils)'); }
+  if (hasPdftoppm()) execSync(`pdftoppm -r 50 -png "${join(out, 'plan.pdf')}" "${join(out, 'pdf')}"`);
+  else console.log('note: pdftoppm not found, so plan.pdf pages were not rendered to PNG (install poppler-utils)');
 }
 await p.close();
 
@@ -173,6 +167,30 @@ await p.close();
   if (lum < 0.85) problems.push(`dark mode: the page turns dark (background luminance ${lum.toFixed(2)}); it must stay light paper`);
   await dk.screenshot({ path: join(out, 'dark-mode-device.png') });
   await dk.close();
+}
+
+// ---------------------------------------------------------------- explainers and the guide
+// a "?" opens its bubble; the guide beside the page opens light, without errors, and fits a phone
+{
+  const pq = await open({ width: 1000, height: 800 });
+  const q = await pq.$('#steps-body .q');
+  if (!q) problems.push('no "?" explainers in the steps');
+  else {
+    await q.click();
+    if (!(await pq.evaluate(() => { const b = document.querySelector('.qpop'); return b && !b.hidden && b.textContent.length > 10; }))) problems.push('a "?" does not open its explanation');
+  }
+  await pq.close();
+  const gfile = join(dirname(file), 'guide.html');
+  if (!existsSync(gfile)) problems.push('no guide.html beside the page (build writes it)');
+  else for (const vp of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+    const g = await browser.newPage({ viewport: vp });
+    g.on('pageerror', e => problems.push(`guide: page error: ${e.message}`));
+    g.on('console', m => { if (m.type() === 'error') problems.push(`guide: console: ${m.text()}`); });
+    await g.goto(pathToFileURL(gfile).href, { waitUntil: 'networkidle' });
+    await g.screenshot({ path: join(out, vp.width < 500 ? 'guide-phone.png' : 'guide.png'), fullPage: true });
+    if (vp.width < 500 && (await g.evaluate(() => document.documentElement.scrollWidth)) > 392) problems.push('guide: scrolls sideways on a phone');
+    await g.close();
+  }
 }
 
 // ---------------------------------------------------------------- phone

@@ -136,7 +136,10 @@ export function solveFrame(model, fixed, loads) {
 // member's end or a load point lands, then subdivided so a spread load acts along
 // the span and not only at its ends. Free member ends within one section size of
 // another member are snapped onto it (a post that starts on top of a rail).
-export function frameModel(jm, extraPts = [], { maxDof = 1100 } = {}) {
+// fits: boxes of bought fittings (a PVC tee or elbow). An end inside one is carried on
+// along its own axis to the point nearest the fitting's centre, so every pipe in that
+// fitting meets at one node: the fitting is taken as a rigid joint.
+export function frameModel(jm, extraPts = [], { maxDof = 1100, fits = [] } = {}) {
   const segs = Object.values(jm).filter(j => !j.m.loose).map(j => ({ a: j.A.slice(), b: j.B.slice(), j }));
   const proj = (p, s) => {
     const d = sub(s.b, s.a), L2 = dot(d, d);
@@ -146,8 +149,30 @@ export function frameModel(jm, extraPts = [], { maxDof = 1100 } = {}) {
   };
   const ends = [];
   segs.forEach(s => { ends.push([s, 'a']); ends.push([s, 'b']); });
+  // ends in each fitting meet where their axes cross (least squares), or at the box centre
+  const fitted = new Set();
+  for (const f of fits) {
+    const inF = ends.filter(([s, k]) => [0, 1, 2].every(i => s[k][i] >= f[0][i] && s[k][i] <= f[1][i]));
+    if (inF.length < 2) continue;
+    const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], r = [0, 0, 0];
+    for (const [s] of inF) {
+      const dd = norm(sub(s.b, s.a));
+      for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { const P = (i === j ? 1 : 0) - dd[i] * dd[j]; M[i][j] += P; r[i] += P * s.a[j]; }
+    }
+    const det = m => m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    const D = det(M);
+    const c = Math.abs(D) > 1e-6 * inF.length ** 3
+      ? [0, 1, 2].map(col => det(M.map((row, i) => row.map((v, j) => (j === col ? r[i] : v)))) / D)
+      : [0, 1, 2].map(i => (f[0][i] + f[1][i]) / 2);
+    for (const [s, k] of inF) {
+      const dd = sub(s.b, s.a);
+      s[k] = add(s.a, mul(dd, dot(sub(c, s.a), dd) / dot(dd, dd)));
+      fitted.add(s[k]);
+    }
+  }
   for (const [s, k] of ends) {
     const p = s[k];
+    if (fitted.has(p)) continue;
     if (ends.some(([o, ok]) => o !== s && len(sub(o[ok], p)) < 1)) continue;
     let best = null;
     for (const o of segs) {
@@ -202,7 +227,7 @@ export function runLoads(d) {
   // direction (drag spread up a mast plus a load at its head): parts: [{ on, at, kg | N, dir }]
   const partsOf = l => l.parts || [l];
   const extra = [...model.supports.map(s => s.at), ...loads.flatMap(l => partsOf(l).flatMap(q => q.at || []))];
-  const fm = frameModel(joints, extra);
+  const fm = frameModel(joints, extra, { fits: d.fitBoxes || [] });
   const N = fm.pts.length;
   let k = 0;
   const supIdx = model.supports.map(s => ({ idx: fm.snapped[k++].idx, fix: s.fix || 'pin' }));
