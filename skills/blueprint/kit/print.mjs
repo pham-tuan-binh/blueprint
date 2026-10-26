@@ -11,6 +11,10 @@
 //   { type: 'prism', pts, z0, h, axis }    a 2D outline extruded along 'z' (or 'x', 'y'):
 //                                          pts are [u, v] on the other two axes in order
 //   { type: 'hole',  a, b, d }             (cuts) a round hole of diameter d from a to b
+//
+// copies: [{ move: [dx, dy, dz], rotZ: deg, about: [x, y, z] }] places the same part
+// again (clips along an arm): turned about a vertical axis through `about`, then
+// moved. One STL; the quantity is the copies plus one.
 import { v3 } from './core.mjs';
 
 // g/cm³, $/kg, and what each is for
@@ -40,10 +44,23 @@ const ext = (sh) => {
   }
   throw new Error(`unknown print solid "${sh.type}"`);
 };
+export const printQty = pr => pr.qty || (pr.copies?.length || 0) + 1;
+// every placement of a part, as a point transform; the first is the part as modelled
+export function placements(pr) {
+  return [p => p, ...(pr.copies || []).map(c => {
+    const t = ((c.rotZ || 0) * Math.PI) / 180, cs = Math.cos(t), sn = Math.sin(t), ab = c.about || [0, 0, 0], mv = c.move || [0, 0, 0];
+    return p => { const x = p[0] - ab[0], y = p[1] - ab[1]; return [ab[0] + x * cs - y * sn + mv[0], ab[1] + x * sn + y * cs + mv[1], p[2] + mv[2]]; };
+  })];
+}
 export const prismAxes = axis => (axis === 'x' ? [1, 2, 0] : axis === 'y' ? [0, 2, 1] : [0, 1, 2]);
 
-// Corner sets per solid, for the drawings (each solid drawn as its outline).
-export function printSolids(part) {
+// Corner sets per solid, for the drawings (each solid drawn as its outline); with
+// all: true, for every placement of the part.
+export function printSolids(part, { all = false } = {}) {
+  const base = solidsOf(part);
+  return all ? placements(part).flatMap(f => base.map(pts => pts.map(f))) : base;
+}
+function solidsOf(part) {
   return part.shapes.map(sh => {
     if (sh.type === 'prism') {
       const [iu, iv, iz] = prismAxes(sh.axis);
@@ -62,6 +79,12 @@ export function printSolids(part) {
     const [lo, hi] = ext(sh);
     return [0, 1, 2, 3, 4, 5, 6, 7].map(i => [i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
   });
+}
+
+// the box round every placement (for the floating check, the 3D view and the overall size)
+export function printBoxAll(part) {
+  const pts = printSolids(part, { all: true }).flat();
+  return [[0, 1, 2].map(i => Math.min(...pts.map(q => q[i]))), [0, 1, 2].map(i => Math.max(...pts.map(q => q[i])))];
 }
 
 export function printBox(part) {

@@ -33,7 +33,7 @@ export function solids(d, { upTo = Infinity, only = null } = {}) {
   const out = [];
   for (const m of d.model.members) if (m.step <= upTo && (!only || only(m))) out.push({ id: m.id, kind: 'member', step: m.step, pts: memberCorners(d.joints[m.id]) });
   for (const pl of d.model.plates) if (pl.step <= upTo && (!only || only(pl))) out.push({ id: pl.id, kind: 'plate', step: pl.step, pts: boxCorners([pl.c.map((v, i) => v - pl.s[i] / 2), pl.c.map((v, i) => v + pl.s[i] / 2)]) });
-  for (const pr of d.model.prints || []) if (pr.step <= upTo && (!only || only(pr))) for (const pts of printSolids(pr)) out.push({ id: pr.id, kind: 'print', step: pr.step, pts });
+  for (const pr of d.model.prints || []) if (pr.step <= upTo && (!only || only(pr))) for (const pts of printSolids(pr, { all: true })) out.push({ id: pr.id, kind: 'print', step: pr.step, pts });
   for (const h of d.model.hardware) if (h.shape && h.step <= upTo && (!only || only(h))) {
     const shapes = [].concat(h.shape);
     for (const sh of shapes) out.push({ id: h.id, kind: 'hardware', step: h.step, pts: sh.type === 'box' ? boxCorners([sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)]) : cylCorners(sh) });

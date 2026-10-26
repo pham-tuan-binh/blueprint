@@ -5,7 +5,7 @@
 import { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet } from './core.mjs';
 import { solveJoints, memberCorners, describeEnd } from './joints.mjs';
 import { runLoads } from './fea.mjs';
-import { printBox, printEstimate, FILAMENTS, bedBox } from './print.mjs';
+import { printBox, printBoxAll, printEstimate, printQty, FILAMENTS, bedBox } from './print.mjs';
 
 const { sub, len, dot, add, mul } = v3;
 
@@ -164,8 +164,8 @@ function massItems(model, joints) {
     items.push({ kind: 'plate', id: pl.id, m: (pl.s[0] * pl.s[1] * pl.s[2] - cut * pl.s[ax[2]]) * rho * (pl.fill ?? 1), c: pl.c });
   }
   for (const pr of model.prints) {
-    const [lo, hi] = printBox(pr);
-    items.push({ kind: 'print', id: pr.id, m: (printEstimate(pr).grams * (pr.qty || 1)) / 1000, c: lo.map((v, i) => (v + hi[i]) / 2) });
+    const [lo, hi] = printBoxAll(pr);
+    items.push({ kind: 'print', id: pr.id, m: (printEstimate(pr).grams * printQty(pr)) / 1000, c: lo.map((v, i) => (v + hi[i]) / 2) });
   }
   for (const h of model.hardware) {
     if (!h.kg) continue;
@@ -243,7 +243,7 @@ function geometryChecks(model, joints, sites, ref) {
   for (const id of ids) boxes[id] = memberBox(joints[id]);
   for (const pl of model.plates) boxes[pl.id] = plateBox(pl);
   for (const h of model.hardware) { const b = shapeBox(h.shape); if (b) boxes[h.id] = b; }
-  for (const pr of model.prints) boxes[pr.id] = printBox(pr);
+  for (const pr of model.prints) boxes[pr.id] = printBoxAll(pr);
   const others = [...model.plates.map(p => ({ id: p.id, on: p.on })), ...model.hardware.filter(h => boxes[h.id]).map(h => ({ id: h.id, on: h.on })), ...model.prints.map(p => ({ id: p.id, on: p.on }))];
   for (const o of others) {
     if (o.on) { for (const t of [].concat(o.on)) if (boxes[t]) link(o.id, t); continue; }
@@ -369,7 +369,7 @@ export function derive(plan, given = {}, system) {
   for (const c of model.consumables) { if (c.price == null) price.known = false; else price.consumables = (price.consumables || 0) + c.price; }
   price.consumables ||= 0;
   d.prints = model.prints.map(pr => ({ part: pr, est: printEstimate(pr) }));
-  price.prints = d.prints.reduce((t, x) => t + x.est.cost * (x.part.qty || 1), 0);
+  price.prints = d.prints.reduce((t, x) => t + x.est.cost * printQty(x.part), 0);
   price.total = price.stock + price.plates + price.hardware + price.consumables + price.prints;
   d.price = price;
   d.hours = model.steps.reduce((s, st) => s + (st.hours || 0), 0);

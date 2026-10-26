@@ -42,6 +42,7 @@ prints: [{
 - `prism` extrudes a 2D outline: `axis: 'z'` takes `pts` as [x, y]; `'x'` as [y, z]; `'y'` as [x, z].
 - `material`: PLA, PETG, ASA, ABS, TPU or PA. `infill` is 0 to 1. `orient` is the sentence the step prints after "print it".
 - A print touches what it holds, like a plate (the floating check sees it); `on: 'member-id'` names a holder it does not touch.
+- `copies: [{ move: [dx, dy, dz], rotZ: deg, about: [x, y, z] }]` places the same part again: clips along an arm, feet under a frame. Each copy is turned about a vertical axis through `about` (default the origin), then moved. They all show in the 3D view and the drawings; there is one STL, and the quantity is the copies plus one (or `qty`).
 
 ## Design rules
 

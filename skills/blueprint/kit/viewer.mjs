@@ -9,6 +9,14 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/exampl
 import { memberCorners } from './joints.mjs';
 import { prismAxes } from './print.mjs';
 
+// the matrix of each placement of a print (see print.mjs copies)
+const placeMatrices = pr => [new THREE.Matrix4(), ...(pr.copies || []).map(c => {
+  const ab = c.about || [0, 0, 0], mv = c.move || [0, 0, 0];
+  return new THREE.Matrix4().makeTranslation(ab[0] + mv[0], ab[1] + mv[1], ab[2] + mv[2])
+    .multiply(new THREE.Matrix4().makeRotationZ(((c.rotZ || 0) * Math.PI) / 180))
+    .multiply(new THREE.Matrix4().makeTranslation(-ab[0], -ab[1], -ab[2]));
+})];
+
 // ---------------------------------------------------------------- printed parts
 // The exact mesh of a print: its solids unioned, then its cuts and bores taken out,
 // with three-bvh-csg (loaded only when a plan has prints). World coordinates, mm.
@@ -210,11 +218,12 @@ export function createViewer(el, { onPick } = {}) {
     for (const pr of md.prints || []) {
       const info = { id: pr.id, name: pr.name, step: pr.step, kind: 'print', spec: `3D print, ${pr.material || 'PETG'}` };
       const tone = pr.tone || 'faint';
-      const rough = roughPrint(pr).map(g => { add(g, info, tone); return meshes[meshes.length - 1]; });
+      const mats4 = placeMatrices(pr);
+      const rough = mats4.flatMap(m4 => roughPrint(pr).map(g => { add(g.applyMatrix4(m4), info, tone); return meshes[meshes.length - 1]; }));
       printGeometry(pr).then(geo => {
         if (gen !== generation) return;
         for (const r of rough) { root.remove(r.mesh); r.mesh.geometry.dispose(); meshes.splice(meshes.indexOf(r), 1); }
-        add(geo, info, tone);
+        for (const m4 of mats4) add(geo.clone().applyMatrix4(m4), info, tone);
         refresh();
       }).catch(e => console.warn('print geometry:', e.message));
     }
