@@ -2,21 +2,26 @@
 // functions feed the live page and its printed form; nothing here computes a
 // number of its own, it only lays out what derive() found.
 import { esc } from './core.mjs';
-import { describeEnd } from './joints.mjs';
 import { jigSheet, gaSheet, pieceSvg, plateSvg, nestSvg, stepNodes, stepViews } from './shop.mjs';
 
 const money = (d, v) => (d.model.currency ? `${d.model.currency}${Math.round(v).toLocaleString('en-US')}` : '');
 
+function plateLine(d) {
+  const metal = d.plateGroups.filter(g => ['steel', 'aluminium', 'stainless'].includes(g.pl.material || 'steel')).reduce((s, g) => s + g.qty, 0);
+  const sheet = d.plateGroups.reduce((s, g) => s + g.qty, 0) - metal;
+  return [metal ? `${metal} plate${metal > 1 ? 's' : ''}` : '', sheet ? `${sheet} sheet${sheet > 1 ? 's' : ''}` : ''].filter(Boolean).join(', ');
+}
+
 export function factsHtml(d) {
   const u = d.units, [lo, hi] = d.bbox;
   const rows = [
-    ['Overall', `${u.size(hi[0] - lo[0])} × ${u.size(hi[1] - lo[1])} × ${u.size(hi[2] - lo[2])}`, 'length × depth × height'],
+    ['Overall', `${u.len(hi[0] - lo[0])} × ${u.len(hi[1] - lo[1])} × ${u.len(hi[2] - lo[2])}${u.imperial ? '' : ' mm'}`, 'length × depth × height'],
     ['Mass', u.mass(d.totalKg), 'as built, with every part listed'],
-    ['Pieces', `${d.model.members.length} cut (${d.pieces.length} different)`, `${d.plateGroups.reduce((s, g) => s + g.qty, 0)} plates`],
+    ['Pieces', `${d.model.members.length} cut (${d.pieces.length} different)`, plateLine(d)],
     [d.model.join === 'screw' || d.model.join === 'bolt' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join === 'screw' || d.model.join === 'bolt' ? '' : `about ${u.run(d.weld.length)} of weld`],
-    ...d.loads.map(r => [r.name, `factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(1)}`, `sags ${u.deflection(r.loadDefl)}`]),
+    ...d.loads.map(r => [r.name, `factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(1)}`, `${(r.load.dir && Math.abs(r.load.dir[2]) < 0.5) ? 'moves' : 'sags'} ${u.deflection(r.loadDefl)}`]),
     ['Build time', d.hours ? `${d.hours} h` : '', `${d.model.steps.length} steps`],
-    ...(d.price.total && d.model.currency ? [['Cost', `~${money(d, d.price.total)}`, d.price.known ? 'materials and parts' : 'priced lines only']] : []),
+    ...(d.price.total && d.model.currency ? [['Cost', `~${money(d, d.price.total)}`, d.price.known ? 'everything on the materials list' : 'priced lines only; see the materials list']] : []),
     ...d.model.facts,
   ];
   return rows.filter(r => r[1]).map(([k, v, s]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}${s ? `<small>${esc(s)}</small>` : ''}</dd></div>`).join('');
@@ -72,6 +77,7 @@ export function legendHtml(d) {
     ['Edges', `named by where they face on the finished build (${md.axes.z[0]}-${md.axes.y[1]}, ${md.axes.z[1]}-${md.axes.x[0]}…)`],
     ['Joints', `mitre = same section, on the bisector · butt onto X = square onto the face of X · flush with X = cut level with X's outer face · then ${joinWord}`],
     ['Long point', 'the overall length of the piece, tip to tip'],
+    ['Dimensions', 'jig drawings and joint tables give centre lines (℄), where the members\' centres cross; the general arrangement gives outside sizes'],
     ['Tolerance', md.tolerance || `cut ${u.tol(1)} · tacked ${u.tol(1)} · finished ${u.tol(2)} · diagonals equal within ${u.len(3)}`],
   ];
   return `<div class="wrap"><table class="doc legend">${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table></div>`;
@@ -106,8 +112,10 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
     h += `<h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr>` +
       stepNodes(d, n).map(q => `<tr><td>${esc(q.name)}</td><td class=n>${esc(u.len(q.p[0]))}</td><td class=n>${esc(u.len(q.p[1]))}</td><td class=n>${esc(u.len(q.p[2]))}</td></tr>`).join('') + `</table></div>`;
     const pcs = piecesOfStep(d, n);
-    const sheets = `<div class="piece-list">${pcs.map(g => pieceSvg(d, g)).join('')}</div>`;
-    const label = `Cut sheets: ${pcs.map(g => `${g.mark} x${g.members.filter(m => m.step === n).length}`).join(', ')}`;
+    const first = pcs.filter(g => g.step === n), earlier = pcs.filter(g => g.step !== n);
+    const label = `Pieces: ${pcs.map(g => `${g.mark} x${g.members.filter(m => m.step === n).length}`).join(', ')}`;
+    const sheets = (first.length ? `<div class="piece-list">${first.map(g => pieceSvg(d, g)).join('')}</div>` : '') +
+      (earlier.length ? `<p class="muted">${earlier.map(g => `${g.mark}: cut sheet in <a href="#step-${g.step}">step ${g.step}</a>`).join(' · ')}</p>` : '');
     h += interactive ? `<details class="sheets" open><summary>${esc(label)}</summary>${sheets}</details>` : `<h4>${esc(label)}</h4>${sheets}`;
   }
   const pls = d.plateGroups.filter(g => g.step === n && g.pl.drawing !== false);
@@ -119,17 +127,20 @@ export function cutListHtml(d) {
   const u = d.units;
   return `<div class="wrap"><table class="doc"><tr><th>Mark</th><th class=n>Qty</th><th>Section</th><th class=n>Long point</th><th>Left end</th><th>Right end</th><th class=n>Step</th></tr>` +
     d.pieces.map(g => {
-      const A = describeEnd(g.pm.ends.A), B = describeEnd(g.pm.ends.B);
+      const [A, B] = g.endText;
       return `<tr><td><b>${esc(g.mark)}</b> <span class="muted">${esc(g.name)}</span></td><td class=n>${g.qty}</td><td>${esc(g.sec.short)}</td><td class=n>${esc(u.len(g.pm.longPoint))}</td><td>${esc(A.ang)} · ${esc(A.how)}</td><td>${esc(B.ang)} · ${esc(B.how)}</td><td class=n>${g.step}</td></tr>`;
     }).join('') + `</table></div><h3>Cutting plan</h3><p class="muted">Each bar is one stock length; cut the pieces left to right.</p>` +
     d.nesting.map(n => `<figure>${nestSvg(d, n)}</figure>`).join('');
 }
 
+// an option label may be a function of the units, so a size in it follows them
+export const optLabel = (o, u) => (o ? (typeof o.label === 'function' ? o.label(u) : o.label) : '');
+
 export function paramsSummary(d) {
   const u = d.units;
   return (d.plan.params || []).map(pd => {
     const v = d.p[pd.id];
-    const s = pd.type === 'choice' ? pd.options.find(o => o.value === v)?.label : pd.type === 'bool' ? (v ? 'yes' : 'no')
+    const s = pd.type === 'choice' ? optLabel(pd.options.find(o => o.value === v), u) : pd.type === 'bool' ? (v ? 'yes' : 'no')
       : pd.type === 'len' ? u.len(v, { u: true }) : pd.type === 'kg' ? u.mass(v) : `${v}${pd.unit ? ' ' + pd.unit : ''}`;
     return `${pd.label} ${s}`;
   }).join(' · ');

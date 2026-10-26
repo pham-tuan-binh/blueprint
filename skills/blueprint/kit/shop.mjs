@@ -2,7 +2,7 @@
 // plate sheets and the stock nesting. Pure functions of a derived plan (derive.mjs)
 // and the units in force, so imperial is a re-render, never a second drawing.
 import { esc, f1, r0 } from './core.mjs';
-import { memberCorners, describeEnd } from './joints.mjs';
+import { memberCorners } from './joints.mjs';
 import { hull2 } from './derive.mjs';
 
 // ---------------------------------------------------------------- views
@@ -38,7 +38,7 @@ export function solids(d, { upTo = Infinity, only = null } = {}) {
 }
 
 // One orthographic view with overall dimensions. now(id) marks the parts of this step.
-function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn }) {
+function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null }) {
   const V = VIEWS[view];
   const polys = items.map(it => ({ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }))
     .sort((a, b) => a.depth - b.depth);
@@ -48,23 +48,25 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
   const span = Math.max(x1 - x0, y1 - y0, 200);
   const fs = fsIn || span / 34, pad = fs * 5;
   // the dimensioned extent is what this step adds (or everything, when it is the GA)
-  const nowPts = polys.filter(p => now(p)).flatMap(p => p.hull);
+  // jigs dimension centre lines (like the joint table, marked ℄); the GA outside faces
+  const nowPts = dimPts ? dimPts.map(V.pr) : polys.filter(p => now(p)).flatMap(p => p.hull);
+  const cl = dimPts ? '℄ ' : '';
   const dx0 = Math.min(...nowPts.map(p => p[0])), dx1 = Math.max(...nowPts.map(p => p[0]));
   const dy0 = Math.min(...nowPts.map(p => p[1])), dy1 = Math.max(...nowPts.map(p => p[1]));
   const vb = [x0 - pad, y0 - pad * 1.2, x1 - x0 + pad * 2.2, y1 - y0 + pad * 2.6];
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(f1).join(' ')}" class="${cls}" style="--fs:${f1(fs)}px" data-w="${f1(vb[2])}" role="img" aria-label="${esc(title || V.title)}">`;
   for (const p of polys) s += `<polygon class="${now(p) ? 'jn' : 'jo'} k-${p.kind}" points="${p.hull.map(q => f1(q[0]) + ',' + f1(q[1])).join(' ')}"/>`;
   if (dims && nowPts.length) {
-    const a = fs * 0.5, off = fs * 2.2;
+    const a = fs * 0.5, off = fs * 2.2, showH = dx1 - dx0 > 1, showV = dy1 - dy0 > 1;
     const yb = y1 + off, xr = x1 + off;
     // horizontal: under the view
-    s += `<path class="dl" d="M${f1(dx0)} ${f1(dy1 + fs * 0.4)}V${f1(yb + a)}M${f1(dx1)} ${f1(dy1 + fs * 0.4)}V${f1(yb + a)}M${f1(dx0)} ${f1(yb)}H${f1(dx1)}"/>`;
-    s += `<path class="da" d="M${f1(dx0)} ${f1(yb)}l${f1(a * 1.6)} ${f1(-a * 0.55)}v${f1(a * 1.1)}zM${f1(dx1)} ${f1(yb)}l${f1(-a * 1.6)} ${f1(-a * 0.55)}v${f1(a * 1.1)}z"/>`;
-    s += `<text class="dt" x="${f1((dx0 + dx1) / 2)}" y="${f1(yb - fs * 0.35)}" text-anchor="middle">${esc(u.len(dx1 - dx0))}</text>`;
+    if (showH) s += `<path class="dl" d="M${f1(dx0)} ${f1(dy1 + fs * 0.4)}V${f1(yb + a)}M${f1(dx1)} ${f1(dy1 + fs * 0.4)}V${f1(yb + a)}M${f1(dx0)} ${f1(yb)}H${f1(dx1)}"/>`;
+    if (showH) s += `<path class="da" d="M${f1(dx0)} ${f1(yb)}l${f1(a * 1.6)} ${f1(-a * 0.55)}v${f1(a * 1.1)}zM${f1(dx1)} ${f1(yb)}l${f1(-a * 1.6)} ${f1(-a * 0.55)}v${f1(a * 1.1)}z"/>`;
+    if (showH) s += `<text class="dt" x="${f1((dx0 + dx1) / 2)}" y="${f1(yb - fs * 0.35)}" text-anchor="middle">${cl}${esc(u.len(dx1 - dx0))}</text>`;
     // vertical: right of the view
-    s += `<path class="dl" d="M${f1(dx1 + fs * 0.4)} ${f1(dy0)}H${f1(xr + a)}M${f1(dx1 + fs * 0.4)} ${f1(dy1)}H${f1(xr + a)}M${f1(xr)} ${f1(dy0)}V${f1(dy1)}"/>`;
-    s += `<path class="da" d="M${f1(xr)} ${f1(dy0)}l${f1(-a * 0.55)} ${f1(a * 1.6)}h${f1(a * 1.1)}zM${f1(xr)} ${f1(dy1)}l${f1(-a * 0.55)} ${f1(-a * 1.6)}h${f1(a * 1.1)}z"/>`;
-    s += `<text class="dt" x="${f1(xr + fs * 0.4)}" y="${f1((dy0 + dy1) / 2)}" transform="rotate(-90 ${f1(xr + fs * 0.4)} ${f1((dy0 + dy1) / 2)})" text-anchor="middle" dy="${f1(-fs * 0.2)}">${esc(u.len(dy1 - dy0))}</text>`;
+    if (showV) s += `<path class="dl" d="M${f1(dx1 + fs * 0.4)} ${f1(dy0)}H${f1(xr + a)}M${f1(dx1 + fs * 0.4)} ${f1(dy1)}H${f1(xr + a)}M${f1(xr)} ${f1(dy0)}V${f1(dy1)}"/>`;
+    if (showV) s += `<path class="da" d="M${f1(xr)} ${f1(dy0)}l${f1(-a * 0.55)} ${f1(a * 1.6)}h${f1(a * 1.1)}zM${f1(xr)} ${f1(dy1)}l${f1(-a * 0.55)} ${f1(-a * 1.6)}h${f1(a * 1.1)}z"/>`;
+    if (showV) s += `<text class="dt" x="${f1(xr + fs * 0.4)}" y="${f1((dy0 + dy1) / 2)}" transform="rotate(-90 ${f1(xr + fs * 0.4)} ${f1((dy0 + dy1) / 2)})" text-anchor="middle" dy="${f1(-fs * 0.2)}">${cl}${esc(u.len(dy1 - dy0))}</text>`;
   }
   // points that land on the same spot in this view share one label: BL1…BL4
   const spots = new Map();
@@ -116,7 +118,8 @@ function sheet(items, views, opts) {
 
 export function jigSheet(d, st, views) {
   const items = solids(d, { upTo: st.n, only: st.alone ? x => x.step === st.n : null });
-  return sheet(items, views, { now: it => it.step === st.n, labels: stepNodes(d, st.n), title: v => `Step ${st.n}: ${VIEWS[v].title}`, u: d.units });
+  const labels = stepNodes(d, st.n);
+  return sheet(items, views, { now: it => it.step === st.n, labels, dimPts: labels.map(l => l.p), title: v => `Step ${st.n}: ${VIEWS[v].title}`, u: d.units });
 }
 
 export function gaSheet(d) {
@@ -128,6 +131,22 @@ export function gaSheet(d) {
 // broken out, the edge marks at each end, and how each end is joined.
 export function pieceSvg(d, g) {
   const u = d.units, pm = g.pm, sec = g.sec;
+  const [A, B] = g.endText;
+  const head = (total) => `<text class="pt" x="10" y="28">${esc(g.mark)}</text><text class="pq" x="${10 + 18 * g.mark.length + 8}" y="28">x${g.qty}</text>` +
+    `<text class="ps" x="10" y="52">${esc(g.name)} · ${esc(sec.short)} · step ${g.step}</text>` +
+    `<text class="ps pm2" x="10" y="72">${esc(g.ids.join(', '))}</text>` +
+    `<text class="pk" x="${total - 10}" y="28" text-anchor="end">${esc(u.len(pm.longPoint, { u: true }))}</text>` +
+    `<text class="ps" x="${total - 10}" y="52" text-anchor="end">long point</text>`;
+  // square both ends: no marks to transfer, one bar and its length is the whole sheet
+  if (A.square && B.square) {
+    const total = 760, x0 = 10, x1 = 600, y = 92, h = 22;
+    let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} 190" class="piece square" role="img" aria-label="Cut sheet, piece ${esc(g.mark)}">` + head(total);
+    s += `<rect class="pf" x="${x0}" y="${y}" width="${x1 - x0}" height="${h}"/>`;
+    s += `<path class="dl" d="M${x0} ${y + h + 6}v18M${x1} ${y + h + 6}v18M${x0} ${y + h + 16}H${x1}"/>`;
+    s += `<text class="pm" x="${(x0 + x1) / 2}" y="${y + h + 36}" text-anchor="middle">${esc(u.len(pm.longPoint))}, square both ends</text>`;
+    s += `<text class="ps" x="10" y="174">Left end: ${esc(A.how)} · Right end: ${esc(B.how)}</text>`;
+    return s + '</svg>';
+  }
   const j = d.joints[g.ids[0]];
   const sizeMax = Math.max(2 * j.hu, 2 * j.hw);
   const k = Math.min(2.2, 70 / sizeMax), END = Math.max(60, sizeMax * 1.4);
@@ -138,12 +157,7 @@ export function pieceSvg(d, g) {
   const rows = faces.map(f => { const r = { ...f, y0: y }; y += f.W + 64; return r; });
   const H = y + 40;
   const total = Math.max(760, x0 + strip + 190);
-  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${f1(H)}" class="piece" role="img" aria-label="Cut sheet, piece ${esc(g.mark)}">`;
-  s += `<text class="pt" x="10" y="28">${esc(g.mark)}</text><text class="pq" x="${10 + 18 * g.mark.length + 8}" y="28">x${g.qty}</text>`;
-  s += `<text class="ps" x="10" y="52">${esc(g.name)} · ${esc(sec.short)} · step ${g.step}</text>`;
-  s += `<text class="ps pm2" x="10" y="72">${esc(g.ids.join(', '))}</text>`;
-  s += `<text class="pk" x="${total - 10}" y="28" text-anchor="end">${esc(u.len(pm.longPoint, { u: true }))}</text>`;
-  s += `<text class="ps" x="${total - 10}" y="52" text-anchor="end">long point</text>`;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${f1(H)}" class="piece" role="img" aria-label="Cut sheet, piece ${esc(g.mark)}">` + head(total);
   for (const f of rows) {
     const [e1, e2] = f.e.map(i => pm.edges[i]);
     const X = v => x0 + v * k;
@@ -160,7 +174,6 @@ export function pieceSvg(d, g) {
     s += `<text class="pm" x="${f1(XR(e2.b) + 5)}" y="${f1(yB + 17)}">${esc(u.len(e2.b))}</text>`;
     s += `<text class="pe" x="${f1(x0 + strip + 64)}" y="${f1(yA + 9)}">${esc(e1.label)}</text><text class="pe" x="${f1(x0 + strip + 64)}" y="${f1(yB)}">${esc(e2.label)}</text>`;
   }
-  const A = describeEnd(pm.ends.A), B = describeEnd(pm.ends.B);
   s += `<text class="ps" x="10" y="${f1(H - 34)}">Left end: ${esc(A.ang)}, ${esc(A.how)}</text>`;
   s += `<text class="ps" x="10" y="${f1(H - 12)}">Right end: ${esc(B.ang)}, ${esc(B.how)}</text>`;
   return s + '</svg>';
@@ -175,10 +188,29 @@ export function plateSvg(d, pl) {
   const W = pl.s[ax[0]], H = pl.s[ax[1]], T = pl.s[ax[2]];
   const k = Math.min(520 / W, 260 / H);
   const ox = 70, oy = 60, w = W * k, h = H * k;
-  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f1(Math.max(700, w + 220))} ${f1(h + 150)}" class="piece plate" role="img" aria-label="Plate ${esc(pl.id)}">`;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f1(Math.max(700, w + 220))} ${f1(h + 172)}" class="piece plate" role="img" aria-label="Plate ${esc(pl.id)}">`;
   s += `<text class="pt" x="10" y="28">${esc(pl.mark || pl.id)}</text><text class="pq" x="${10 + 18 * String(pl.mark || pl.id).length + 8}" y="28">x${pl.qty || 1}</text>`;
   s += `<text class="ps" x="10" y="50">${esc(pl.name)} · ${esc(u.len(T, { u: true }))} ${esc(pl.materialLabel || pl.material || 'steel')} · step ${pl.step}</text>`;
-  s += `<rect class="pf" x="${ox}" y="${oy}" width="${f1(w)}" height="${f1(h)}" rx="${f1((pl.r || 0) * k)}"/>`;
+  const notches = pl.notches || [];
+  if (!notches.length) s += `<rect class="pf" x="${ox}" y="${oy}" width="${f1(w)}" height="${f1(h)}" rx="${f1((pl.r || 0) * k)}"/>`;
+  else {
+    // the outline minus its notches, as grid cells: fill the kept cells, ink the edges between kept and cut
+    const xs = [...new Set([0, W, ...notches.flatMap(n => [n[0], n[2]])])].sort((a, b) => a - b);
+    const ys = [...new Set([0, H, ...notches.flatMap(n => [n[1], n[3]])])].sort((a, b) => a - b);
+    const cut = (a, b) => notches.some(n => a > n[0] && a < n[2] && b > n[1] && b < n[3]);
+    const keep = (i, j) => i >= 0 && j >= 0 && i < xs.length - 1 && j < ys.length - 1 && !cut((xs[i] + xs[i + 1]) / 2, (ys[j] + ys[j + 1]) / 2);
+    const X = v => ox + v * k, Y = v => oy + h - v * k;
+    let fillD = '', edgeD = '';
+    for (let i = 0; i < xs.length - 1; i++) for (let j = 0; j < ys.length - 1; j++) {
+      if (!keep(i, j)) continue;
+      fillD += `M${f1(X(xs[i]))} ${f1(Y(ys[j]))}H${f1(X(xs[i + 1]))}V${f1(Y(ys[j + 1]))}H${f1(X(xs[i]))}Z`;
+      if (!keep(i - 1, j)) edgeD += `M${f1(X(xs[i]))} ${f1(Y(ys[j]))}V${f1(Y(ys[j + 1]))}`;
+      if (!keep(i + 1, j)) edgeD += `M${f1(X(xs[i + 1]))} ${f1(Y(ys[j]))}V${f1(Y(ys[j + 1]))}`;
+      if (!keep(i, j - 1)) edgeD += `M${f1(X(xs[i]))} ${f1(Y(ys[j]))}H${f1(X(xs[i + 1]))}`;
+      if (!keep(i, j + 1)) edgeD += `M${f1(X(xs[i]))} ${f1(Y(ys[j + 1]))}H${f1(X(xs[i + 1]))}`;
+    }
+    s += `<path class="pf" style="stroke:none" d="${fillD}"/><path class="pb" style="stroke:var(--ink);stroke-width:1.5" d="${edgeD}"/>`;
+  }
   for (const hole of pl.holes || []) {
     const cx = ox + hole.at[0] * k, cy = oy + h - hole.at[1] * k;
     s += `<circle class="ph" cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(Math.max(2.5, (hole.d / 2) * k))}"/>`;
@@ -190,9 +222,15 @@ export function plateSvg(d, pl) {
   s += `<text class="pm" x="${f1(ox + w + 34)}" y="${f1(oy + h / 2 + 5)}">${esc(u.len(H))}</text>`;
   if (pl.holes?.length) {
     const hs = [...new Map(pl.holes.map(hh => [hh.d, hh])).values()];
-    s += `<text class="ps" x="10" y="${f1(oy + h + 76)}">${pl.holes.length} holes: ${hs.map(hh => `⌀${esc(u.len(hh.d))}`).join(', ')} · centres from the lower-left corner: ${pl.holes.map(hh => `(${u.len(hh.at[0])}, ${u.len(hh.at[1])})`).join(' ')}</text>`;
+    s += `<text class="ps" x="10" y="${f1(oy + h + 76)}">${pl.holes.length} hole${pl.holes.length > 1 ? 's' : ''}: ${hs.map(hh => `⌀${esc(u.len(hh.d))}`).join(', ')} · centres from the lower-left corner: ${pl.holes.map(hh => `(${u.len(hh.at[0])}, ${u.len(hh.at[1])})`).join(' ')}</text>`;
   }
-  if (pl.note) s += `<text class="ps" x="10" y="${f1(oy + h + (pl.holes?.length ? 98 : 76))}">${esc(pl.note)}</text>`;
+  let ty = oy + h + (pl.holes?.length ? 98 : 76);
+  if (notches.length) {
+    const sizes = [...new Set(notches.map(n => `${u.len(n[2] - n[0])} × ${u.len(n[3] - n[1])}`))];
+    s += `<text class="ps" x="10" y="${f1(ty)}">${notches.length} notch${notches.length > 1 ? 'es' : ''} ${sizes.join(', ')} for the members that pass through, at: ${notches.map(n => `(${u.len(n[0])}, ${u.len(n[1])})`).join(' ')}</text>`;
+    ty += 22;
+  }
+  if (pl.note) s += `<text class="ps" x="10" y="${f1(ty)}">${esc(pl.note)}</text>`;
   return s + '</svg>';
 }
 
@@ -226,6 +264,7 @@ export const SHOP_CSS = `
 .ga .jn{fill:var(--face)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
+.dt,.jl{paint-order:stroke;stroke:var(--paper);stroke-width:calc(var(--fs) * .3);stroke-linejoin:round}
 .jp{fill:var(--ink)}.jl{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}.jt{font:700 calc(var(--fs) * 1.1) var(--sans);fill:var(--ink)}
 .nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
 `;

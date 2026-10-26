@@ -15,7 +15,7 @@ Open the closest example before you start, and copy its shape.
 
 - `examples/shelf-rack/design.mjs`: four posts, a welded rectangle at every shelf level, plywood decks. The smallest complete plan (about 150 lines). Shows posts that run past corners (`prio`), dynamic limits (the shelf count follows the height), a plan check of its own, and an anchored tip check.
 
-Build one with `node scripts/build.mjs examples/<name>/design.mjs` and open the `index.html` it writes next to it.
+Build one with `node scripts/build.mjs examples/<name>/design.mjs --out /tmp/<name>.html` and open it (without `--out` it writes `index.html` next to the design).
 
 ## The one idea that matters
 
@@ -55,9 +55,9 @@ Work in this order. Write the requirements and the structure before any code: mo
 4. **Write the params**, then the model in `design.mjs`, in this order: sections, nodes (named so a builder can read them: `FL0` front-left at the floor), members, plates, hardware, supports, loads, tip, plan checks, steps. The schema is in `references/model.md`; copy the example's shape.
 5. **Write the steps**: Fabricate (cut, tack sub-frames on a flat table, join, weld out in a balanced sequence, plates and tabs from the real parts), then Finish or Assemble (paint, fit parts, level, load-test). Every step that fits members ends with a check (diagonals, plumb, level, within a tolerance). `references/steps.md` has the rules and a model step.
 6. **Build and audit.**
-   - `node scripts/build.mjs plans/<id>/design.mjs` writes `plans/<id>/index.html` and prints the checks.
+   - `node scripts/build.mjs plans/<id>/design.mjs` writes `plans/<id>/index.html` and prints every check with its value.
    - `node scripts/audit.mjs plans/<id>/design.mjs` must end `audit passed`. Fix the design, never a check: a failing strength check gets a bigger section or a brace, a failing size gets a design that adapts, a hard-coded "mm" gets `u.len()`.
-   - `node scripts/capture.mjs plans/<id>/index.html` must end `capture passed`. It types into a field, switches to inches, checks the 3D view and the phone width, and writes PNGs to `plans/<id>/shots/`.
+   - `node scripts/capture.mjs plans/<id>/index.html --pdf` must end `capture passed`. It types into a field, switches to inches, checks the 3D view and the phone width, and writes PNGs (and the printed pages) to `plans/<id>/shots/`. For every `choice` option and every size where the design changes (a middle leg appears), capture that variant too: `--hash "top=steel" --out plans/<id>/shots/steel`.
 7. **Verify like a builder.** Read every PNG: desktop, phone, every step, the drawings, the cut list, the imperial pass. Then go through `references/verify.md` as someone standing at the saw with only this page. Iterate until every answer is yes.
 8. **Deliver.** The plan folder (`design.mjs`, `index.html`, `shots/`). Tell the user the size, the main numbers (mass, load and safety factor, cost if priced), the assumptions you made about stock and load, and how to change the size (the fields on the page; the URL keeps it).
 
@@ -89,9 +89,9 @@ Put new plans in `plans/<id>/design.mjs` in the user's project (or wherever they
 - **Straight cuts, flat table.** Every member is a straight piece of one section. Prefer square cuts: a rail between two legs butts square onto their faces. Mitre only two members of the same section at a corner. No bends, no copes, no notching, unless the user has the tool and asks.
 - **No ears, no overhangs.** Nothing runs past a joint. A member never butts onto a smaller one (the joint check fails it).
 - **Legs run through.** Give legs and posts `prio: 1`: they run from the floor to the top, cut flush with the top of the rails, and every rail butts onto their faces. The top stays one flat plane.
-- **Name everything for the builder.** Members get a plain name ("Front rail, lower"), nodes a short readable name, steps a short title. Piece marks (A, B, C) are automatic.
+- **Name everything for the builder.** Members get a plain name ("Front rail, lower"), nodes a short readable name, steps a short title. Piece marks (A, B, C) are automatic; write them into step text with `{mark:member-id}`. Members that share a mark should share a name too ("Short rail"), since the cut sheet prints them together.
 - **One or two sections.** Fewer sizes means fewer purchases and fewer mistakes. Use a lighter section only where the checks show it is enough.
-- **Prove what it holds.** At least one load case for its job (spread over what carries it) and one for abuse (a point load, a sideways shove). Safety factor 2 on yield for furniture and fixtures, 3 for anything a person stands on or hangs from. A deflection limit where sag matters (a bench top: span/300). A tip check for anything taller than it is deep.
+- **Prove what it holds.** At least one load case for its job (spread over what carries it) and one for abuse (a point load, a sideways shove). Safety factor 2 on yield for furniture and fixtures, 3 for anything a person stands on or hangs from. A deflection limit where sag matters (a bench top: span/300). A tip check for anything taller than 1.5 × its depth or pushed at height (`references/structure.md`).
 - **Every part is in a step and on the bill.** Plates, feet, bolts, screws, paint, wire and discs: the person buys from the materials list, so if it is not there they will not have it.
 - **Tolerances a person can hold.** ±1 mm cut, diagonals equal within 2-3 mm. Say how to check it, not just the number.
 - **Honest about limits.** If a check only passes because it is anchored, braced or loaded carefully, say so in the check and the step.

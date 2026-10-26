@@ -53,6 +53,7 @@ async function main() {
   const d = derive(plan, {}, opt('units') || plan.units || 'metric');
   const html = pageHtml(d, { script: bundle(designPath) });
   writeFileSync(out, html);
+  for (const c of d.checks) console.log(`  ${c.pass ? '✓' : '✗'} ${c.name}: ${c.value}`);
   const bad = d.checks.filter(c => !c.pass);
   console.log(`wrote ${out} (${(html.length / 1024).toFixed(0)} KB) · ${d.model.members.length} members, ${d.pieces.length} piece marks, ${d.model.steps.length} steps · ${bad.length ? bad.length + ' FAILING checks: ' + bad.map(c => c.name).join('; ') : 'all ' + d.checks.length + ' checks pass'}`);
   if (basename(out) !== 'index.html') console.log('note: name the page index.html when it is the plan\'s main page');

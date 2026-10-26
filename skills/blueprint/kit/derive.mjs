@@ -3,7 +3,7 @@
 // audit calls it at defaults and at every parameter's extremes. Nothing on the
 // page is computed anywhere else.
 import { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet } from './core.mjs';
-import { solveJoints, memberCorners } from './joints.mjs';
+import { solveJoints, memberCorners, describeEnd } from './joints.mjs';
 import { runLoads } from './fea.mjs';
 
 const { sub, len, dot, add, mul } = v3;
@@ -15,7 +15,10 @@ function normalise(model, plan) {
   model.steps ||= []; model.checks ||= []; model.facts ||= [];
   model.kerf ??= 2; model.trim ??= 10;
   model.steps.sort((a, b) => a.n - b.n);
-  for (const s of model.steps) s.tasks ||= [];
+  for (const s of model.steps) {
+    s.tasks ||= [];
+    for (const v of s.views || []) if (!['top', 'front', 'side'].includes(v)) throw new Error(`step ${s.n}: unknown view "${v}" (use 'top', 'front' or 'side')`);
+  }
   model.currency ||= plan.currency || '';
   return model;
 }
@@ -62,10 +65,30 @@ function groupPieces(model, joints) {
     g.ids.push(m.id); g.members.push(m); g.step = Math.min(g.step, m.step);
   }
   const list = [...groups.values()].sort((a, b) => a.step - b.step || b.sec.bu * b.sec.bw - a.sec.bu * a.sec.bw || b.pm.longPoint - a.pm.longPoint);
-  list.forEach((g, i) => { g.mark = letter(i); g.qty = g.ids.length; g.name = g.members[0].name; });
-  const markOf = {};
-  for (const g of list) for (const id of g.ids) markOf[id] = g.mark;
-  return { pieces: list, markOf };
+  list.forEach((g, i) => { g.mark = letter(i); g.qty = g.ids.length; g.name = [...new Set(g.members.map(m => m.name))].join(' / '); });
+  const markOf = {}, nameOf = {};
+  for (const g of list) for (const m of g.members) { markOf[m.id] = g.mark; nameOf[m.id] = m.name; }
+  // how a member is known in the shop: its mark and its name
+  const ref = id => (markOf[id] ? `${markOf[id]} (${(nameOf[id] || '').toLowerCase()})` : id);
+  // both ends of every piece in a mark, read in the drawn direction; ends that differ
+  // between members of one mark (a short rail onto a leg, or onto a long rail) are joined with "or"
+  for (const g of list) {
+    const ends = [[], []];
+    for (const m of g.members) {
+      const j = joints[m.id];
+      const da = describeEnd(j.ends.A, ref), db = describeEnd(j.ends.B, ref);
+      const key = pm => JSON.stringify(pm.edges.map(e => [Math.round(e.a * 2) / 2, Math.round(e.b * 2) / 2]).sort((x, y) => x[0] - y[0] || x[1] - y[1]));
+      const flip = key(pieceMarks(j, model.axes)) !== key(g.pm);
+      const [x, y] = flip ? [db, da] : [da, db];
+      ends[0].push(x); ends[1].push(y);
+    }
+    g.endText = ends.map(es => {
+      const angs = [...new Set(es.map(e => e.ang))], hows = [...new Set(es.map(e => e.how))];
+      const joined = hows.length > 1 && hows.every(h => h.startsWith('butt onto ')) ? 'butt onto ' + hows.map(h => h.slice(10)).join(' or ') : hows.join(' or ');
+      return { ang: angs.join(' or '), how: joined, square: es.every(e => e.square) };
+    });
+  }
+  return { pieces: list, markOf, ref };
 }
 
 // ---------------------------------------------------------------- nesting
@@ -97,8 +120,16 @@ function nest(model, pieces) {
 // ---------------------------------------------------------------- mass
 function shapeBox(sh) {
   if (!sh) return null;
+  if (Array.isArray(sh)) {
+    const bs = sh.map(shapeBox).filter(Boolean);
+    return bs.length ? [[0, 1, 2].map(i => Math.min(...bs.map(b => b[0][i]))), [0, 1, 2].map(i => Math.max(...bs.map(b => b[1][i])))] : null;
+  }
   if (sh.type === 'box') return [sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)];
-  if (sh.type === 'cyl') return [[0, 1, 2].map(i => Math.min(sh.a[i], sh.b[i]) - sh.r), [0, 1, 2].map(i => Math.max(sh.a[i], sh.b[i]) + sh.r)];
+  if (sh.type === 'cyl') {
+    // a disc of radius r around the axis reaches r * sqrt(1 - axis_i^2) along each world axis
+    const ax = v3.norm(sub(sh.b, sh.a)), e = ax.map(c => sh.r * Math.sqrt(Math.max(0, 1 - c * c)));
+    return [[0, 1, 2].map(i => Math.min(sh.a[i], sh.b[i]) - e[i]), [0, 1, 2].map(i => Math.max(sh.a[i], sh.b[i]) + e[i])];
+  }
   return null;
 }
 const plateBox = pl => [pl.c.map((v, i) => v - pl.s[i] / 2), pl.c.map((v, i) => v + pl.s[i] / 2)];
@@ -114,7 +145,9 @@ function massItems(model, joints) {
   }
   for (const pl of model.plates) {
     const rho = pl.rho ?? { steel: 7.85e-6, aluminium: 2.7e-6, stainless: 8e-6, timber: 4.2e-7, plywood: 6e-7, mdf: 7.5e-7 }[pl.material || 'steel'];
-    items.push({ kind: 'plate', id: pl.id, m: pl.s[0] * pl.s[1] * pl.s[2] * rho * (pl.fill ?? 1), c: pl.c });
+    const cut = (pl.notches || []).reduce((a, n) => a + (n[2] - n[0]) * (n[3] - n[1]), 0);
+    const ax = [0, 1, 2].sort((a, b) => pl.s[b] - pl.s[a]);
+    items.push({ kind: 'plate', id: pl.id, m: (pl.s[0] * pl.s[1] * pl.s[2] - cut * pl.s[ax[2]]) * rho * (pl.fill ?? 1), c: pl.c });
   }
   for (const h of model.hardware) {
     if (!h.kg) continue;
@@ -122,6 +155,33 @@ function massItems(model, joints) {
     items.push({ kind: 'hardware', id: h.id, m: h.kg * (h.qty || 1), c: h.at || (b ? b[0].map((v, i) => (v + b[1][i]) / 2) : [0, 0, 0]) });
   }
   return items;
+}
+
+// ---------------------------------------------------------------- plate notches
+// A plate or sheet that a straight, axis-aligned member passes through is notched
+// around it when it says notch: true (a shelf deck around the legs); otherwise it
+// is a clash. Notches are rectangles [a0, b0, a1, b1] on the plate's two biggest
+// axes, measured from its lower-left corner, the same frame as its holes.
+function notchPlates(model, joints, ref) {
+  const clashes = [];
+  for (const pl of model.plates) {
+    const ax = [0, 1, 2].sort((a, b) => pl.s[b] - pl.s[a]);
+    const pb = plateBox(pl);
+    pl.axes = ax;
+    pl.notches = [];
+    for (const m of model.members) {
+      const j = joints[m.id];
+      const straight = [0, 1, 2].filter(i => Math.abs(j.axis[i]) > 0.999).length === 1 && [j.u, j.w].every(v => v.some(c => Math.abs(c) > 0.999));
+      if (!straight) continue;
+      const mb = memberBox(j);
+      const pen = [0, 1, 2].map(i => Math.min(pb[1][i], mb[1][i]) - Math.max(pb[0][i], mb[0][i]));
+      if (pen.some(v => v <= 0.5)) continue;
+      if (!pl.notch) { clashes.push(`${pl.name} passes through ${ref(m.id)}: give the plate notch: true, or move it`); continue; }
+      const lo = i => Math.max(pb[0][i], mb[0][i]) - pb[0][i], hi = i => Math.min(pb[1][i], mb[1][i]) - pb[0][i];
+      pl.notches.push([lo(ax[0]), lo(ax[1]), hi(ax[0]), hi(ax[1])]);
+    }
+  }
+  return clashes;
 }
 
 // ---------------------------------------------------------------- geometry checks
@@ -136,7 +196,7 @@ function segDist(p1, q1, p2, q2) {
   return len(sub(add(p1, mul(d1, s)), add(p2, mul(d2, t))));
 }
 
-function geometryChecks(model, joints, sites) {
+function geometryChecks(model, joints, sites, ref) {
   const ids = model.members.map(m => m.id);
   const sharesSite = new Set();
   for (const s of sites) {
@@ -151,7 +211,7 @@ function geometryChecks(model, joints, sites) {
     if (sharesSite.has(A.id + '|' + B.id)) { link(A.id, B.id); continue; }
     const d = segDist(A.A, A.B, B.A, B.B);
     if (d <= half(A) + half(B) + 1) link(A.id, B.id);
-    if (d < halfMin(A) + halfMin(B) - 1) clashes.push(`${A.id} passes through ${B.id}`);
+    if (d < halfMin(A) + halfMin(B) - 1) clashes.push(`${ref(A.id)} passes through ${ref(B.id)} (${A.id}, ${B.id})`);
   }
   // plates and hardware touch a member, a plate, or name what they sit on
   const boxes = {};
@@ -188,7 +248,13 @@ export function derive(plan, given = {}, system) {
   const kit = { u: units, p, v3, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet };
   const model = normalise(plan.build(p, kit), plan);
   const { joints, sites, report } = solveJoints(model);
-  const { pieces, markOf } = groupPieces(model, joints);
+  const { pieces, markOf, ref } = groupPieces(model, joints);
+  // step text may name a piece by its mark: {mark:leg-FL} becomes "A"
+  const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { if (!markOf[id]) throw new Error(`{mark:${id}}: no member "${id}"`); return markOf[id]; }) : t);
+  for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); }
+  for (const c of model.checks) { c.value = fill(c.value); c.why = fill(c.why); }
+  for (const pl of model.plates) pl.note = fill(pl.note);
+  const plateClashes = notchPlates(model, joints, ref);
   const nesting = nest(model, pieces);
   // identical plates share a mark (P1, P2...): same size, thickness, holes and material
   const pg = new Map();
@@ -202,10 +268,10 @@ export function derive(plan, given = {}, system) {
   const mass = massItems(model, joints);
   const totalKg = mass.reduce((s, it) => s + it.m, 0);
   const cog = mass.reduce((c, it) => add(c, mul(it.c, it.m / (totalKg || 1))), [0, 0, 0]);
-  const geo = geometryChecks(model, joints, sites);
+  const geo = geometryChecks(model, joints, sites, ref);
   const allBoxes = Object.values(geo.boxes);
   const bbox = [[0, 1, 2].map(i => Math.min(...allBoxes.map(b => b[0][i]))), [0, 1, 2].map(i => Math.max(...allBoxes.map(b => b[1][i])))];
-  const d = { plan, p, notes, limits, units, model, joints, sites, pieces, markOf, nesting, plateGroups, massItems: mass, totalKg, cog, bbox };
+  const d = { plan, p, notes, limits, units, model, joints, sites, pieces, markOf, ref, nesting, plateGroups, massItems: mass, totalKg, cog, bbox };
 
   // joining: weld run (or fastener count) from every end that meets something
   let weld = 0, joins = 0;
@@ -239,17 +305,19 @@ export function derive(plan, given = {}, system) {
   const add2 = (name, pass, value, why) => checks.push({ name, pass: !!pass, value, why });
   add2('Every joint can be made as drawn', !report.length, report.length ? report[0] : `${d.weld.joins} joints`, 'Each end is a mitre, a butt onto a face, a flush cut or a free end; nothing overhangs.');
   add2('Nothing floating', !geo.floating.length, geo.floating.length ? geo.floating.join(', ') : 'all connected', 'Every member, plate and part touches what holds it.');
-  add2('No clashes', !geo.clashes.length, geo.clashes[0] || 'none', 'No member passes through another away from a joint.');
+  const clashes = [...geo.clashes, ...plateClashes];
+  add2('No clashes', !clashes.length, clashes[0] || 'none', 'No member passes through another away from a joint, and no plate through a member it is not notched around.');
   const longest = Math.max(...pieces.map(g => g.pm.stock));
+  const tooLongRef = it => `${markOf[it.id]} (${it.id})`;
   const tooLong = nesting.flatMap(n => n.tooLong);
-  add2('Every piece fits the stock', !tooLong.length, tooLong.length ? `${tooLong[0].id} is ${u.len(tooLong[0].L, { u: true })}` : `longest ${u.len(longest, { u: true })}`, 'Cut from standard lengths with a trim and a kerf per cut.');
+  add2('Every piece fits the stock', !tooLong.length, tooLong.length ? `${tooLongRef(tooLong[0])} is ${u.len(tooLong[0].L, { u: true })}` : `longest ${u.len(longest, { u: true })}`, 'Cut from standard lengths with a trim and a kerf per cut.');
   const shortest = pieces.reduce((m, g) => (g.pm.shortPoint < m.v ? { v: g.pm.shortPoint, g } : m), { v: Infinity });
   const minPiece = model.minPiece ?? 30;
   add2('Every piece can be clamped and cut', shortest.v >= minPiece, `shortest ${u.len(shortest.v, { u: true })}`, `No piece shorter than ${u.len(minPiece, { u: true })} on its short side.`);
   if (loadErr) add2('Frame analysis', false, loadErr, 'The frame solver could not run.');
   for (const r of d.loads) {
     const need = r.load.sf ?? 2;
-    add2(`${r.name}: strength`, r.sf >= need, `safety factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + r.worstMember : ''}`, `Yield ÷ peak stress with ${r.load.kg != null ? u.mass(r.load.kg) : u.force(r.load.N)} ${r.load.what || 'applied'}, plus self weight.`);
+    add2(`${r.name}: strength`, r.sf >= need, `safety factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + ref(r.worstMember) : ''}`, `Yield ÷ peak stress with ${r.load.kg != null ? u.mass(r.load.kg) : u.force(r.load.N)} ${r.load.what || 'applied'}, plus self weight.`);
     if (r.load.defl != null) add2(`${r.name}: deflection`, r.loadDefl <= r.load.defl, `${u.deflection(r.loadDefl)} (limit ${u.deflection(r.load.defl)})`, 'Largest movement of the loaded members.');
   }
   if (d.tip && model.tip.anchored) add2('Does not tip over', true, `anchored (${model.tip.anchored}); free-standing factor ${d.tip.sf.toFixed(2)}`, `Free-standing it would tip with ${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high, so it is fixed down.`);
@@ -266,7 +334,9 @@ export function derive(plan, given = {}, system) {
   for (const n of nesting) { if (n.sec.price == null) price.known = false; else price.stock += (n.bars.length * n.sec.stockLen / 1000) * n.sec.price; }
   for (const pl of model.plates) { if (pl.price == null) price.known = false; else price.plates += pl.price * (pl.qty || 1); }
   for (const h of model.hardware) { if (h.price == null) price.known = false; else price.hardware += h.price * (h.qty || 1); }
-  price.total = price.stock + price.plates + price.hardware;
+  for (const c of model.consumables) { if (c.price == null) price.known = false; else price.consumables = (price.consumables || 0) + c.price; }
+  price.consumables ||= 0;
+  price.total = price.stock + price.plates + price.hardware + price.consumables;
   d.price = price;
   d.hours = model.steps.reduce((s, st) => s + (st.hours || 0), 0);
   return d;

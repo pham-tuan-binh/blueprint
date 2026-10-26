@@ -50,8 +50,8 @@ export const plan = {
     const plates = [];
     for (const [k, [x, y]] of Object.entries(corners)) plates.push({ id: `foot-${k}`, name: 'Foot plate', c: [x, y, foot / 2], s: [40, 40, foot], step: 4, holes: [{ at: [20, 20], d: 10 }], note: 'Same size as the post. Drill for an M8 floor anchor, weld all round.' });
     levels.forEach((z, i) => plates.push({
-      id: `deck-${i + 1}`, name: i === levels.length - 1 ? 'Top deck' : 'Deck, corners notched for the posts', material: 'plywood', materialLabel: 'plywood',
-      c: [W / 2, D / 2, z + h + deckT / 2], s: [W, D, deckT], step: 5, drawing: false, price: (W * D / 1e6) * 18,
+      id: `deck-${i + 1}`, name: i === levels.length - 1 ? 'Top deck' : 'Deck', material: 'plywood', materialLabel: 'plywood',
+      c: [W / 2, D / 2, z + h + deckT / 2], s: [W, D, deckT], step: 5, notch: true, price: (W * D / 1e6) * 18,
     }));
 
     const totalKg = p.shelfKg * p.shelves;
@@ -82,17 +82,17 @@ export const plan = {
         { n: 1, phase: 'Fabricate', title: 'Cut and deburr', hours: 2, tasks: [
           'Cut every piece from the cutting plan. Square ends: check with a square after each cut.',
           'Deburr every end and label the piece mark on it in marker.',
-          `Lay out the cut pieces by mark and count them against the cut list: ${4} posts, ${4 * p.shelves} rails.`,
+          `Lay out the cut pieces by mark and count them against the cut list: 4 posts ({mark:post-FL}), ${4 * p.shelves} rails.`,
         ], check: `Every piece within ${u.tol(1)} of its long point.` },
         { n: 2, phase: 'Fabricate', title: 'Two end frames (tack)', hours: 2, tasks: [
           'Lay two posts flat on the table, outer faces against a straight edge.',
-          `Mark the rail centre heights on both posts: ${levels.map(z => u.len(z)).join(', ')} from the bottom end + ${u.len(foot)}.`,
-          'Clamp each end rail between the posts, square to them, and tack both ends.',
+          `Mark the rail centre lines on both posts, measured from the bottom end of the post: ${levels.map(z => u.len(z - foot)).join(', ')}.`,
+          'Clamp each end rail ({mark:end-L1}) between the posts on its mark, square to them, and tack both ends.',
           'Build the second frame the same way, on top of the first if you like, so they match.',
         ], check: `Diagonals of each frame equal within ${u.len(2, { u: true })}. Both frames the same.` },
         { n: 3, phase: 'Fabricate', title: 'Join the frames (tack)', hours: 2, tasks: [
           'Stand both end frames up, clamp them to something square.',
-          'Tack the long rails at the top level first, then the bottom level, then the rest.',
+          'Tack the long rails ({mark:long-F1}) at the top level first, then the bottom level, then the rest.',
           'Check the top rectangle diagonals, nudge to equal, then tack every joint fully.',
         ], check: `Top diagonals equal within ${u.len(3, { u: true })}; the rack sits level on all four posts.` },
         { n: 4, phase: 'Fabricate', title: 'Weld out and feet', hours: 3, tasks: [
@@ -102,7 +102,7 @@ export const plan = {
         ], check: `Diagonals still equal within ${u.len(3, { u: true })} after welding.` },
         { n: 5, phase: 'Finish', title: 'Paint and decks', hours: 3, tasks: [
           'Degrease, prime and paint.',
-          `Cut ${p.shelves} decks ${u.len(W)} × ${u.len(D)} from ${u.len(18, { u: true })} plywood. Notch the corners of all but the top deck ${u.len(42)} × ${u.len(42)} for the posts.`,
+          `Cut ${p.shelves} decks ${u.len(W)} × ${u.len(D)} from ${u.len(18, { u: true })} plywood. Notch the lower decks around the posts as their drawing shows.`,
           'Screw each deck down through the rails, two screws per rail.',
         ] },
         { n: 6, phase: 'Finish', title: 'Stand and anchor', hours: 1, tasks: [

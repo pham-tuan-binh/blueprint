@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // Open a built plan in headless Chromium and prove the page, not just the model.
 //
-//   node scripts/capture.mjs path/to/index.html [--out shots/] [--pdf]
+//   node scripts/capture.mjs path/to/index.html [--out shots/] [--pdf] [--hash "top=steel&length=2400"]
+//
+// --hash opens the page at another size or option (the same as a shared link), so
+// the steps of a variant can be read too: capture each choice option into its own --out.
 //
 // Writes PNGs (desktop, phone, the size panel, drawings, the first jig step, cut
 // list, imperial) and, with --pdf, the printed pack. Fails on any console error, a
@@ -32,7 +35,7 @@ const { chromium } = loadPlaywright();
 const exe = ['/opt/pw-browsers/chromium', process.env.CHROMIUM_PATH].find(p => p && existsSync(p) && !p.endsWith('/chromium'));
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'], ...(exe ? { executablePath: exe } : {}) });
 const problems = [];
-const url = pathToFileURL(file).href;
+const url = pathToFileURL(file).href + (opt('hash', '') ? '#' + opt('hash', '').replace(/^#/, '') : '');
 
 async function open(viewport) {
   const p = await browser.newPage({ viewport });
@@ -71,6 +74,7 @@ else if (ink < 0.01) problems.push(`3D view looks blank (${(ink * 100).toFixed(1
 else if (ink > 0.5) problems.push(`3D view is mostly ink (${(ink * 100).toFixed(0)}%): outlines are firing everywhere`);
 await shot(p, '#size', 'size.png');
 await shot(p, '#checks', 'checks.png');
+await shot(p, '#bom', 'materials.png');
 await shot(p, '#drawings', 'drawings.png');
 const firstJig = await p.evaluate(() => [...document.querySelectorAll('.step')].find(s => s.querySelector('.sheet'))?.id);
 if (firstJig) await shot(p, '#' + firstJig, 'step-first-jig.png');
@@ -82,11 +86,11 @@ for (const id of stepIds) await shot(p, '#' + id, `${id}.png`);
 const lenField = await p.evaluate(() => {
   const plan = window.__blueprint.d.plan;
   const pd = plan.params.find(q => q.type === 'len') || plan.params.find(q => q.type === 'count');
-  return pd && { id: pd.id, max: window.__blueprint.d.limits[pd.id].max, min: window.__blueprint.d.limits[pd.id].min, value: pd.value };
+  return pd && { id: pd.id, max: window.__blueprint.d.limits[pd.id].max, min: window.__blueprint.d.limits[pd.id].min, value: window.__blueprint.d.p[pd.id] };
 });
 if (lenField) {
   const before = await text(p, '#cutlist-body');
-  const target = lenField.value === lenField.max ? lenField.min : lenField.max;
+  const target = Math.abs(lenField.value - lenField.max) < 1 ? lenField.min : lenField.max;
   await p.fill(`#f-${lenField.id}`, String(Math.round(target)));
   await p.press(`#f-${lenField.id}`, 'Tab');
   await p.waitForTimeout(600);
@@ -97,6 +101,8 @@ if (lenField) {
   if (!(await p.evaluate(() => location.hash.length > 1))) problems.push('the size is not in the URL, so it cannot be shared');
   await p.screenshot({ path: join(out, 'desktop-changed.png') });
   await p.click('#reset');
+  await p.waitForTimeout(300);
+  if (opt('hash', '')) await p.goto(url, { waitUntil: 'networkidle' });
   await p.waitForTimeout(400);
 }
 
@@ -116,6 +122,9 @@ if (args.includes('--pdf')) {
   await p.waitForTimeout(400);
   await p.emulateMedia({ media: 'print' });
   await p.pdf({ path: join(out, 'plan.pdf'), format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '12mm', left: '10mm', right: '10mm' } });
+  // pages as images, so the print layout can be read too
+  try { execSync(`pdftoppm -r 50 -png "${join(out, 'plan.pdf')}" "${join(out, 'pdf')}"`); }
+  catch { console.log('note: pdftoppm not found, so plan.pdf pages were not rendered to PNG (install poppler-utils)'); }
 }
 await p.close();
 

@@ -28,10 +28,11 @@ export const plan = {
 | `kg` | kilograms | kg or lb |
 | `count` | an integer | a number |
 | `number` | a plain number (`unit: '°'`) | a number with its unit |
-| `choice` | one of `options: [{ value: 'steel', label: '5 mm steel plate' }]` | a select |
+| `choice` | one of `options: [{ value: 'steel', label: u => `${u.len(5, { u: true })} steel plate` }]` | a select |
 | `bool` | true / false | a checkbox |
 
 - `min` / `max` may be functions of the params declared **before** this one: `max: p => Math.floor((p.height - 270) / 250) + 1`.
+- An option `label` is a string, or a function of the units when it names a size (as above): a plain "18 mm plywood" would stay metric in an imperial page and fail the capture check.
 - `group` puts fields under a small heading (Size, Load, Options). Order the params the way a person thinks: overall size first.
 - In imperial plans give round inch values. The params are plain data outside `build`, so define `const inch = v => v * 25.4;` at the top of the file and write `value: inch(60), min: inch(36), max: inch(96)`.
 
@@ -62,7 +63,7 @@ return {
   tools: ['MIG welder', '...'],
   supports: [{ at: [x, y, z], fix: 'pin' }],  // where it stands: 'pin' (feet), 'fixed', 'roller'
   loads: [ ... ],
-  tip: { N: 300, height: 900, sf: 1.5 },      // optional; anchored: 'how' when it is fixed down
+  tip: { N: 300, height: 900, sf: 1.5 },      // optional; anchored: 'step 8, four M8 anchors' when it is fixed down
   checks: [{ name, pass, value, why }],       // the plan's own checks
   steps: [ ... ],
   facts: [['Work height', u.len(900, { u: true }), 'top surface']],   // optional extra facts
@@ -94,7 +95,7 @@ Member ids: short and meaningful (`rail-F-top`, `leg-BR`). Identical pieces get 
   material: 'steel', holes: [{ at: [a, b], d: 10 }], note: 'Weld all round.', price: 1.5 }
 ```
 
-An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. Holes are drawn on the plate's two biggest axes, from its lower-left corner. `material: 'plywood' | 'mdf' | 'timber' | 'steel' | 'aluminium'` (`materialLabel` overrides the printed name), `drawing: false` for sheet goods that need no shop drawing (a plywood deck), `price` per piece, `tone`, `on: 'member-id'` when it is held by something it does not touch (rare). Identical plates (same size, holes, material and name) share a mark (P1, P2).
+An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. A plate that straight members pass through (a lower shelf around the legs) gets `notch: true`: the kit cuts a notch where each member passes, draws it on the plate's drawing with its size, and shows it in 3D; without it, that is a clash. Holes are drawn on the plate's two biggest axes, from its lower-left corner. `material: 'plywood' | 'mdf' | 'timber' | 'steel' | 'aluminium'` (`materialLabel` overrides the printed material word only, printed after the size: "1500 × 700 × 18 plywood", so give `'plywood'`, not `'18 mm plywood'`), `drawing: false` for sheet goods that need no shop drawing (a plywood deck), `price` per piece, `tone`, `on: 'member-id'` when it is held by something it does not touch (rare). Identical plates (same size, holes, material and name) share a mark (P1, P2).
 
 ### hardware
 
@@ -116,6 +117,7 @@ loads: [
 ]
 ```
 
+- `what` is a short phrase that reads after the load in the check's explanation: "Yield ÷ peak stress with 150 kg *on one corner*". Write `what: 'on one corner'`, not a sentence.
 - `kg` (or `N`) is spread equally over every node of the members in `on` (the members are cut into short spans, so it acts along them) and/or the points in `at` (snapped to the nearest member).
 - `dir` defaults to straight down. Self weight of every member, plate and part is always added.
 - `sf`: the safety factor on yield the check requires. `defl`: the largest movement allowed at the loaded points, in mm.
@@ -131,7 +133,9 @@ loads: [
   tip: 'Optional note.' }
 ```
 
-Numbered 1, 2, 3… with no gaps. `phase` groups them in the build order. `hours` is the honest time for one person. `views` overrides which jig views are drawn (default: the top view for a flat step, all three otherwise). `alone: true` draws a sub-assembly built on its own without the rest of the frame. Every member, plate and part has a `step`, and the step that fits members shows its jig, joint positions and cut sheets automatically.
+Numbered 1, 2, 3… with no gaps. `phase` groups them in the build order. `hours` is the honest time for one person. `views` overrides which jig views are drawn: a list of `'top'`, `'front'`, `'side'` (default: the top view for a flat step, all three otherwise).
+
+**Name pieces by mark** with `{mark:member-id}` in any step text, check or plate note: `'Clamp the end rails ({mark:end-L1}) between the legs'` prints "Clamp the end rails (B) between the legs". Marks are assigned after `build()` runs, so this placeholder is the only way to write them; an unknown id is an error. `alone: true` draws a sub-assembly built on its own without the rest of the frame. Every member, plate and part has a `step`, and the step that fits members shows its jig, joint positions and cut sheets automatically.
 
 ### checks
 

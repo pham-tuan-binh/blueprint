@@ -177,13 +177,14 @@ export function memberCorners(j) {
   return [...j.edges.map(e => at(e, e.ta)), ...j.edges.map(e => at(e, e.tb))];
 }
 
-// Plain-language description of one end, for the cut list and cut sheets.
-export function describeEnd(end) {
+// Plain-language description of one end, for the cut list and cut sheets. ref(id)
+// names the member it meets the way the builder knows it ("A (leg)").
+export function describeEnd(end, ref = id => id) {
   const r = v => Math.round(v);
   const ang = (end.top > 0.5 || end.side > 0.5)
     ? [end.top > 0.5 ? `${r(end.top)}° top` : null, end.side > 0.5 ? `${r(end.side)}° side` : null].filter(Boolean).join(' ')
     : 'square';
-  const how = end.kind === 'miter' ? `mitre to ${end.with}` : end.kind === 'butt' ? `butt onto ${end.onto}`
-    : end.kind === 'flush' ? `flush with ${end.to}${end.cap ? ', cap' : ''}` : end.cap ? 'free end, cap' : 'free end';
-  return { ang, how };
+  const how = end.kind === 'miter' ? `mitre to ${ref(end.with)}` : end.kind === 'butt' ? `butt onto ${ref(end.onto)}`
+    : end.kind === 'flush' ? `flush with ${ref(end.to)}${end.cap ? ', cap' : ''}` : end.cap ? 'free end, cap' : 'free end';
+  return { ang, how, square: ang === 'square' };
 }

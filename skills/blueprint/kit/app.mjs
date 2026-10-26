@@ -4,7 +4,7 @@
 // between metric (default) and imperial without changing the design.
 import { derive } from './derive.mjs';
 import { makeUnits, esc } from './core.mjs';
-import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary } from './pack.mjs';
+import { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel } from './pack.mjs';
 import { createViewer } from './viewer.mjs';
 
 const $ = s => document.querySelector(s);
@@ -35,7 +35,7 @@ export function mountPlan(plan) {
     const v = d ? d.p[pd.id] : pd.value;
     const id = `f-${pd.id}`;
     const hint = pd.hint ? `<small>${esc(pd.hint)}</small>` : '';
-    if (pd.type === 'choice') return `<label class="field" for="${id}"><span>${esc(pd.label)}</span><select id="${id}" data-param="${pd.id}">${pd.options.map(o => `<option value="${esc(o.value)}" ${o.value === v ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</select>${hint}</label>`;
+    if (pd.type === 'choice') return `<label class="field" for="${id}"><span>${esc(pd.label)}</span><select id="${id}" data-param="${pd.id}">${pd.options.map(o => `<option value="${esc(o.value)}" ${o.value === v ? 'selected' : ''}>${esc(optLabel(o, u))}</option>`).join('')}</select>${hint}</label>`;
     if (pd.type === 'bool') return `<label class="field check" for="${id}"><input type="checkbox" id="${id}" data-param="${pd.id}" ${v ? 'checked' : ''}><span>${esc(pd.label)}</span>${hint}</label>`;
     const lim = d?.limits[pd.id] || { min: pd.min, max: pd.max };
     let val = v, min = lim.min, max = lim.max, step = pd.step ?? 1, unit = pd.unit || '';

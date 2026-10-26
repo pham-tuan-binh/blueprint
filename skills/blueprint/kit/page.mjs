@@ -65,7 +65,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .legend th{text-align:left;white-space:nowrap;width:1%}.legend td{text-align:left}
 .wrap{overflow-x:auto;max-width:100%}
 .sheet{display:grid;gap:0;border:1px solid var(--line);margin:8px 0}.sheet figure{margin:0;min-width:0}.sheet svg{border:0!important}
-.sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr}
+.sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr;max-width:620px}
 figure{margin:0}
 .views svg,.piece-list svg,figure>svg{border:1px solid var(--line);width:100%;height:auto;display:block}
 .piece-list{display:grid;gap:14px}

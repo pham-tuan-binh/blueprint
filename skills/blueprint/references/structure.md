@@ -42,7 +42,7 @@ Write load cases for the job and for abuse:
 
 Safety factor (yield ÷ peak stress, what the checks report): at least 2 for furniture, benches and racks; 3 for anything a person stands on, sits on or hangs from; and never rely on the factor for lifting gear or vehicles (that is a Machine: see SKILL.md). Deflection: a work surface span/300 at its rated load; a shelf span/250.
 
-Tip-over: for anything taller than about 1.5 × its depth, add `tip: { N, height, sf: 1.5 }` with a realistic push (150 N for a rack, 300 N at work height for a bench being planed on). If it only passes anchored, anchor it in a step and say so with `anchored: 'step 6, four M8 anchors'`.
+Tip-over: add `tip: { N, height, sf: 1.5 }` for anything taller than about 1.5 × its depth, and for anything people push at height (a bench being planed or filed on). Use a realistic push: 150 N at the top of a rack; 300 N at work height for a bench used hard. A light steel bench (40-60 kg) rarely passes 300 N free-standing: a heavy top, a wider stance, or anchoring fixes it. If it only passes anchored, fit the anchors in a step (as hardware in that step) and name it: `anchored: 'step 8, four M8 anchors'`. The audit checks that step fits anchors, bolts or screws. Say plainly in that step that it must be anchored.
 
 ## Metric stock (default)
 

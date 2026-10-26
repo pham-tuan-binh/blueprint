@@ -1,0 +1,2240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Welded steel workbench build plan</title>
+<meta name="description" content="Four square-tube legs, a welded top frame and lower frame, a plywood or steel top and an optional lower shelf. Straight square cuts only: every rail butts onto a leg face.">
+<style>
+:root{--paper:#fbfbfa;--ink:#16181b;--ink2:#3a3f46;--muted:#666d75;--line:#d7dade;--th:#f0f1f2;--face:#e1e4e7;--now:#4a4f57;--old:#e6e8eb;--oldline:#a9afb6;--lit:#d23f45;--okc:#1d6b3a;
+--sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#141416;--ink:#ecebe8;--ink2:#c9c8c4;--muted:#9a9a96;--line:#34353a;--th:#1d1e21;--face:#3a3c40;--now:#c9ccd0;--old:#26272a;--oldline:#56585d;--lit:#ef6a6f;--okc:#6fcf8f;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#141416;--ink:#ecebe8;--ink2:#c9c8c4;--muted:#9a9a96;--line:#34353a;--th:#1d1e21;--face:#3a3c40;--now:#c9ccd0;--old:#26272a;--oldline:#56585d;--lit:#ef6a6f;--okc:#6fcf8f;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}html{scroll-padding-top:64px}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-text-size-adjust:100%}
+a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{padding:16px}
+.top{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:8px 16px;display:flex;gap:14px;align-items:center}
+.brand{font-weight:700;text-decoration:none;white-space:nowrap}
+.toc{display:flex;gap:14px;overflow-x:auto;flex:1;scrollbar-width:none}.toc a{text-decoration:none;white-space:nowrap;color:var(--ink2)}.toc a:hover{color:var(--ink)}
+.seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.btn{font:600 14px var(--sans);background:none;color:var(--ink);border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover,.seg button:hover{box-shadow:2px 2px 0 var(--ink)}
+main{max-width:1080px;margin:0 auto;padding:24px 16px 64px}
+.kicker{font:12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font-size:34px;line-height:1.1;margin:6px 0 8px;letter-spacing:-.01em}.lede{max-width:70ch;margin:0 0 16px;color:var(--ink2)}
+h2{font-size:23px;margin:48px 0 10px;padding-top:14px;border-top:2px solid var(--ink);display:flex;gap:12px;align-items:baseline}
+.secn{font:400 15px var(--mono);color:var(--muted)}h3{font-size:18px;margin:26px 0 6px}h4{font-size:15px;margin:20px 0 6px}
+p,li{max-width:75ch}
+.status{display:inline-block;font:600 13px var(--mono);padding:3px 10px;border:1.5px solid currentColor;margin:0 0 12px}.status.ok{color:var(--okc)}.status.bad{color:var(--lit)}
+.warn{color:var(--lit);font-weight:600}
+.split{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.split{grid-template-columns:1fr}}
+.viewer-box{position:relative;border:1.5px solid var(--ink);aspect-ratio:4/3;background:var(--paper)}
+.viewer{position:absolute;inset:0}.viewer canvas{display:block}
+.cams{position:absolute;left:10px;bottom:10px;display:flex;border:1.5px solid var(--ink);background:var(--paper)}
+.cams button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;border-right:1px solid var(--line);padding:6px 11px;cursor:pointer}.cams button:last-child{border-right:0}
+.cams button:hover{background:var(--th)}
+.step-badge{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--paper);border:1.5px solid var(--lit);padding:6px 10px;font-size:14px}
+.hint{font:12px var(--mono);color:var(--muted);margin:6px 0 0}
+.pick{font-size:14px;margin:6px 0 0}
+.viewer-ctl{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 0;font-size:14px}.viewer-ctl label{display:flex;gap:6px;align-items:center}
+.size{border:1.5px solid var(--ink);padding:14px 16px 16px;box-shadow:4px 4px 0 var(--ink)}
+.size h2{margin:0 0 4px;padding:0;border:0;font-size:19px}
+.size fieldset{border:0;padding:0;margin:10px 0 0}.size legend{font:12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0;margin:0 0 4px}
+.field{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.field>span:first-child{font-weight:600;font-size:14px}.field small{grid-column:1/-1;color:var(--muted);font:12px var(--mono)}
+.inp{display:inline-flex;align-items:center;border:1.5px solid var(--ink);background:var(--paper)}
+.inp input{width:96px;font:600 15px var(--mono);border:0;background:none;color:var(--ink);padding:5px 6px;text-align:right}
+.inp i{font:13px var(--mono);font-style:normal;color:var(--muted);padding:0 8px 0 2px}
+.field select{font:600 14px var(--sans);border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);padding:5px 6px;max-width:190px}
+.field.check{grid-template-columns:auto 1fr;justify-content:start}.field.check input{width:18px;height:18px;margin:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--lit);outline-offset:2px}
+.size-act{display:flex;gap:8px;margin:12px 0 0;flex-wrap:wrap}
+.built{font:12px var(--mono);color:var(--muted);margin:10px 0 0}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:0;margin:20px 0 0;border-top:1px solid var(--line)}
+.facts div{padding:8px 12px 8px 0;border-bottom:1px solid var(--line)}.facts dt{font:12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.facts dd{margin:2px 0 0;font-weight:700;font-size:17px}.facts small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.doc{border-collapse:collapse;font:13px/1.45 var(--mono);margin:8px 0;min-width:100%}
+.doc td,.doc th{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}.doc .n{text-align:right;white-space:nowrap}
+.doc th{background:var(--th);font-weight:700}
+.doc small{display:block;color:var(--muted);font:12px var(--sans)}
+.checks td:nth-child(2){font-family:var(--sans);font-weight:600}.checks td:first-child{font-weight:700;width:2em;text-align:center}
+.checks tr.ok td:first-child{color:var(--okc)}.checks tr.bad td{color:var(--lit)}
+.legend th{text-align:left;white-space:nowrap;width:1%}.legend td{text-align:left}
+.wrap{overflow-x:auto;max-width:100%}
+.sheet{display:grid;gap:0;border:1px solid var(--line);margin:8px 0}.sheet figure{margin:0;min-width:0}.sheet svg{border:0!important}
+.sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr;max-width:620px}
+figure{margin:0}
+.views svg,.piece-list svg,figure>svg{border:1px solid var(--line);width:100%;height:auto;display:block}
+.piece-list{display:grid;gap:14px}
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}.phases h4{margin:8px 0 0}.phases ol{margin:4px 0;padding-left:1.6em}
+.step{padding-top:10px}.step-h h3{display:flex;gap:10px;align-items:baseline;margin-bottom:0}.sn{font:400 .9em var(--mono);color:var(--muted)}.step-h p{margin:2px 0 8px}
+.tasks{list-style:none;padding:0}.tasks li{display:flex;gap:8px;align-items:flex-start;margin:4px 0}.tasks input{margin-top:5px;width:16px;height:16px;flex:none}
+.tasks li:has(input:checked) label{color:var(--muted);text-decoration:line-through}
+.gate{border:1.5px solid var(--ink);padding:6px 12px;max-width:none}.note{border-left:2px solid var(--muted);padding:4px 12px;color:var(--ink2);max-width:none}
+details.sheets{margin:12px 0;border:1.5px solid var(--ink);padding:6px 12px}details.sheets summary{cursor:pointer;font-weight:600}
+.linkish{font:inherit;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
+ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
+.foot{max-width:1080px;margin:0 auto;padding:24px 16px 48px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+@media (max-width:600px){h1{font-size:27px}.toc{display:none}.inp input{width:84px}ul.cols{columns:1}}
+
+.piece,.jig,.nest{background:var(--paper);max-width:100%;height:auto;display:block}
+.pt{font:700 24px var(--mono);fill:var(--ink)}.pq{font:400 20px var(--mono);fill:var(--muted)}
+.ps{font:14px var(--sans);fill:var(--ink2)}.pm2{font:12px var(--mono);fill:var(--muted)}
+.pk{font:700 20px var(--mono);fill:var(--ink)}.pm{font:700 15px var(--mono);fill:var(--ink)}.pe{font:12px var(--mono);fill:var(--muted)}
+.pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
+.ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+.jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
+.ga .jn{fill:var(--face)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
+.dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
+.dt,.jl{paint-order:stroke;stroke:var(--paper);stroke-width:calc(var(--fs) * .3);stroke-linejoin:round}
+.jp{fill:var(--ink)}.jl{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}.jt{font:700 calc(var(--fs) * 1.1) var(--sans);fill:var(--ink)}
+.nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
+
+@media print{
+  :root{--paper:#fff;--ink:#000;--ink2:#222;--muted:#555;--line:#bbb;--th:#eee;--face:#e4e4e4;--now:#444;--old:#eee;--oldline:#aaa;--lit:#000;color-scheme:light}
+  .top,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step]{display:none!important}
+  .split{display:block}.size{box-shadow:none;border:1px solid #000}
+  .step{break-before:page}.piece-list svg,figure{break-inside:avoid}details.sheets{border:0;padding:0}
+  details.sheets>summary{list-style:none;font-weight:700}a{text-decoration:none}main{padding-top:0}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="#top">Workbench</a>
+  <nav class="toc" aria-label="Sections">
+    <a href="#size">Size</a><a href="#checks">Checks</a><a href="#bom">Materials</a><a href="#drawings">Drawings</a><a href="#legend">Legend</a><a href="#steps">Steps</a><a href="#cutlist">Cut list</a>
+  </nav>
+  <div class="seg" role="group" aria-label="Units"><button type="button" data-units="metric" aria-pressed="true">mm</button><button type="button" data-units="imperial" aria-pressed="false">in</button></div>
+  <button type="button" class="btn" id="print">Print</button>
+</div></header>
+<main id="top">
+  <p class="kicker">Build plan · v1</p>
+  <h1>Welded steel workbench</h1>
+  <p class="lede">Four square-tube legs, a welded top frame and lower frame, a plywood or steel top and an optional lower shelf. Straight square cuts only: every rail butts onto a leg face.</p>
+  <p id="status" class="status ok">✓ All 17 checks pass</p>
+  <div class="split" id="model">
+    <div>
+      <div class="viewer-box">
+        <div class="viewer" id="viewer" role="img" aria-label="3D model. Drag to orbit, Ctrl and scroll to zoom, click a part to identify it."></div>
+        <div class="cams" role="group" aria-label="Camera"><button type="button" data-cam="iso">3/4</button><button type="button" data-cam="front">Front</button><button type="button" data-cam="side">Side</button><button type="button" data-cam="top">Top</button></div>
+        <div class="step-badge" id="step-badge" hidden><span id="step-badge-text"></span><button type="button" class="linkish" id="step-badge-off">Show everything</button></div>
+      </div>
+      <p class="hint">Drag: orbit · Ctrl+scroll / pinch: zoom · click: identify a part</p>
+      <div class="viewer-ctl"><label for="show-stress"><input type="checkbox" id="show-stress"> Show stress (red = least margin)</label></div>
+      <div class="pick" id="pick" hidden></div>
+    </div>
+    <section class="size" id="size" aria-labelledby="size-h">
+      <h2 id="size-h">Make it yours</h2>
+      <p class="muted" style="margin:0">Change a number and the whole plan, drawings, cut list and checks follow.</p>
+      <form id="size-form" onsubmit="return false"></form>
+      <div class="size-act"><button type="button" class="btn" id="reset">Reset</button><button type="button" class="btn" id="copy-link">Copy link</button></div>
+      <div id="notes"></div>
+      <p class="built" id="built-for">Length 1500 mm · Depth 700 mm · Work height 900 mm · Rated load 300 kg · Top Plywood, screwed · Lower shelf yes</p>
+    </section>
+  </div>
+  <dl class="facts" id="facts"><div><dt>Overall</dt><dd>1500 × 700 × 900 mm<small>length × depth × height</small></dd></div><div><dt>Mass</dt><dd>58 kg<small>as built, with every part listed</small></dd></div><div><dt>Pieces</dt><dd>16 cut (3 different)<small>4 plates, 2 sheets</small></dd></div><div><dt>Welds</dt><dd>28 joints<small>about 4.5 m of weld</small></dd></div><div><dt>Rated load on the top</dt><dd>factor 5.5<small>sags 1.4 mm</small></dd></div><div><dt>Point load at a front corner</dt><dd>factor 26.8<small>sags 0.0 mm</small></dd></div><div><dt>Shoved sideways at the top</dt><dd>factor 12.2<small>moves 0.9 mm</small></dd></div><div><dt>Shoved front to back at the top</dt><dd>factor 16.1<small>moves 0.4 mm</small></dd></div><div><dt>Loaded lower shelf</dt><dd>factor 13.2<small>sags 0.4 mm</small></dd></div><div><dt>Build time</dt><dd>16 h<small>8 steps</small></dd></div><div><dt>Cost</dt><dd>~$136<small>priced lines only; see the materials list</small></dd></div><div><dt>Work height</dt><dd>900 mm<small>top surface, feet mid-travel</small></dd></div><div><dt>Top</dt><dd>18 mm plywood</dd></div></dl>
+  <section id="checks"><h2><span class="secn">1</span>Checks</h2><div id="checks-body"><p class="muted">All 17 checks pass at this size.</p><div class="wrap"><table class="doc checks"><tr><th></th><th>Check</th><th>Result</th></tr><tr class="ok"><td>✓</td><td>Every joint can be made as drawn<small>Each end is a mitre, a butt onto a face, a flush cut or a free end; nothing overhangs.</small></td><td>28 joints</td></tr><tr class="ok"><td>✓</td><td>Nothing floating<small>Every member, plate and part touches what holds it.</small></td><td>all connected</td></tr><tr class="ok"><td>✓</td><td>No clashes<small>No member passes through another away from a joint, and no plate through a member it is not notched around.</small></td><td>none</td></tr><tr class="ok"><td>✓</td><td>Every piece fits the stock<small>Cut from standard lengths with a trim and a kerf per cut.</small></td><td>longest 1420 mm</td></tr><tr class="ok"><td>✓</td><td>Every piece can be clamped and cut<small>No piece shorter than 30 mm on its short side.</small></td><td>shortest 620 mm</td></tr><tr class="ok"><td>✓</td><td>Rated load on the top: strength<small>Yield ÷ peak stress with 300 kg spread over the top frame, plus self weight.</small></td><td>safety factor 5.50 (need 2), worst A (leg)</td></tr><tr class="ok"><td>✓</td><td>Rated load on the top: deflection<small>Largest movement of the loaded members.</small></td><td>1.4 mm (limit 4.9 mm)</td></tr><tr class="ok"><td>✓</td><td>Point load at a front corner: strength<small>Yield ÷ peak stress with 150 kg on one front corner, plus self weight.</small></td><td>safety factor 26.84 (need 2), worst A (leg)</td></tr><tr class="ok"><td>✓</td><td>Shoved sideways at the top: strength<small>Yield ÷ peak stress with 400 N pushing the top end-on, plus self weight.</small></td><td>safety factor 12.24 (need 2), worst C (long rail)</td></tr><tr class="ok"><td>✓</td><td>Shoved front to back at the top: strength<small>Yield ÷ peak stress with 400 N pushing the top front edge, plus self weight.</small></td><td>safety factor 16.12 (need 2), worst A (leg)</td></tr><tr class="ok"><td>✓</td><td>Loaded lower shelf: strength<small>Yield ÷ peak stress with 100 kg spread over the shelf, plus self weight.</small></td><td>safety factor 13.15 (need 2), worst C (long rail)</td></tr><tr class="ok"><td>✓</td><td>Loaded lower shelf: deflection<small>Largest movement of the loaded members.</small></td><td>0.4 mm (limit 5.8 mm)</td></tr><tr class="ok"><td>✓</td><td>Does not tip over<small>Free-standing it would tip with 300 N sideways at 900 mm high, so it is fixed down.</small></td><td>anchored (step 8, an M8 floor anchor through the base of every levelling foot); free-standing factor 0.69</td></tr><tr class="ok"><td>✓</td><td>Every part has a step<small>Each piece is cut, fitted or bought in a numbered step.</small></td><td>8 steps</td></tr><tr class="ok"><td>✓</td><td>Top supported often enough<small>Plywood and plate stay flat with supports no more than 600 mm apart.</small></td><td>487 mm between cross rails</td></tr><tr class="ok"><td>✓</td><td>Work height<small>Standing work: about wrist height for a vise, elbow height for fine work.</small></td><td>900 mm</td></tr><tr class="ok"><td>✓</td><td>Room above the shelf<small>At least 300 mm between the shelf and the top frame for boxes and cases.</small></td><td>604 mm clear</td></tr></table></div></div></section>
+  <section id="bom"><h2><span class="secn">2</span>Materials</h2><div id="bom-body"><h3>Stock</h3><div class="wrap"><table class="doc"><tr><th>Section</th><th class=n>Pieces</th><th class=n>Cut length</th><th class=n>Buy</th><th class=n>Mass</th><th class=n>Cost</th></tr><tr><td>40 × 40 × 2 square tube</td><td class=n>16</td><td class=n>14.0 m</td><td class=n>3 × 6.00 m</td><td class=n>33 kg</td><td class=n>$72</td></tr></table></div><h3>Plate and sheet</h3><div class="wrap"><table class="doc"><tr><th>Mark</th><th>Part</th><th>Size</th><th class=n>Qty</th><th class=n>Step</th><th class=n>Cost</th></tr><tr><td>P1</td><td>Foot plate</td><td>40 × 40 × 6 steel</td><td class=n>4</td><td class=n>6</td><td class=n>$2</td></tr><tr><td>P2</td><td>Top, plywood</td><td>1500 × 700 × 18 plywood</td><td class=n>1</td><td class=n>8</td><td class=n>$19</td></tr><tr><td>P3</td><td>Lower shelf</td><td>1500 × 700 × 18 plywood</td><td class=n>1</td><td class=n>8</td><td class=n>$19</td></tr></table></div><h3>Parts to buy</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Spec</th><th class=n>Qty</th><th class=n>Step</th><th class=n>Cost</th></tr><tr><td>Hex nut, M12</td><td>plain steel, welded to the foot plate</td><td class=n>4</td><td class=n>6</td><td class=n>$1</td></tr><tr><td>Levelling foot, M12, bolt-down base</td><td>40 mm base with an anchor hole, M12 stud at least 60 mm, 500 kg rating</td><td class=n>4</td><td class=n>8</td><td class=n>$16</td></tr><tr><td>Floor anchor, M8</td><td>sleeve or wedge anchor, to suit the levelling foot base hole</td><td class=n>4</td><td class=n>8</td><td class=n>$5</td></tr><tr><td>Self-drilling screws, countersunk</td><td>5.5 × 45 mm, for steel up to 3 mm</td><td class=n>24</td><td class=n>8</td><td class=n>$3</td></tr></table></div><h3>Consumables</h3><ul class="plain"><li>MIG wire, 0.8 mm · 1 kg spool</li><li>Shielding gas, Ar/CO2 · one small cylinder</li><li>Cut-off discs, 1 mm · 5</li><li>Flap discs, 80 grit · 3</li><li>Primer and enamel · 1 L each</li><li>Degreaser and rags</li></ul><h3>Tools</h3><ul class="plain cols"><li>MIG welder</li><li>Hammer drill and masonry bit for the anchors</li><li>Chop saw or angle grinder with cut-off discs</li><li>Angle grinder with flap disc</li><li>Welding table or flat floor</li><li>Square, tape, scriber, spirit level</li><li>Six or more clamps</li><li>Drill, 13 mm bit, M12 tap</li><li>Circular saw or jigsaw for the plywood</li><li>Impact driver</li></ul></div></section>
+  <section id="drawings"><h2><span class="secn">3</span>Drawings</h2><p class="muted">Overall dimensions. Every number on this page is from the same model as the 3D view.</p><div id="drawings-body"><div class="sheet" style="grid-template-columns:1985.3fr 1185.3fr"><figure class="v-top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -964.7 1985.3 1273.5" class="jig ga" style="--fs:44.1px" data-w="1985.3" role="img" aria-label="Top"><polygon class="jn k-hardware" points="0,-40 40,-40 40,0 0,0"/><polygon class="jn k-hardware" points="1460,-40 1500,-40 1500,0 1460,0"/><polygon class="jn k-hardware" points="0,-700 40,-700 40,-660 0,-660"/><polygon class="jn k-hardware" points="1460,-700 1500,-700 1500,-660 1460,-660"/><polygon class="jn k-plate" points="0,-40 40,-40 40,0 0,0"/><polygon class="jn k-plate" points="1460,-40 1500,-40 1500,0 1460,0"/><polygon class="jn k-plate" points="0,-700 40,-700 40,-660 0,-660"/><polygon class="jn k-plate" points="1460,-700 1500,-700 1500,-660 1460,-660"/><polygon class="jn k-member" points="0,-660 40,-660 40,-40 0,-40"/><polygon class="jn k-member" points="1460,-660 1500,-660 1500,-40 1460,-40"/><polygon class="jn k-member" points="40,-40 1460,-40 1460,0 40,0"/><polygon class="jn k-member" points="40,-700 1460,-700 1460,-660 40,-660"/><polygon class="jn k-member" points="486.7,-660 526.7,-660 526.7,-40 486.7,-40"/><polygon class="jn k-member" points="973.3,-660 1013.3,-660 1013.3,-40 973.3,-40"/><polygon class="jn k-plate" points="0,-700 1500,-700 1500,0 0,0"/><polygon class="jn k-member" points="0,-40 40,-40 40,0 0,0"/><polygon class="jn k-member" points="1460,-40 1500,-40 1500,0 1460,0"/><polygon class="jn k-member" points="0,-700 40,-700 40,-660 0,-660"/><polygon class="jn k-member" points="1460,-700 1500,-700 1500,-660 1460,-660"/><polygon class="jn k-member" points="0,-660 40,-660 40,-40 0,-40"/><polygon class="jn k-member" points="1460,-660 1500,-660 1500,-40 1460,-40"/><polygon class="jn k-member" points="40,-40 1460,-40 1460,0 40,0"/><polygon class="jn k-member" points="40,-700 1460,-700 1460,-660 40,-660"/><polygon class="jn k-member" points="486.7,-660 526.7,-660 526.7,-40 486.7,-40"/><polygon class="jn k-member" points="973.3,-660 1013.3,-660 1013.3,-40 973.3,-40"/><polygon class="jn k-plate" points="0,-700 1500,-700 1500,0 0,0"/><path class="dl" d="M0 17.6V119.1M1500 17.6V119.1M0 97.1H1500"/><path class="da" d="M0 97.1l35.3 -12.1v24.3zM1500 97.1l-35.3 -12.1v24.3z"/><text class="dt" x="750" y="81.6" text-anchor="middle">1500</text><path class="dl" d="M1517.6 -700H1619.1M1517.6 0H1619.1M1597.1 -700V0"/><path class="da" d="M1597.1 -700l-12.1 35.3h24.3zM1597.1 0l-12.1 -35.3h24.3z"/><text class="dt" x="1614.7" y="-350" transform="rotate(-90 1614.7 -350)" text-anchor="middle" dy="-8.8">700</text><text class="jt" x="-194.1" y="-894.1">Top</text></svg></figure><figure class="v-front"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -1164.7 1985.3 1473.5" class="jig ga" style="--fs:44.1px" data-w="1985.3" role="img" aria-label="Front"><polygon class="jn k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jn k-member" points="1460,-882 1500,-882 1500,-36 1460,-36"/><polygon class="jn k-member" points="40,-882 1460,-882 1460,-842 40,-842"/><polygon class="jn k-member" points="40,-220 1460,-220 1460,-180 40,-180"/><polygon class="jn k-plate" points="0,-36 40,-36 40,-30 0,-30"/><polygon class="jn k-plate" points="1460,-36 1500,-36 1500,-30 1460,-30"/><polygon class="jn k-hardware" points="0,-30 40,-30 40,0 0,0"/><polygon class="jn k-hardware" points="1460,-30 1500,-30 1500,0 1460,0"/><polygon class="jn k-member" points="0,-882 40,-882 40,-842 0,-842"/><polygon class="jn k-member" points="0,-220 40,-220 40,-180 0,-180"/><polygon class="jn k-member" points="1460,-882 1500,-882 1500,-842 1460,-842"/><polygon class="jn k-member" points="1460,-220 1500,-220 1500,-180 1460,-180"/><polygon class="jn k-member" points="486.7,-882 526.7,-882 526.7,-842 486.7,-842"/><polygon class="jn k-member" points="973.3,-882 1013.3,-882 1013.3,-842 973.3,-842"/><polygon class="jn k-member" points="486.7,-220 526.7,-220 526.7,-180 486.7,-180"/><polygon class="jn k-member" points="973.3,-220 1013.3,-220 1013.3,-180 973.3,-180"/><polygon class="jn k-plate" points="0,-900 1500,-900 1500,-882 0,-882"/><polygon class="jn k-plate" points="0,-238 1500,-238 1500,-220 0,-220"/><polygon class="jn k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jn k-member" points="1460,-882 1500,-882 1500,-36 1460,-36"/><polygon class="jn k-member" points="40,-882 1460,-882 1460,-842 40,-842"/><polygon class="jn k-member" points="40,-220 1460,-220 1460,-180 40,-180"/><polygon class="jn k-plate" points="0,-36 40,-36 40,-30 0,-30"/><polygon class="jn k-plate" points="1460,-36 1500,-36 1500,-30 1460,-30"/><polygon class="jn k-hardware" points="0,-30 40,-30 40,0 0,0"/><polygon class="jn k-hardware" points="1460,-30 1500,-30 1500,0 1460,0"/><path class="dl" d="M0 17.6V119.1M1500 17.6V119.1M0 97.1H1500"/><path class="da" d="M0 97.1l35.3 -12.1v24.3zM1500 97.1l-35.3 -12.1v24.3z"/><text class="dt" x="750" y="81.6" text-anchor="middle">1500</text><path class="dl" d="M1517.6 -900H1619.1M1517.6 0H1619.1M1597.1 -900V0"/><path class="da" d="M1597.1 -900l-12.1 35.3h24.3zM1597.1 0l-12.1 -35.3h24.3z"/><text class="dt" x="1614.7" y="-450" transform="rotate(-90 1614.7 -450)" text-anchor="middle" dy="-8.8">900</text><text class="jt" x="-194.1" y="-1094.1">Front</text></svg></figure><figure class="v-side"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -1164.7 1185.3 1473.5" class="jig ga" style="--fs:44.1px" data-w="1185.3" role="img" aria-label="Side (from the right)"><polygon class="jn k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jn k-member" points="660,-882 700,-882 700,-36 660,-36"/><polygon class="jn k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jn k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jn k-plate" points="0,-36 40,-36 40,-30 0,-30"/><polygon class="jn k-plate" points="660,-36 700,-36 700,-30 660,-30"/><polygon class="jn k-hardware" points="0,-30 40,-30 40,0 0,0"/><polygon class="jn k-hardware" points="660,-30 700,-30 700,0 660,0"/><polygon class="jn k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jn k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jn k-member" points="0,-882 40,-882 40,-842 0,-842"/><polygon class="jn k-member" points="660,-882 700,-882 700,-842 660,-842"/><polygon class="jn k-member" points="0,-220 40,-220 40,-180 0,-180"/><polygon class="jn k-member" points="660,-220 700,-220 700,-180 660,-180"/><polygon class="jn k-plate" points="0,-900 700,-900 700,-882 0,-882"/><polygon class="jn k-plate" points="0,-238 700,-238 700,-220 0,-220"/><polygon class="jn k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jn k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jn k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jn k-member" points="660,-882 700,-882 700,-36 660,-36"/><polygon class="jn k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jn k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jn k-plate" points="0,-36 40,-36 40,-30 0,-30"/><polygon class="jn k-plate" points="660,-36 700,-36 700,-30 660,-30"/><polygon class="jn k-hardware" points="0,-30 40,-30 40,0 0,0"/><polygon class="jn k-hardware" points="660,-30 700,-30 700,0 660,0"/><path class="dl" d="M0 17.6V119.1M700 17.6V119.1M0 97.1H700"/><path class="da" d="M0 97.1l35.3 -12.1v24.3zM700 97.1l-35.3 -12.1v24.3z"/><text class="dt" x="350" y="81.6" text-anchor="middle">700</text><path class="dl" d="M717.6 -900H819.1M717.6 0H819.1M797.1 -900V0"/><path class="da" d="M797.1 -900l-12.1 35.3h24.3zM797.1 0l-12.1 -35.3h24.3z"/><text class="dt" x="814.7" y="-450" transform="rotate(-90 814.7 -450)" text-anchor="middle" dy="-8.8">900</text><text class="jt" x="-194.1" y="-1094.1">Side (from the right)</text></svg></figure></div></div></section>
+  <section id="legend"><h2><span class="secn">4</span>Legend</h2><div id="legend-body"><div class="wrap"><table class="doc legend"><tr><th>Units</th><td>millimetres, kilograms, degrees</td></tr><tr><th>Datum</th><td>x from the left end of the top, y from the front edge, z up from the floor</td></tr><tr><th>Piece marks</th><td>A, B, C… one letter per different piece. &quot;x4&quot; = cut four the same. Mirror images share a mark.</td></tr><tr><th>Cut marks</th><td>From one square end, mark each edge at the two numbers, join the marks around the section, cut on the lines. Angles are for reference.</td></tr><tr><th>Edges</th><td>named by where they face on the finished build (top-front, bottom-right…)</td></tr><tr><th>Joints</th><td>mitre = same section, on the bisector · butt onto X = square onto the face of X · flush with X = cut level with X's outer face · then weld</td></tr><tr><th>Long point</th><td>the overall length of the piece, tip to tip</td></tr><tr><th>Dimensions</th><td>jig drawings and joint tables give centre lines (℄), where the members' centres cross; the general arrangement gives outside sizes</td></tr><tr><th>Tolerance</th><td>cut ±1 · tacked ±1 · finished ±2 · diagonals equal within 3</td></tr></table></div></div></section>
+  <section id="order"><h2><span class="secn">5</span>Order</h2><div id="order-body"><p>Cut everything, tack the end frames, join them, weld out, then feet, paint and top.</p><div class="phases"><div><h4>Fabricate</h4><ol start="1"><li><a href="#step-1">Cut, deburr, foot plates</a> <span class="muted">3 h</span></li><li><a href="#step-2">Two end frames (tack)</a> <span class="muted">2 h</span></li><li><a href="#step-3">Join the end frames (tack)</a> <span class="muted">2 h</span></li><li><a href="#step-4">Cross rails and shelf rails (tack)</a> <span class="muted">1 h</span></li><li><a href="#step-5">Weld out</a> <span class="muted">3 h</span></li><li><a href="#step-6">Foot plates</a> <span class="muted">1 h</span></li></ol></div><div><h4>Finish</h4><ol start="7"><li><a href="#step-7">Clean and paint</a> <span class="muted">2 h</span></li></ol></div><div><h4>Assemble</h4><ol start="8"><li><a href="#step-8">Feet, top and load test</a> <span class="muted">2 h</span></li></ol></div></div></div></section>
+  <section id="steps"><h2><span class="secn">6</span>Steps</h2><p class="muted">Ticks save on this device. "Show in 3D" shows the build after that step, the new parts lit.</p><div id="steps-body"><section class="step" id="step-1"><div class="step-h"><h3><span class="sn">01</span>Cut, deburr, foot plates</h3><p class="muted">Fabricate · 3 h · <button type="button" class="linkish" data-show-step="1">Show in 3D</button></p></div><ol class="tasks"><li><input type="checkbox" id="t-1-0" data-check="t-1-0" ><label for="t-1-0">Safety glasses, gloves and hearing protection from here on. Use bare or oiled tube, never galvanised.</label></li><li><input type="checkbox" id="t-1-1" data-check="t-1-1" ><label for="t-1-1">Cut every piece from the cutting plan, square ends; check each cut with a square.</label></li><li><input type="checkbox" id="t-1-2" data-check="t-1-2" ><label for="t-1-2">Deburr every end and write its piece mark on it in marker.</label></li><li><input type="checkbox" id="t-1-3" data-check="t-1-3" ><label for="t-1-3">Lay the pieces out by mark and count them against the cut list: 4 legs (A), 12 rails.</label></li><li><input type="checkbox" id="t-1-4" data-check="t-1-4" ><label for="t-1-4">Cut 4 foot plates 40 × 40 from 6 mm plate and drill a 13 mm hole in the centre of each.</label></li></ol><p class="gate"><b>Check</b> Every piece within ±1 of its long point on the cut list.</p></section><section class="step" id="step-2"><div class="step-h"><h3><span class="sn">02</span>Two end frames (tack)</h3><p class="muted">Fabricate · 2 h · <button type="button" class="linkish" data-show-step="2">Show in 3D</button></p></div><ol class="tasks"><li><input type="checkbox" id="t-2-0" data-check="t-2-0" ><label for="t-2-0">Lay two legs (A) flat on the welding table, parallel, outer faces against a straight edge.</label></li><li><input type="checkbox" id="t-2-1" data-check="t-2-1" ><label for="t-2-1">Fit a short rail (B) between them at the top, its top face flush with the leg tops, and a second one lower down with its centre line 164 up from the leg bottoms.</label></li><li><input type="checkbox" id="t-2-2" data-check="t-2-2" ><label for="t-2-2">Set the outside width to 700 at the top and the bottom, clamp each joint square, tack each joint on two faces.</label></li><li><input type="checkbox" id="t-2-3" data-check="t-2-3" ><label for="t-2-3">Build the second end frame on top of the first so the two match.</label></li></ol><p class="gate"><b>Check</b> Diagonals of each frame equal within 2 mm; both frames the same within ±1; flat on the table at all four corners.</p><h4>Jig</h4><div class="sheet one"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -1146.7 1185.3 1419.5" class="jig" style="--fs:44.1px" data-w="1185.3" role="img" aria-label="Step 2: Side (from the right)"><polygon class="jn k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jn k-member" points="660,-882 700,-882 700,-36 660,-36"/><polygon class="jn k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jn k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jn k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jn k-member" points="660,-882 700,-882 700,-36 660,-36"/><polygon class="jn k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jn k-member" points="40,-220 660,-220 660,-180 40,-180"/><path class="dl" d="M20 -18.4V83.1M680 -18.4V83.1M20 61.1H680"/><path class="da" d="M20 61.1l35.3 -12.1v24.3zM680 61.1l-35.3 -12.1v24.3z"/><text class="dt" x="350" y="45.6" text-anchor="middle">℄ 660</text><path class="dl" d="M697.6 -862H819.1M697.6 -36H819.1M797.1 -862V-36"/><path class="da" d="M797.1 -862l-12.1 35.3h24.3zM797.1 -36l-12.1 -35.3h24.3z"/><text class="dt" x="814.7" y="-449" transform="rotate(-90 814.7 -449)" text-anchor="middle" dy="-8.8">℄ 826</text><circle class="jp" cx="20" cy="-36" r="12.4"/><text class="jl" x="39.9" y="-53.6">FL0, FR0</text><circle class="jp" cx="680" cy="-36" r="12.4"/><text class="jl" x="699.9" y="-53.6">BL0, BR0</text><circle class="jp" cx="20" cy="-200" r="12.4"/><text class="jl" x="39.9" y="-217.6">FL1, FR1</text><circle class="jp" cx="680" cy="-200" r="12.4"/><text class="jl" x="699.9" y="-217.6">BL1, BR1</text><circle class="jp" cx="20" cy="-862" r="12.4"/><text class="jl" x="39.9" y="-879.6">FL2, FR2</text><circle class="jp" cx="680" cy="-862" r="12.4"/><text class="jl" x="699.9" y="-879.6">BL2, BR2</text><text class="jt" x="-194.1" y="-1076.1">Step 2: Side (from the right)</text></svg></figure></div><h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr><tr><td>FL0</td><td class=n>20</td><td class=n>20</td><td class=n>36</td></tr><tr><td>FR0</td><td class=n>1480</td><td class=n>20</td><td class=n>36</td></tr><tr><td>BL0</td><td class=n>20</td><td class=n>680</td><td class=n>36</td></tr><tr><td>BR0</td><td class=n>1480</td><td class=n>680</td><td class=n>36</td></tr><tr><td>FL1</td><td class=n>20</td><td class=n>20</td><td class=n>200</td></tr><tr><td>FR1</td><td class=n>1480</td><td class=n>20</td><td class=n>200</td></tr><tr><td>BL1</td><td class=n>20</td><td class=n>680</td><td class=n>200</td></tr><tr><td>BR1</td><td class=n>1480</td><td class=n>680</td><td class=n>200</td></tr><tr><td>FL2</td><td class=n>20</td><td class=n>20</td><td class=n>862</td></tr><tr><td>FR2</td><td class=n>1480</td><td class=n>20</td><td class=n>862</td></tr><tr><td>BL2</td><td class=n>20</td><td class=n>680</td><td class=n>862</td></tr><tr><td>BR2</td><td class=n>1480</td><td class=n>680</td><td class=n>862</td></tr></table></div><details class="sheets" open><summary>Pieces: A x4, B x4</summary><div class="piece-list"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 190" class="piece square" role="img" aria-label="Cut sheet, piece A"><text class="pt" x="10" y="28">A</text><text class="pq" x="36" y="28">x4</text><text class="ps" x="10" y="52">Leg · SHS 40×40×2 · step 2</text><text class="ps pm2" x="10" y="72">leg-FL, leg-FR, leg-BL, leg-BR</text><text class="pk" x="750" y="28" text-anchor="end">846 mm</text><text class="ps" x="750" y="52" text-anchor="end">long point</text><rect class="pf" x="10" y="92" width="590" height="22"/><path class="dl" d="M10 120v18M600 120v18M10 130H600"/><text class="pm" x="305" y="150" text-anchor="middle">846, square both ends</text><text class="ps" x="10" y="174">Left end: free end · Right end: flush with B (short rail)</text></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 190" class="piece square" role="img" aria-label="Cut sheet, piece B"><text class="pt" x="10" y="28">B</text><text class="pq" x="36" y="28">x8</text><text class="ps" x="10" y="52">Short rail · SHS 40×40×2 · step 2</text><text class="ps pm2" x="10" y="72">end-L-top, end-L-low, end-R-top, end-R-low, cross-top-1, cross-top-2, cross-low-1, cross-low-2</text><text class="pk" x="750" y="28" text-anchor="end">620 mm</text><text class="ps" x="750" y="52" text-anchor="end">long point</text><rect class="pf" x="10" y="92" width="590" height="22"/><path class="dl" d="M10 120v18M600 120v18M10 130H600"/><text class="pm" x="305" y="150" text-anchor="middle">620, square both ends</text><text class="ps" x="10" y="174">Left end: butt onto A (leg) or C (long rail) · Right end: butt onto A (leg) or C (long rail)</text></svg></div></details></section><section class="step" id="step-3"><div class="step-h"><h3><span class="sn">03</span>Join the end frames (tack)</h3><p class="muted">Fabricate · 2 h · <button type="button" class="linkish" data-show-step="3">Show in 3D</button></p></div><ol class="tasks"><li><input type="checkbox" id="t-3-0" data-check="t-3-0" ><label for="t-3-0">Stand both end frames up on the table, top ends up, and brace each with a clamp to a square.</label></li><li><input type="checkbox" id="t-3-1" data-check="t-3-1" ><label for="t-3-1">Clamp the long rails (C) between the end frames: top rails flush with the leg tops, lower rails at the same height as the lower end rails.</label></li><li><input type="checkbox" id="t-3-2" data-check="t-3-2" ><label for="t-3-2">Set the outside length to 1500 on the top and the bottom rails.</label></li><li><input type="checkbox" id="t-3-3" data-check="t-3-3" ><label for="t-3-3">Tack the top long rails first, then the lower ones, one tack per joint.</label></li><li><input type="checkbox" id="t-3-4" data-check="t-3-4" ><label for="t-3-4">Measure the top diagonals, nudge the frame until they are equal, then tack every joint on two faces.</label></li></ol><p class="gate"><b>Check</b> Top diagonals equal within 3 mm; every leg plumb within ±1 over its height; the frame sits on all 4 legs without rocking.</p><p class="note">Tack only: the frame is welded out in step 5, once every rail is in.</p><h4>Jig</h4><div class="sheet" style="grid-template-columns:1985.3fr 1185.3fr"><figure class="v-top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -964.7 1985.3 1273.5" class="jig" style="--fs:44.1px" data-w="1985.3" role="img" aria-label="Step 3: Top"><polygon class="jo k-member" points="0,-660 40,-660 40,-40 0,-40"/><polygon class="jo k-member" points="1460,-660 1500,-660 1500,-40 1460,-40"/><polygon class="jn k-member" points="40,-40 1460,-40 1460,0 40,0"/><polygon class="jn k-member" points="40,-700 1460,-700 1460,-660 40,-660"/><polygon class="jo k-member" points="0,-40 40,-40 40,0 0,0"/><polygon class="jo k-member" points="1460,-40 1500,-40 1500,0 1460,0"/><polygon class="jo k-member" points="0,-700 40,-700 40,-660 0,-660"/><polygon class="jo k-member" points="1460,-700 1500,-700 1500,-660 1460,-660"/><polygon class="jo k-member" points="0,-660 40,-660 40,-40 0,-40"/><polygon class="jo k-member" points="1460,-660 1500,-660 1500,-40 1460,-40"/><polygon class="jn k-member" points="40,-40 1460,-40 1460,0 40,0"/><polygon class="jn k-member" points="40,-700 1460,-700 1460,-660 40,-660"/><path class="dl" d="M20 -2.4V119.1M1480 -2.4V119.1M20 97.1H1480"/><path class="da" d="M20 97.1l35.3 -12.1v24.3zM1480 97.1l-35.3 -12.1v24.3z"/><text class="dt" x="750" y="81.6" text-anchor="middle">℄ 1460</text><path class="dl" d="M1497.6 -680H1619.1M1497.6 -20H1619.1M1597.1 -680V-20"/><path class="da" d="M1597.1 -680l-12.1 35.3h24.3zM1597.1 -20l-12.1 -35.3h24.3z"/><text class="dt" x="1614.7" y="-350" transform="rotate(-90 1614.7 -350)" text-anchor="middle" dy="-8.8">℄ 660</text><circle class="jp" cx="20" cy="-20" r="12.4"/><text class="jl" x="39.9" y="-37.6">FL1, FL2</text><circle class="jp" cx="1480" cy="-20" r="12.4"/><text class="jl" x="1499.9" y="-37.6">FR1, FR2</text><circle class="jp" cx="20" cy="-680" r="12.4"/><text class="jl" x="39.9" y="-697.6">BL1, BL2</text><circle class="jp" cx="1480" cy="-680" r="12.4"/><text class="jl" x="1499.9" y="-697.6">BR1, BR2</text><text class="jt" x="-194.1" y="-894.1">Step 3: Top</text></svg></figure><figure class="v-front"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -1146.7 1985.3 1419.5" class="jig" style="--fs:44.1px" data-w="1985.3" role="img" aria-label="Step 3: Front"><polygon class="jo k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jo k-member" points="1460,-882 1500,-882 1500,-36 1460,-36"/><polygon class="jn k-member" points="40,-882 1460,-882 1460,-842 40,-842"/><polygon class="jn k-member" points="40,-220 1460,-220 1460,-180 40,-180"/><polygon class="jo k-member" points="0,-882 40,-882 40,-842 0,-842"/><polygon class="jo k-member" points="0,-220 40,-220 40,-180 0,-180"/><polygon class="jo k-member" points="1460,-882 1500,-882 1500,-842 1460,-842"/><polygon class="jo k-member" points="1460,-220 1500,-220 1500,-180 1460,-180"/><polygon class="jo k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jo k-member" points="1460,-882 1500,-882 1500,-36 1460,-36"/><polygon class="jn k-member" points="40,-882 1460,-882 1460,-842 40,-842"/><polygon class="jn k-member" points="40,-220 1460,-220 1460,-180 40,-180"/><path class="dl" d="M20 -182.4V83.1M1480 -182.4V83.1M20 61.1H1480"/><path class="da" d="M20 61.1l35.3 -12.1v24.3zM1480 61.1l-35.3 -12.1v24.3z"/><text class="dt" x="750" y="45.6" text-anchor="middle">℄ 1460</text><path class="dl" d="M1497.6 -862H1619.1M1497.6 -200H1619.1M1597.1 -862V-200"/><path class="da" d="M1597.1 -862l-12.1 35.3h24.3zM1597.1 -200l-12.1 -35.3h24.3z"/><text class="dt" x="1614.7" y="-531" transform="rotate(-90 1614.7 -531)" text-anchor="middle" dy="-8.8">℄ 662</text><circle class="jp" cx="20" cy="-200" r="12.4"/><text class="jl" x="39.9" y="-217.6">FL1, BL1</text><circle class="jp" cx="1480" cy="-200" r="12.4"/><text class="jl" x="1499.9" y="-217.6">FR1, BR1</text><circle class="jp" cx="20" cy="-862" r="12.4"/><text class="jl" x="39.9" y="-879.6">FL2, BL2</text><circle class="jp" cx="1480" cy="-862" r="12.4"/><text class="jl" x="1499.9" y="-879.6">FR2, BR2</text><text class="jt" x="-194.1" y="-1076.1">Step 3: Front</text></svg></figure><figure class="v-side"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -1146.7 1185.3 1419.5" class="jig" style="--fs:44.1px" data-w="1185.3" role="img" aria-label="Step 3: Side (from the right)"><polygon class="jo k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jo k-member" points="660,-882 700,-882 700,-36 660,-36"/><polygon class="jo k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jo k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jn k-member" points="0,-882 40,-882 40,-842 0,-842"/><polygon class="jn k-member" points="660,-882 700,-882 700,-842 660,-842"/><polygon class="jn k-member" points="0,-220 40,-220 40,-180 0,-180"/><polygon class="jn k-member" points="660,-220 700,-220 700,-180 660,-180"/><polygon class="jo k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jo k-member" points="660,-882 700,-882 700,-36 660,-36"/><polygon class="jo k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jo k-member" points="40,-220 660,-220 660,-180 40,-180"/><path class="dl" d="M20 -182.4V83.1M680 -182.4V83.1M20 61.1H680"/><path class="da" d="M20 61.1l35.3 -12.1v24.3zM680 61.1l-35.3 -12.1v24.3z"/><text class="dt" x="350" y="45.6" text-anchor="middle">℄ 660</text><path class="dl" d="M697.6 -862H819.1M697.6 -200H819.1M797.1 -862V-200"/><path class="da" d="M797.1 -862l-12.1 35.3h24.3zM797.1 -200l-12.1 -35.3h24.3z"/><text class="dt" x="814.7" y="-531" transform="rotate(-90 814.7 -531)" text-anchor="middle" dy="-8.8">℄ 662</text><circle class="jp" cx="20" cy="-200" r="12.4"/><text class="jl" x="39.9" y="-217.6">FL1, FR1</text><circle class="jp" cx="680" cy="-200" r="12.4"/><text class="jl" x="699.9" y="-217.6">BL1, BR1</text><circle class="jp" cx="20" cy="-862" r="12.4"/><text class="jl" x="39.9" y="-879.6">FL2, FR2</text><circle class="jp" cx="680" cy="-862" r="12.4"/><text class="jl" x="699.9" y="-879.6">BL2, BR2</text><text class="jt" x="-194.1" y="-1076.1">Step 3: Side (from the right)</text></svg></figure></div><h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr><tr><td>FL1</td><td class=n>20</td><td class=n>20</td><td class=n>200</td></tr><tr><td>FR1</td><td class=n>1480</td><td class=n>20</td><td class=n>200</td></tr><tr><td>BL1</td><td class=n>20</td><td class=n>680</td><td class=n>200</td></tr><tr><td>BR1</td><td class=n>1480</td><td class=n>680</td><td class=n>200</td></tr><tr><td>FL2</td><td class=n>20</td><td class=n>20</td><td class=n>862</td></tr><tr><td>FR2</td><td class=n>1480</td><td class=n>20</td><td class=n>862</td></tr><tr><td>BL2</td><td class=n>20</td><td class=n>680</td><td class=n>862</td></tr><tr><td>BR2</td><td class=n>1480</td><td class=n>680</td><td class=n>862</td></tr></table></div><details class="sheets" open><summary>Pieces: C x4</summary><div class="piece-list"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 190" class="piece square" role="img" aria-label="Cut sheet, piece C"><text class="pt" x="10" y="28">C</text><text class="pq" x="36" y="28">x4</text><text class="ps" x="10" y="52">Long rail · SHS 40×40×2 · step 3</text><text class="ps pm2" x="10" y="72">long-F-top, long-B-top, long-F-low, long-B-low</text><text class="pk" x="750" y="28" text-anchor="end">1420 mm</text><text class="ps" x="750" y="52" text-anchor="end">long point</text><rect class="pf" x="10" y="92" width="590" height="22"/><path class="dl" d="M10 120v18M600 120v18M10 130H600"/><text class="pm" x="305" y="150" text-anchor="middle">1420, square both ends</text><text class="ps" x="10" y="174">Left end: butt onto A (leg) · Right end: butt onto A (leg)</text></svg></div></details></section><section class="step" id="step-4"><div class="step-h"><h3><span class="sn">04</span>Cross rails and shelf rails (tack)</h3><p class="muted">Fabricate · 1 h · <button type="button" class="linkish" data-show-step="4">Show in 3D</button></p></div><ol class="tasks"><li><input type="checkbox" id="t-4-0" data-check="t-4-0" ><label for="t-4-0">Mark the cross rail positions on the top long rails, front and back: 507, 993 from the left end to the centre line of each cross rail.</label></li><li><input type="checkbox" id="t-4-1" data-check="t-4-1" ><label for="t-4-1">Fit a short rail (B) as a cross rail at each mark, between the top long rails, top face flush with them, square to the front rail, and tack both ends.</label></li><li><input type="checkbox" id="t-4-2" data-check="t-4-2" ><label for="t-4-2">Mark the same positions on the lower long rails and tack a short rail at each as a shelf rail, flush with the top of the lower rails.</label></li></ol><p class="gate"><b>Check</b> Cross rails flush with the top within ±1 (lay a straight edge across), and 487 apart centre to centre within ±2.</p><h4>Jig</h4><div class="sheet" style="grid-template-columns:1985.3fr 1185.3fr"><figure class="v-top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -964.7 1985.3 1273.5" class="jig" style="--fs:44.1px" data-w="1985.3" role="img" aria-label="Step 4: Top"><polygon class="jo k-member" points="0,-660 40,-660 40,-40 0,-40"/><polygon class="jo k-member" points="1460,-660 1500,-660 1500,-40 1460,-40"/><polygon class="jo k-member" points="40,-40 1460,-40 1460,0 40,0"/><polygon class="jo k-member" points="40,-700 1460,-700 1460,-660 40,-660"/><polygon class="jn k-member" points="486.7,-660 526.7,-660 526.7,-40 486.7,-40"/><polygon class="jn k-member" points="973.3,-660 1013.3,-660 1013.3,-40 973.3,-40"/><polygon class="jo k-member" points="0,-40 40,-40 40,0 0,0"/><polygon class="jo k-member" points="1460,-40 1500,-40 1500,0 1460,0"/><polygon class="jo k-member" points="0,-700 40,-700 40,-660 0,-660"/><polygon class="jo k-member" points="1460,-700 1500,-700 1500,-660 1460,-660"/><polygon class="jo k-member" points="0,-660 40,-660 40,-40 0,-40"/><polygon class="jo k-member" points="1460,-660 1500,-660 1500,-40 1460,-40"/><polygon class="jo k-member" points="40,-40 1460,-40 1460,0 40,0"/><polygon class="jo k-member" points="40,-700 1460,-700 1460,-660 40,-660"/><polygon class="jn k-member" points="486.7,-660 526.7,-660 526.7,-40 486.7,-40"/><polygon class="jn k-member" points="973.3,-660 1013.3,-660 1013.3,-40 973.3,-40"/><path class="dl" d="M506.7 -2.4V119.1M993.3 -2.4V119.1M506.7 97.1H993.3"/><path class="da" d="M506.7 97.1l35.3 -12.1v24.3zM993.3 97.1l-35.3 -12.1v24.3z"/><text class="dt" x="750" y="81.6" text-anchor="middle">℄ 487</text><path class="dl" d="M1011 -680H1619.1M1011 -20H1619.1M1597.1 -680V-20"/><path class="da" d="M1597.1 -680l-12.1 35.3h24.3zM1597.1 -20l-12.1 -35.3h24.3z"/><text class="dt" x="1614.7" y="-350" transform="rotate(-90 1614.7 -350)" text-anchor="middle" dy="-8.8">℄ 660</text><circle class="jp" cx="506.7" cy="-20" r="12.4"/><text class="jl" x="526.5" y="-37.6">F1L, F1T</text><circle class="jp" cx="993.3" cy="-20" r="12.4"/><text class="jl" x="1013.2" y="-37.6">F2L, F2T</text><circle class="jp" cx="506.7" cy="-680" r="12.4"/><text class="jl" x="526.5" y="-697.6">B1L, B1T</text><circle class="jp" cx="993.3" cy="-680" r="12.4"/><text class="jl" x="1013.2" y="-697.6">B2L, B2T</text><text class="jt" x="-194.1" y="-894.1">Step 4: Top</text></svg></figure><figure class="v-front"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -1146.7 1985.3 1419.5" class="jig" style="--fs:44.1px" data-w="1985.3" role="img" aria-label="Step 4: Front"><polygon class="jo k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jo k-member" points="1460,-882 1500,-882 1500,-36 1460,-36"/><polygon class="jo k-member" points="40,-882 1460,-882 1460,-842 40,-842"/><polygon class="jo k-member" points="40,-220 1460,-220 1460,-180 40,-180"/><polygon class="jo k-member" points="0,-882 40,-882 40,-842 0,-842"/><polygon class="jo k-member" points="0,-220 40,-220 40,-180 0,-180"/><polygon class="jo k-member" points="1460,-882 1500,-882 1500,-842 1460,-842"/><polygon class="jo k-member" points="1460,-220 1500,-220 1500,-180 1460,-180"/><polygon class="jn k-member" points="486.7,-882 526.7,-882 526.7,-842 486.7,-842"/><polygon class="jn k-member" points="973.3,-882 1013.3,-882 1013.3,-842 973.3,-842"/><polygon class="jn k-member" points="486.7,-220 526.7,-220 526.7,-180 486.7,-180"/><polygon class="jn k-member" points="973.3,-220 1013.3,-220 1013.3,-180 973.3,-180"/><polygon class="jo k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jo k-member" points="1460,-882 1500,-882 1500,-36 1460,-36"/><polygon class="jo k-member" points="40,-882 1460,-882 1460,-842 40,-842"/><polygon class="jo k-member" points="40,-220 1460,-220 1460,-180 40,-180"/><path class="dl" d="M506.7 -182.4V83.1M993.3 -182.4V83.1M506.7 61.1H993.3"/><path class="da" d="M506.7 61.1l35.3 -12.1v24.3zM993.3 61.1l-35.3 -12.1v24.3z"/><text class="dt" x="750" y="45.6" text-anchor="middle">℄ 487</text><path class="dl" d="M1011 -862H1619.1M1011 -200H1619.1M1597.1 -862V-200"/><path class="da" d="M1597.1 -862l-12.1 35.3h24.3zM1597.1 -200l-12.1 -35.3h24.3z"/><text class="dt" x="1614.7" y="-531" transform="rotate(-90 1614.7 -531)" text-anchor="middle" dy="-8.8">℄ 662</text><circle class="jp" cx="506.7" cy="-200" r="12.4"/><text class="jl" x="526.5" y="-217.6">F1L, B1L</text><circle class="jp" cx="993.3" cy="-200" r="12.4"/><text class="jl" x="1013.2" y="-217.6">F2L, B2L</text><circle class="jp" cx="506.7" cy="-862" r="12.4"/><text class="jl" x="526.5" y="-879.6">F1T, B1T</text><circle class="jp" cx="993.3" cy="-862" r="12.4"/><text class="jl" x="1013.2" y="-879.6">F2T, B2T</text><text class="jt" x="-194.1" y="-1076.1">Step 4: Front</text></svg></figure><figure class="v-side"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-220.6 -1146.7 1185.3 1419.5" class="jig" style="--fs:44.1px" data-w="1185.3" role="img" aria-label="Step 4: Side (from the right)"><polygon class="jo k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jo k-member" points="660,-882 700,-882 700,-36 660,-36"/><polygon class="jo k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jo k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jn k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jn k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jo k-member" points="0,-882 40,-882 40,-842 0,-842"/><polygon class="jo k-member" points="660,-882 700,-882 700,-842 660,-842"/><polygon class="jo k-member" points="0,-220 40,-220 40,-180 0,-180"/><polygon class="jo k-member" points="660,-220 700,-220 700,-180 660,-180"/><polygon class="jn k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jn k-member" points="40,-220 660,-220 660,-180 40,-180"/><polygon class="jo k-member" points="0,-882 40,-882 40,-36 0,-36"/><polygon class="jo k-member" points="660,-882 700,-882 700,-36 660,-36"/><polygon class="jo k-member" points="40,-882 660,-882 660,-842 40,-842"/><polygon class="jo k-member" points="40,-220 660,-220 660,-180 40,-180"/><path class="dl" d="M20 -182.4V83.1M680 -182.4V83.1M20 61.1H680"/><path class="da" d="M20 61.1l35.3 -12.1v24.3zM680 61.1l-35.3 -12.1v24.3z"/><text class="dt" x="350" y="45.6" text-anchor="middle">℄ 660</text><path class="dl" d="M697.6 -862H819.1M697.6 -200H819.1M797.1 -862V-200"/><path class="da" d="M797.1 -862l-12.1 35.3h24.3zM797.1 -200l-12.1 -35.3h24.3z"/><text class="dt" x="814.7" y="-531" transform="rotate(-90 814.7 -531)" text-anchor="middle" dy="-8.8">℄ 662</text><circle class="jp" cx="20" cy="-200" r="12.4"/><text class="jl" x="39.9" y="-217.6">F1L, F2L</text><circle class="jp" cx="680" cy="-200" r="12.4"/><text class="jl" x="699.9" y="-217.6">B1L, B2L</text><circle class="jp" cx="20" cy="-862" r="12.4"/><text class="jl" x="39.9" y="-879.6">F1T, F2T</text><circle class="jp" cx="680" cy="-862" r="12.4"/><text class="jl" x="699.9" y="-879.6">B1T, B2T</text><text class="jt" x="-194.1" y="-1076.1">Step 4: Side (from the right)</text></svg></figure></div><h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr><tr><td>F1L</td><td class=n>507</td><td class=n>20</td><td class=n>200</td></tr><tr><td>F2L</td><td class=n>993</td><td class=n>20</td><td class=n>200</td></tr><tr><td>B1L</td><td class=n>507</td><td class=n>680</td><td class=n>200</td></tr><tr><td>B2L</td><td class=n>993</td><td class=n>680</td><td class=n>200</td></tr><tr><td>F1T</td><td class=n>507</td><td class=n>20</td><td class=n>862</td></tr><tr><td>F2T</td><td class=n>993</td><td class=n>20</td><td class=n>862</td></tr><tr><td>B1T</td><td class=n>507</td><td class=n>680</td><td class=n>862</td></tr><tr><td>B2T</td><td class=n>993</td><td class=n>680</td><td class=n>862</td></tr></table></div><details class="sheets" open><summary>Pieces: B x4</summary><p class="muted">B: cut sheet in <a href="#step-2">step 2</a></p></details></section><section class="step" id="step-5"><div class="step-h"><h3><span class="sn">05</span>Weld out</h3><p class="muted">Fabricate · 3 h · <button type="button" class="linkish" data-show-step="5">Show in 3D</button></p></div><ol class="tasks"><li><input type="checkbox" id="t-5-0" data-check="t-5-0" ><label for="t-5-0">Re-check the top diagonals and the leg plumb before any weld; fix them while it is only tacked.</label></li><li><input type="checkbox" id="t-5-1" data-check="t-5-1" ><label for="t-5-1">Weld every joint all round in short runs, alternating diagonally opposite corners so the heat does not pull the frame out of square.</label></li><li><input type="checkbox" id="t-5-2" data-check="t-5-2" ><label for="t-5-2">Weld the top frame joints first, then the lower frame, then the cross rails. Leave it clamped until cold.</label></li><li><input type="checkbox" id="t-5-3" data-check="t-5-3" ><label for="t-5-3">Grind the welds on the top faces of the top frame flush, so the top sits flat.</label></li></ol><p class="gate"><b>Check</b> Top diagonals still equal within 3 mm; a straight edge across the top shows no gap over ±1.</p><p class="note">Ventilate: weld fumes from mill scale and paint are toxic.</p></section><section class="step" id="step-6"><div class="step-h"><h3><span class="sn">06</span>Foot plates</h3><p class="muted">Fabricate · 1 h · <button type="button" class="linkish" data-show-step="6">Show in 3D</button></p></div><ol class="tasks"><li><input type="checkbox" id="t-6-0" data-check="t-6-0" ><label for="t-6-0">Weld an M12 nut on the top face of each foot plate, centred over the 13 mm hole: thread a bolt through both to hold it straight while you weld.</label></li><li><input type="checkbox" id="t-6-1" data-check="t-6-1" ><label for="t-6-1">Lay the bench on its back (two people). Centre a foot plate on the bottom of each leg, nut inside the tube, and weld it all round.</label></li><li><input type="checkbox" id="t-6-2" data-check="t-6-2" ><label for="t-6-2">Chase each nut with an M12 tap or run a bolt in and out to clear spatter.</label></li></ol><p class="gate"><b>Check</b> A bolt screws into every nut by hand, straight.</p><h4>Parts</h4><ul class="plain"><li>Hex nut, M12 x4 <span class="muted">plain steel, welded to the foot plate</span></li></ul><h4>Plates</h4><div class="piece-list"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 432" class="piece plate" role="img" aria-label="Plate foot-FL"><text class="pt" x="10" y="28">P1</text><text class="pq" x="54" y="28">x4</text><text class="ps" x="10" y="50">Foot plate · 6 mm steel · step 6</text><rect class="pf" x="70" y="60" width="260" height="260" rx="0"/><circle class="ph" cx="200" cy="190" r="42.3"/><path class="dl" d="M70 342H330M70 326v24M330 326v24"/><text class="pm" x="200" y="364" text-anchor="middle">40</text><path class="dl" d="M352 60V320M336 60h24M336 320h24"/><text class="pm" x="364" y="195">40</text><text class="ps" x="10" y="396">1 hole: ⌀13 · centres from the lower-left corner: (20, 20)</text><text class="ps" x="10" y="418">Weld an M12 nut over the hole on the top face first, then weld the plate centred under the leg, all round.</text></svg></div></section><section class="step" id="step-7"><div class="step-h"><h3><span class="sn">07</span>Clean and paint</h3><p class="muted">Finish · 2 h · <button type="button" class="linkish" data-show-step="7">Show in 3D</button></p></div><ol class="tasks"><li><input type="checkbox" id="t-7-0" data-check="t-7-0" ><label for="t-7-0">Degrease, wire-brush the welds, and sand any mill scale on show.</label></li><li><input type="checkbox" id="t-7-1" data-check="t-7-1" ><label for="t-7-1">Prime and paint with two coats of enamel; let it dry overnight.</label></li></ol><p class="gate"><b>Check</b> No bare steel left except where masked; paint dry to the touch.</p></section><section class="step" id="step-8"><div class="step-h"><h3><span class="sn">08</span>Feet, top and load test</h3><p class="muted">Assemble · 2 h · <button type="button" class="linkish" data-show-step="8">Show in 3D</button></p></div><ol class="tasks"><li><input type="checkbox" id="t-8-0" data-check="t-8-0" ><label for="t-8-0">Screw a levelling foot into each leg and set each to 30 under the foot plate.</label></li><li><input type="checkbox" id="t-8-1" data-check="t-8-1" ><label for="t-8-1">Cut the top 1500 × 700 from 18 mm plywood, lay it on the frame flush all round.</label></li><li><input type="checkbox" id="t-8-2" data-check="t-8-2" ><label for="t-8-2">Screw it down into the top frame and cross rails with countersunk self-drilling screws: two per cross rail and per end rail, and two per bay on the front and back rails (12 screws).</label></li><li><input type="checkbox" id="t-8-3" data-check="t-8-3" ><label for="t-8-3">Cut the shelf 1500 × 700 from 18 mm plywood and cut the notches for the legs as its drawing (step 8) shows.</label></li><li><input type="checkbox" id="t-8-4" data-check="t-8-4" ><label for="t-8-4">Drop it onto the lower frame and screw it down the same way (12 screws).</label></li><li><input type="checkbox" id="t-8-5" data-check="t-8-5" ><label for="t-8-5">Stand it in place and level it with the feet: a level on the top, front to back and end to end. Lock each foot with its nut.</label></li><li><input type="checkbox" id="t-8-6" data-check="t-8-6" ><label for="t-8-6">Mark the anchor hole of every foot base on the floor, move the bench, drill for the M8 anchors, set them, and bolt every foot down (4 anchors).</label></li><li><input type="checkbox" id="t-8-7" data-check="t-8-7" ><label for="t-8-7">Load it gradually, in steps of about a quarter, up to 300 kg spread over the top, and leave it an hour.</label></li></ol><p class="gate"><b>Check</b> Level within ±1 over the length; does not move or lift when pushed hard at the top edge; no visible sag or cracked weld after the load test.</p><h4>Parts</h4><ul class="plain"><li>Levelling foot, M12, bolt-down base x4 <span class="muted">40 mm base with an anchor hole, M12 stud at least 60 mm, 500 kg rating</span></li><li>Floor anchor, M8 x4 <span class="muted">sleeve or wedge anchor, to suit the levelling foot base hole</span></li><li>Self-drilling screws, countersunk x24 <span class="muted">5.5 × 45 mm, for steel up to 3 mm</span></li></ul><h4>Plates</h4><div class="piece-list"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 414.7" class="piece plate" role="img" aria-label="Plate shelf"><text class="pt" x="10" y="28">P3</text><text class="pq" x="54" y="28">x1</text><text class="ps" x="10" y="50">Lower shelf · 18 mm plywood · step 8</text><path class="pf" style="stroke:none" d="M70 288.8H83.9V73.9H70ZM83.9 302.7H576.1V288.8H83.9ZM83.9 288.8H576.1V73.9H83.9ZM83.9 73.9H576.1V60H83.9ZM576.1 288.8H590V73.9H576.1Z"/><path class="pb" style="stroke:var(--ink);stroke-width:1.5" d="M70 288.8V73.9M70 288.8H83.9M70 73.9H83.9M83.9 302.7V288.8M576.1 302.7V288.8M83.9 302.7H576.1M83.9 73.9V60M576.1 73.9V60M83.9 60H576.1M590 288.8V73.9M576.1 288.8H590M576.1 73.9H590"/><path class="dl" d="M70 324.7H590M70 308.7v24M590 308.7v24"/><text class="pm" x="330" y="346.7" text-anchor="middle">1500</text><path class="dl" d="M612 60V302.7M596 60h24M596 302.7h24"/><text class="pm" x="624" y="186.3">700</text><text class="ps" x="10" y="378.7">4 notches 40 × 40 for the members that pass through, at: (0, 0) (1460, 0) (0, 660) (1460, 660)</text></svg></div></section></div></section>
+  <section id="cutlist"><h2><span class="secn">7</span>Cut list</h2><div id="cutlist-body"><div class="wrap"><table class="doc"><tr><th>Mark</th><th class=n>Qty</th><th>Section</th><th class=n>Long point</th><th>Left end</th><th>Right end</th><th class=n>Step</th></tr><tr><td><b>A</b> <span class="muted">Leg</span></td><td class=n>4</td><td>SHS 40×40×2</td><td class=n>846</td><td>square · free end</td><td>square · flush with B (short rail)</td><td class=n>2</td></tr><tr><td><b>B</b> <span class="muted">Short rail</span></td><td class=n>8</td><td>SHS 40×40×2</td><td class=n>620</td><td>square · butt onto A (leg) or C (long rail)</td><td>square · butt onto A (leg) or C (long rail)</td><td class=n>2</td></tr><tr><td><b>C</b> <span class="muted">Long rail</span></td><td class=n>4</td><td>SHS 40×40×2</td><td class=n>1420</td><td>square · butt onto A (leg)</td><td>square · butt onto A (leg)</td><td class=n>3</td></tr></table></div><h3>Cutting plan</h3><p class="muted">Each bar is one stock length; cut the pieces left to right.</p><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 158" class="nest" role="img" aria-label="Cutting plan SHS 40×40×2"><text class="ps" x="0" y="16">SHS 40×40×2 · 3 x 6.00 m lengths · kerf 2</text><rect class="nb" x="0" y="30" width="720" height="26"/><rect class="nc" x="1.2" y="30" width="170.4" height="26"/><text class="nt" x="86.4" y="48" text-anchor="middle">C</text><rect class="nc" x="171.8" y="30" width="170.4" height="26"/><text class="nt" x="257" y="48" text-anchor="middle">C</text><rect class="nc" x="342.5" y="30" width="170.4" height="26"/><text class="nt" x="427.7" y="48" text-anchor="middle">C</text><rect class="nc" x="513.1" y="30" width="170.4" height="26"/><text class="nt" x="598.3" y="48" text-anchor="middle">C</text><text class="ps" x="728" y="48">off 302</text><rect class="nb" x="0" y="68" width="720" height="26"/><rect class="nc" x="1.2" y="68" width="101.5" height="26"/><text class="nt" x="52" y="86" text-anchor="middle">A</text><rect class="nc" x="103" y="68" width="101.5" height="26"/><text class="nt" x="153.7" y="86" text-anchor="middle">A</text><rect class="nc" x="204.7" y="68" width="101.5" height="26"/><text class="nt" x="255.5" y="86" text-anchor="middle">A</text><rect class="nc" x="306.5" y="68" width="101.5" height="26"/><text class="nt" x="357.2" y="86" text-anchor="middle">A</text><rect class="nc" x="408.2" y="68" width="74.4" height="26"/><text class="nt" x="445.4" y="86" text-anchor="middle">B</text><rect class="nc" x="482.9" y="68" width="74.4" height="26"/><text class="nt" x="520.1" y="86" text-anchor="middle">B</text><rect class="nc" x="557.5" y="68" width="74.4" height="26"/><text class="nt" x="594.7" y="86" text-anchor="middle">B</text><rect class="nc" x="632.2" y="68" width="74.4" height="26"/><text class="nt" x="669.4" y="86" text-anchor="middle">B</text><text class="ps" x="728" y="86">off 110</text><rect class="nb" x="0" y="106" width="720" height="26"/><rect class="nc" x="1.2" y="106" width="74.4" height="26"/><text class="nt" x="38.4" y="124" text-anchor="middle">B</text><rect class="nc" x="75.8" y="106" width="74.4" height="26"/><text class="nt" x="113" y="124" text-anchor="middle">B</text><rect class="nc" x="150.5" y="106" width="74.4" height="26"/><text class="nt" x="187.7" y="124" text-anchor="middle">B</text><rect class="nc" x="225.1" y="106" width="74.4" height="26"/><text class="nt" x="262.3" y="124" text-anchor="middle">B</text><text class="ps" x="728" y="124">off 3502</text></svg></figure></div></section>
+</main>
+<footer class="foot"><p>Generated by the blueprint skill. Check every dimension against your own stock before you cut, wear eye and hand protection, and load-test the build gently before trusting it.</p></footer>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/+esm';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm';
+const __core = (() => {
+// Blueprint kit, core: vectors, materials, stock sections and units.
+// Every other kit module and every plan's design.mjs builds on these.
+//
+// Internal units are always millimetres, kilograms, newtons and MPa. Units only
+// change at the edge: what the page prints and what the input fields accept.
+// Axes: x and y on the floor, z up. The plan names what +x and +y mean.
+
+const v3 = {
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  mul: (a, k) => [a[0] * k, a[1] * k, a[2] * k],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  norm: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; },
+  lerp: (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t],
+};
+const DEG = 180 / Math.PI;
+const G0 = 9.81;
+const INCH = 25.4;
+const inch = v => v * INCH;           // for imperial stock: inch(1.5) = 38.1 mm
+const feet = v => v * 12 * INCH;
+
+// ---------------------------------------------------------------- materials
+// yield: the stress the checks divide by (MPa). For aluminium it is the welded
+// (heat-affected) value, because a welded joint is where it fails. Timber uses a
+// design bending strength, not a yield.
+const MATERIALS = {
+  steel: { name: 'Mild steel (S235 / A36 / SS400)', E: 200000, G: 79300, yield: 235, rho: 7.85e-6, join: 'weld' },
+  stainless: { name: 'Stainless 304', E: 193000, G: 77000, yield: 205, rho: 8.0e-6, join: 'weld' },
+  aluminium: { name: 'Aluminium 6061-T6 (welded)', E: 68900, G: 26000, yield: 110, rho: 2.7e-6, join: 'weld' },
+  timber: { name: 'Softwood C24', E: 11000, G: 690, yield: 14, rho: 4.2e-7, join: 'screw' },
+};
+
+// ---------------------------------------------------------------- stock sections
+// bu: width along the member's u axis (horizontal, across the member)
+// bw: width along w (the other face normal, up for a level member)
+// Every section is drawn and cut as its rectangular envelope; round tube is
+// allowed for parts with free ends or ends cut square onto a flat face.
+function makeSection(kind, bu, bw, t, o = {}) {
+  const mat = MATERIALS[o.material || 'steel'];
+  let A, Iuu, Iww, J, tau;
+  if (kind === 'rect-tube') {
+    const iu = bu - 2 * t, iw = bw - 2 * t;
+    A = bu * bw - iu * iw;
+    Iuu = (bw * bu ** 3 - iw * iu ** 3) / 12;     // resists deflection along u
+    Iww = (bu * bw ** 3 - iu * iw ** 3) / 12;     // resists deflection along w
+    const Am = (bu - t) * (bw - t), pm = 2 * (bu - t) + 2 * (bw - t);
+    J = (4 * Am * Am * t) / pm;
+    tau = T => Math.abs(T) / (2 * Am * t);
+  } else if (kind === 'round-tube') {
+    const d = bu - 2 * t;
+    A = (Math.PI / 4) * (bu * bu - d * d);
+    Iuu = Iww = (Math.PI / 64) * (bu ** 4 - d ** 4);
+    J = 2 * Iuu;
+    tau = T => (Math.abs(T) * bu / 2) / J;
+  } else {
+    // solid rectangle: flat bar, square bar, timber
+    A = bu * bw;
+    Iuu = (bw * bu ** 3) / 12;
+    Iww = (bu * bw ** 3) / 12;
+    const a = Math.max(bu, bw), b = Math.min(bu, bw);
+    const beta = 1 / 3 - 0.21 * (b / a) * (1 - b ** 4 / (12 * a ** 4));
+    J = beta * a * b ** 3;
+    tau = T => Math.abs(T) / (0.208 * a * b * b);
+  }
+  const id = o.id || `${kind}-${bu}x${bw}${t ? 'x' + t : ''}`;
+  return {
+    id, kind, bu, bw, t: t || 0, material: o.material || 'steel', mat,
+    label: o.label || id, short: o.short || o.label || id,
+    stockLen: o.stockLen || 6000, price: o.price ?? null, // price per metre, plan currency
+    A, Iuu, Iww, J, tau, Su: Iuu / (bu / 2), Sw: Iww / (bw / 2),
+    kgPerM: A * mat.rho * 1000, round: kind === 'round-tube',
+  };
+}
+const rectTube = (bu, bw, t, o) => makeSection('rect-tube', bu, bw, t, o);
+const squareTube = (b, t, o) => makeSection('rect-tube', b, b, t, o);
+const roundTube = (d, t, o) => makeSection('round-tube', d, d, t, o);
+const flatBar = (b, t, o) => makeSection('flat', b, t, 0, o);      // lies flat: b across, t up
+const bar = (bu, bw, o) => makeSection('bar', bu, bw, 0, o);
+const timber = (bu, bw, o) => makeSection('timber', bu, bw, 0, { material: 'timber', ...o });
+
+// ---------------------------------------------------------------- units
+// Metric is the default. Imperial prints inches to the nearest 1/16 (what a tape
+// reads), pounds and feet; the inputs take decimal inches.
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+function fracIn(mm, den = 16) {
+  const neg = mm < 0, v = Math.abs(mm) / INCH;
+  let whole = Math.floor(v), n = Math.round((v - whole) * den);
+  if (n === den) { whole++; n = 0; }
+  const g = n ? gcd(n, den) : 1;
+  const f = n ? `${n / g}/${den / g}` : '';
+  return (neg ? '-' : '') + (whole && f ? `${whole} ${f}` : whole ? `${whole}` : f || '0') + '"';
+}
+const group3 = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+function makeUnits(system = 'metric') {
+  const imp = system === 'imperial';
+  return {
+    system, imperial: imp,
+    lenUnit: imp ? 'in' : 'mm',
+    // a length on a drawing, cut sheet or task
+    len: (mm, { u = false } = {}) => (imp ? fracIn(mm) : `${Math.round(mm)}${u ? ' mm' : ''}`),
+    // an overall size for prose: 1.50 m / 4' 11"
+    size: mm => {
+      if (!imp) return mm >= 1000 ? `${(mm / 1000).toFixed(2)} m` : `${Math.round(mm)} mm`;
+      const inTot = Math.round(mm / INCH);
+      return inTot >= 24 ? `${Math.floor(inTot / 12)}' ${inTot % 12}"` : `${inTot}"`;
+    },
+    // long totals: 14.2 m / 46.6 ft
+    run: mm => (imp ? `${(mm / 304.8).toFixed(1)} ft` : `${(mm / 1000).toFixed(1)} m`),
+    tol: mm => (imp ? '±' + fracIn(Math.max(mm, 0.8)) : `±${mm}`),
+    mass: kg => (imp ? `${Math.round(kg * 2.2046)} lb` : `${kg < 10 ? kg.toFixed(1) : Math.round(kg)} kg`),
+    force: N => (imp ? `${Math.round(N / 4.448)} lbf` : `${Math.round(N)} N`),
+    area: mm2 => (imp ? `${(mm2 / 92903).toFixed(1)} ft²` : `${(mm2 / 1e6).toFixed(2)} m²`),
+    stress: mpa => (imp ? `${(mpa * 0.145).toFixed(1)} ksi` : `${Math.round(mpa)} MPa`),
+    deflection: mm => (imp ? `${(mm / INCH).toFixed(3)}"` : `${mm.toFixed(1)} mm`),
+    num: group3,
+    // input fields
+    toInput: mm => (imp ? Math.round((mm / INCH) * 16) / 16 : Math.round(mm)),
+    fromInput: v => (imp ? v * INCH : v),
+    inputStep: mm => (imp ? 0.0625 : mm),
+    massToInput: kg => (imp ? Math.round(kg * 2.2046) : kg),
+    massFromInput: v => (imp ? v / 2.2046 : v),
+    massUnit: imp ? 'lb' : 'kg',
+  };
+}
+
+// ---------------------------------------------------------------- params
+// A plan's params are declared in mm / kg. resolveParams fills defaults, clamps to
+// [min, max] and snaps integers, so build(p) never sees a value it was not written for.
+// min and max may be functions of the params declared before them (a shelf count
+// whose max follows the height); limits holds the numbers in force.
+function resolveParams(defs, given = {}) {
+  const p = {}, notes = [], limits = {};
+  for (const d of defs) {
+    let v = given[d.id] ?? d.value;
+    if (d.type === 'choice') { if (!d.options.some(o => o.value === v)) v = d.value; }
+    else if (d.type === 'bool') v = v === true || v === 'true' || v === 1 || v === '1';
+    else {
+      const min = typeof d.min === 'function' ? d.min(p) : d.min, max = typeof d.max === 'function' ? d.max(p) : d.max;
+      limits[d.id] = { min, max };
+      v = Number(v);
+      if (!Number.isFinite(v)) v = d.value;
+      if (d.type === 'count') v = Math.round(v);
+      if (min != null && v < min) { if (given[d.id] != null) notes.push(`${d.label} raised to its minimum`); v = min; }
+      if (max != null && v > max) { if (given[d.id] != null) notes.push(`${d.label} lowered to its maximum`); v = max; }
+    }
+    p[d.id] = v;
+  }
+  return { p, notes, limits };
+}
+
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const r0 = v => Math.round(v);
+const f1 = v => (Math.round(v * 10) / 10).toString();
+
+return { v3, DEG, G0, INCH, inch, feet, MATERIALS, rectTube, squareTube, roundTube, flatBar, bar, timber, makeUnits, resolveParams, esc, r0, f1 };
+})();
+const __joints = (() => {
+// Joint model: how every member end is cut and joined. One source for the 3D
+// model (members drawn trimmed, never overlapping), the cut list (true long-point
+// lengths and the angle on each face) and the cut sheets. Works for
+// rectangular sections of any size.
+//
+// At each joint, in order:
+//   1. a member that passes straight through the joint is the receiver; every
+//      member that ends there is cut to sit on its face (butt)
+//   2. otherwise, two ends that carry on in nearly the same line (>= 150 deg) are
+//      mitred to each other on the bisector, and the rest butt onto them
+//   3. otherwise it is a corner, and nothing runs past it (no ears):
+//      - a member with a higher `prio` wins: it is cut flush with the outer face of
+//        the biggest other member, and the rest butt onto it (a leg that runs up to
+//        the top and the rails welded to its faces)
+//      - else, if the two biggest outline members are the same section they are
+//        mitred on the bisector (a picture-frame corner)
+//      - else the biggest is cut flush with the outer face of the next one and
+//        gets an end cap; braces and the rest butt onto them
+// A butting member is cut on the plane of the receiver face it lands on, so one
+// arriving at an angle gets the matching angled cut.
+const { v3, DEG } = __core;
+const { sub, add, mul, dot, cross, len, norm } = v3;
+
+// Orientation: one face pair stays level (u is horizontal). w is the other face
+// normal, turned to point up (or toward +x for an upright member). A member may
+// pass `roll: 90` to stand a rectangular section on edge (swaps u and w).
+function memberFrame(a, roll = 0) {
+  let u = cross([0, 0, 1], a);
+  if (len(u) < 1e-6) u = [0, 1, 0];
+  u = norm(u);
+  let w = norm(cross(u, a));
+  if (w[2] < -1e-6 || (Math.abs(w[2]) < 1e-6 && (w[0] < -1e-6 || (Math.abs(w[0]) < 1e-6 && w[1] < 0)))) w = mul(w, -1);
+  if (Math.abs(roll) === 90) return { a, u: w, w: mul(u, -1) };
+  return { a, u, w };
+}
+
+const keyOf = p => p.map(v => Math.round(v * 2) / 2).join(',');
+
+function onSegment(p, a, b) {
+  const d = sub(b, a), L = len(d), t = dot(sub(p, a), d) / (L * L);
+  if (t <= 1e-3 || t >= 1 - 1e-3) return false;
+  return len(sub(add(a, mul(d, t)), p)) < 0.6;
+}
+
+const isBrace = m => (m.brace ? 1 : 0);
+
+function solveJoints(model) {
+  const P = n => {
+    const p = model.nodes[n];
+    if (!p) throw new Error(`member refers to unknown node "${n}"`);
+    return p;
+  };
+  const info = model.members.map(m => {
+    const A = P(m.pts[0]), B = P(m.pts[m.pts.length - 1]);
+    const L = len(sub(B, A));
+    if (L < 1) throw new Error(`member ${m.id} has zero length`);
+    const a = norm(sub(B, A));
+    const sec = model.sections[m.sec];
+    if (!sec) throw new Error(`member ${m.id} uses unknown section "${m.sec}"`);
+    const frame = memberFrame(a, m.roll || 0);
+    const swap = Math.abs(m.roll || 0) === 90;
+    return { m, A, B, a, L, sec, frame, hu: (swap ? sec.bw : sec.bu) / 2, hw: (swap ? sec.bu : sec.bw) / 2, size: Math.max(sec.bu, sec.bw), prio: m.prio || 0 };
+  });
+  const joints = new Map();
+  const at = p => { const k = keyOf(p); if (!joints.has(k)) joints.set(k, { X: p, ends: [], through: [] }); return joints.get(k); };
+  for (const t of info) {
+    at(t.A).ends.push({ t, end: 'A', d: t.a });
+    at(t.B).ends.push({ t, end: 'B', d: mul(t.a, -1) });
+  }
+  for (const j of joints.values()) for (const t of info) if (onSegment(j.X, t.A, t.B)) j.through.push(t);
+
+  const rank = (p, q) => (q.t.prio - p.t.prio) || (isBrace(p.t.m) - isBrace(q.t.m)) || (q.t.size - p.t.size) ||
+    ((p.t.m.step ?? 0) - (q.t.m.step ?? 0)) || (q.t.L - p.t.L) || p.t.m.id.localeCompare(q.t.m.id);
+  const cuts = {};
+  const set = (e, cut) => { (cuts[e.t.m.id] ||= {})[e.end] = cut; };
+  const facesOf = r => [[r.frame.u, r.hu], [mul(r.frame.u, -1), r.hu], [r.frame.w, r.hw], [mul(r.frame.w, -1), r.hw]];
+  // the face of receiver r that a member arriving along d lands on
+  const face = (r, d, X) => {
+    const perp = sub(d, mul(r.a, dot(d, r.a)));
+    let best = null;
+    for (const [f, h] of facesOf(r)) { const s = dot(f, perp); if (!best || s > best.s) best = { f, h, s }; }
+    return { p0: add(X, mul(best.f, best.h)), n: best.f };
+  };
+  const squareness = (d, r) => len(cross(d, r.a));
+  const flushTo = (R, E, X) => {
+    let best = null;
+    for (const [f, h] of facesOf(E.t)) { const sc = -dot(f, R.d); if (!best || sc > best.sc) best = { f, h, sc }; }
+    return { kind: 'flush', to: E.t.m.id, p0: add(X, mul(best.f, best.h)), n: mul(best.f, -1), cap: !!R.t.m.cap };
+  };
+  const report = [];
+
+  for (const j of joints.values()) {
+    const { X } = j;
+    let mains = [], rest = [...j.ends];
+    if (j.through.length) {
+      mains = j.through;
+    } else if (rest.length === 1) {
+      set(rest[0], { kind: 'free', p0: X, n: rest[0].d, cap: !!rest[0].t.m.cap });
+      rest = [];
+    } else {
+      let pair = null;
+      for (let i = 0; i < rest.length; i++) for (let k = i + 1; k < rest.length; k++) {
+        const ang = Math.acos(Math.max(-1, Math.min(1, dot(rest[i].d, rest[k].d)))) * DEG;
+        if (!pair || ang > pair.ang) pair = { i, k, ang };
+      }
+      const sorted = [...rest].sort(rank);
+      const topPrio = sorted[0].t.prio > (sorted[1]?.t.prio ?? -Infinity);
+      if (pair.ang >= 150 && !topPrio) {
+        const e1 = rest[pair.i], e2 = rest[pair.k];
+        set(e1, { kind: 'miter', with: e2.t.m.id, p0: X, n: norm(sub(e1.d, e2.d)) });
+        set(e2, { kind: 'miter', with: e1.t.m.id, p0: X, n: norm(sub(e2.d, e1.d)) });
+        if (e1.t.sec.id !== e2.t.sec.id) report.push(`joint at ${X.map(Math.round)}: ${e1.t.m.id} and ${e2.t.m.id} are mitred but are different sections`);
+        mains = [e1.t, e2.t];
+        rest = rest.filter(e => e !== e1 && e !== e2);
+      } else if (topPrio) {
+        const R = sorted[0], E = sorted[1];
+        set(R, flushTo(R, E, X));
+        mains = [R.t];
+        rest = sorted.slice(1);
+      } else {
+        const outline = sorted.filter(e => !isBrace(e.t.m));
+        const R = outline[0] || sorted[0];
+        let mate = null;
+        for (const e of outline.slice(1)) if (e.t.sec.id === R.t.sec.id && !!e.t.m.roll === !!R.t.m.roll) {
+          const ang = Math.acos(Math.max(-1, Math.min(1, dot(e.d, R.d))));
+          if (!mate || ang > mate.ang) mate = { e, ang };
+        }
+        if (mate) {
+          const e2 = mate.e;
+          set(R, { kind: 'miter', with: e2.t.m.id, p0: X, n: norm(sub(R.d, e2.d)) });
+          set(e2, { kind: 'miter', with: R.t.m.id, p0: X, n: norm(sub(e2.d, R.d)) });
+          mains = [R.t, e2.t];
+          rest = sorted.filter(e => e !== R && e !== e2);
+        } else {
+          const E = sorted.filter(e => e !== R)[0];
+          set(R, { ...flushTo(R, E, X), cap: true });
+          mains = [R.t];
+          rest = sorted.filter(e => e !== R);
+        }
+      }
+    }
+    for (const e of rest) {
+      const r = [...mains].sort((p, q) => squareness(e.d, q) - squareness(e.d, p))[0];
+      if (r.size < e.t.size - 0.5) report.push(`${e.t.m.id} butts onto the smaller ${r.m.id}: it will overhang its face`);
+      const f = face(r, e.d, X);
+      set(e, { kind: 'butt', onto: r.m.id, p0: f.p0, n: f.n });
+    }
+  }
+
+  const out = {};
+  for (const t of info) {
+    const c = cuts[t.m.id];
+    const { a, u, w } = t.frame;
+    const SIGNS = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
+    const corners = SIGNS.map(([su, sw]) => add(mul(u, su * t.hu), mul(w, sw * t.hw)));
+    const tAt = (cut, off) => dot(cut.n, sub(cut.p0, add(t.A, off))) / dot(cut.n, a);
+    const edges = corners.map(off => ({ off, ta: tAt(c.A, off), tb: tAt(c.B, off) }));
+    const lens = edges.map(e => e.tb - e.ta);
+    if (Math.min(...lens) <= 0) report.push(`${t.m.id}: the joints eat the whole member (shortest edge ${Math.round(Math.min(...lens))} mm)`);
+    const faceAngles = cut => {
+      const n = cut.n, na = Math.abs(dot(n, a));
+      return { top: Math.atan2(Math.abs(dot(n, u)), na) * DEG, side: Math.atan2(Math.abs(dot(n, w)), na) * DEG };
+    };
+    out[t.m.id] = {
+      id: t.m.id, m: t.m, sec: t.sec, A: t.A, B: t.B, axis: a, u, w, hu: t.hu, hw: t.hw, edges, L: t.L,
+      longPoint: Math.max(...lens), shortPoint: Math.min(...lens),
+      ends: { A: { ...c.A, ...faceAngles(c.A) }, B: { ...c.B, ...faceAngles(c.B) } },
+    };
+  }
+  return { joints: out, sites: [...joints.values()], report };
+}
+
+// The 8 corners of a trimmed member: 4 at end A, then 4 at end B (same edge order).
+function memberCorners(j) {
+  const at = (e, t) => add(add(j.A, e.off), mul(j.axis, t));
+  return [...j.edges.map(e => at(e, e.ta)), ...j.edges.map(e => at(e, e.tb))];
+}
+
+// Plain-language description of one end, for the cut list and cut sheets. ref(id)
+// names the member it meets the way the builder knows it ("A (leg)").
+function describeEnd(end, ref = id => id) {
+  const r = v => Math.round(v);
+  const ang = (end.top > 0.5 || end.side > 0.5)
+    ? [end.top > 0.5 ? `${r(end.top)}° top` : null, end.side > 0.5 ? `${r(end.side)}° side` : null].filter(Boolean).join(' ')
+    : 'square';
+  const how = end.kind === 'miter' ? `mitre to ${ref(end.with)}` : end.kind === 'butt' ? `butt onto ${ref(end.onto)}`
+    : end.kind === 'flush' ? `flush with ${ref(end.to)}${end.cap ? ', cap' : ''}` : end.cap ? 'free end, cap' : 'free end';
+  return { ang, how, square: ang === 'square' };
+}
+
+return { memberFrame, solveJoints, memberCorners, describeEnd };
+})();
+const __fea = (() => {
+// Frame solver: 3D Euler-Bernoulli beam elements, dense LU, checked against
+// textbook beams by scripts/test-fea.mjs. A section has two bending stiffnesses (Iuu, Iww), so rectangular tube
+// and flat bar are modelled the way they stand.
+//
+// What it is for: "will this frame hold the load the plan promises, and how far
+// will it sag". It models members on their centre lines, welded joints as rigid,
+// and ignores plates and sheets (conservative: a deck only adds stiffness).
+const { v3, G0 } = __core;
+const { sub, add, mul, dot, cross, len, norm } = v3;
+
+function elementMatrices(el, pts) {
+  const a = pts[el.n1], b = pts[el.n2];
+  const L = len(sub(b, a));
+  const ex = el.ax, ey = el.u, ez = el.w;
+  const { A, Iuu, Iww, J, mat } = el.sec;
+  const E = mat.E, G = mat.G;
+  const k = Array.from({ length: 12 }, () => new Float64Array(12));
+  const set = (i, j, v) => { k[i][j] += v; if (i !== j) k[j][i] += v; };
+  const EA = (E * A) / L, GJ = (G * J) / L;
+  set(0, 0, EA); set(6, 6, EA); set(0, 6, -EA);
+  set(3, 3, GJ); set(9, 9, GJ); set(3, 9, -GJ);
+  // bending in local xy (deflection along u): dofs 1,5,7,11, stiffness Iuu
+  let b1 = (12 * E * Iuu) / L ** 3, b2 = (6 * E * Iuu) / L ** 2, b3 = (4 * E * Iuu) / L, b4 = (2 * E * Iuu) / L;
+  set(1, 1, b1); set(7, 7, b1); set(1, 7, -b1);
+  set(1, 5, b2); set(1, 11, b2); set(5, 7, -b2); set(7, 11, -b2);
+  set(5, 5, b3); set(11, 11, b3); set(5, 11, b4);
+  // bending in local xz (deflection along w): dofs 2,4,8,10, stiffness Iww
+  b1 = (12 * E * Iww) / L ** 3; b2 = (6 * E * Iww) / L ** 2; b3 = (4 * E * Iww) / L; b4 = (2 * E * Iww) / L;
+  set(2, 2, b1); set(8, 8, b1); set(2, 8, -b1);
+  set(2, 4, -b2); set(2, 10, -b2); set(4, 8, b2); set(8, 10, b2);
+  set(4, 4, b3); set(10, 10, b3); set(4, 10, b4);
+  return { k, R: [ex, ey, ez], L };
+}
+
+const toLocal = (R, u) => {
+  const o = new Float64Array(12);
+  for (let blk = 0; blk < 4; blk++) for (let i = 0; i < 3; i++) o[blk * 3 + i] = R[i][0] * u[blk * 3] + R[i][1] * u[blk * 3 + 1] + R[i][2] * u[blk * 3 + 2];
+  return o;
+};
+
+function luSolve(n, K, rhsList) {
+  const piv = new Int32Array(n);
+  for (let c = 0; c < n; c++) {
+    let p = c, mx = Math.abs(K[c * n + c]);
+    for (let r = c + 1; r < n; r++) { const v = Math.abs(K[r * n + c]); if (v > mx) { mx = v; p = r; } }
+    if (mx < 1e-9) throw new Error('the frame is a mechanism (singular stiffness): a member is not connected, or the supports do not hold it');
+    piv[c] = p;
+    if (p !== c) for (let j = 0; j < n; j++) { const t = K[c * n + j]; K[c * n + j] = K[p * n + j]; K[p * n + j] = t; }
+    const d = K[c * n + c];
+    for (let r = c + 1; r < n; r++) {
+      const f = K[r * n + c] / d;
+      if (f === 0) continue;
+      K[r * n + c] = f;
+      const ro = r * n, co = c * n;
+      for (let j = c + 1; j < n; j++) K[ro + j] -= f * K[co + j];
+    }
+  }
+  return rhsList.map(b0 => {
+    const b = Float64Array.from(b0);
+    for (let c = 0; c < n; c++) { const p = piv[c]; if (p !== c) { const t = b[c]; b[c] = b[p]; b[p] = t; } }
+    for (let c = 0; c < n; c++) for (let r = c + 1; r < n; r++) b[r] -= K[r * n + c] * b[c];
+    for (let r = n - 1; r >= 0; r--) { let s = b[r]; for (let j = r + 1; j < n; j++) s -= K[r * n + j] * b[j]; b[r] = s / K[r * n + r]; }
+    return b;
+  });
+}
+
+// model: { pts: [[x,y,z]], els: [{ n1, n2, sec, id, ax, u, w }] }
+// fixed: [[node, [dofs]]], loads: [Float64Array(N*6)]
+function solveFrame(model, fixed, loads) {
+  const N = model.pts.length, nd = N * 6;
+  const mats = model.els.map(el => elementMatrices(el, model.pts));
+  const isFixed = new Uint8Array(nd);
+  for (const [node, dofs] of fixed) for (const d of dofs) isFixed[node * 6 + d] = 1;
+  const used = new Uint8Array(N);
+  model.els.forEach(e => { used[e.n1] = 1; used[e.n2] = 1; });
+  for (let i = 0; i < N; i++) if (!used[i]) for (let d = 0; d < 6; d++) isFixed[i * 6 + d] = 1;
+  const map = new Int32Array(nd).fill(-1), free = [];
+  for (let i = 0; i < nd; i++) if (!isFixed[i]) { map[i] = free.length; free.push(i); }
+  const n = free.length;
+  const K = new Float64Array(n * n);
+  model.els.forEach((el, ei) => {
+    const { k, R } = mats[ei];
+    const dofs = [];
+    for (const q of [el.n1, el.n2]) for (let d = 0; d < 6; d++) dofs.push(q * 6 + d);
+    const T = (i, j) => (Math.floor(i / 3) === Math.floor(j / 3) ? R[i % 3][j % 3] : 0);
+    const kT = Array.from({ length: 12 }, () => new Float64Array(12));
+    for (let i = 0; i < 12; i++) for (let j = 0; j < 12; j++) { let s = 0; const bj = Math.floor(j / 3) * 3; for (let m = bj; m < bj + 3; m++) s += k[i][m] * T(m, j); kT[i][j] = s; }
+    for (let i = 0; i < 12; i++) {
+      const gi = map[dofs[i]]; if (gi < 0) continue;
+      const bi = Math.floor(i / 3) * 3;
+      for (let j = 0; j < 12; j++) {
+        const gj = map[dofs[j]]; if (gj < 0) continue;
+        let s = 0; for (let m = bi; m < bi + 3; m++) s += T(m, i) * kT[m][j];
+        K[gi * n + gj] += s;
+      }
+    }
+  });
+  const rhs = loads.map(F => { const b = new Float64Array(n); free.forEach((d, i) => (b[i] = F[d])); return b; });
+  const K0 = Float64Array.from(K);
+  const sols = luSolve(n, K, rhs);
+  sols.forEach((x, si) => {
+    let res = 0, fmax = 1;
+    for (let i = 0; i < n; i++) {
+      let acc = 0; const row = i * n;
+      for (let j = 0; j < n; j++) acc += K0[row + j] * x[j];
+      res = Math.max(res, Math.abs(acc - rhs[si][i])); fmax = Math.max(fmax, Math.abs(rhs[si][i]));
+    }
+    if (res > 1e-6 * fmax) throw new Error(`frame solver residual ${res.toExponential(1)} N: the answer is not trustworthy`);
+  });
+  return sols.map(x => {
+    const u = new Float64Array(nd);
+    free.forEach((d, i) => (u[d] = x[i]));
+    let worst = { sf: Infinity, id: null };
+    const elStress = model.els.map((el, ei) => {
+      const { k, R } = mats[ei];
+      const ue = new Float64Array(12);
+      for (let d = 0; d < 6; d++) { ue[d] = u[el.n1 * 6 + d]; ue[6 + d] = u[el.n2 * 6 + d]; }
+      const ul = toLocal(R, ue);
+      const f = new Float64Array(12);
+      for (let i = 0; i < 12; i++) { let s = 0; for (let j = 0; j < 12; j++) s += k[i][j] * ul[j]; f[i] = s; }
+      const s = el.sec;
+      // f[4], f[10]: moment about u (bends along w); f[5], f[11]: about w (bends along u)
+      const sig = Math.abs(f[0]) / s.A + Math.max(Math.abs(f[4]) / s.Sw + Math.abs(f[5]) / s.Su, Math.abs(f[10]) / s.Sw + Math.abs(f[11]) / s.Su);
+      const tau = s.tau(f[3]);
+      const vm = Math.sqrt(sig * sig + 3 * tau * tau);
+      const sf = vm > 1e-9 ? s.mat.yield / vm : Infinity;
+      if (sf < worst.sf) worst = { sf, vm, id: el.id };
+      return vm;
+    });
+    return { u, worst, elStress };
+  });
+}
+
+// Build the solver model from solved joints: centre lines, split wherever another
+// member's end or a load point lands, then subdivided so a spread load acts along
+// the span and not only at its ends. Free member ends within one section size of
+// another member are snapped onto it (a post that starts on top of a rail).
+function frameModel(jm, extraPts = [], { maxDof = 1100 } = {}) {
+  const segs = Object.values(jm).filter(j => !j.m.loose).map(j => ({ a: j.A.slice(), b: j.B.slice(), j }));
+  const proj = (p, s) => {
+    const d = sub(s.b, s.a), L2 = dot(d, d);
+    const t = Math.max(0, Math.min(1, dot(sub(p, s.a), d) / L2));
+    const q = add(s.a, mul(d, t));
+    return { t, q, dist: len(sub(p, q)) };
+  };
+  const ends = [];
+  segs.forEach(s => { ends.push([s, 'a']); ends.push([s, 'b']); });
+  for (const [s, k] of ends) {
+    const p = s[k];
+    if (ends.some(([o, ok]) => o !== s && len(sub(o[ok], p)) < 1)) continue;
+    let best = null;
+    for (const o of segs) {
+      if (o === s) continue;
+      const r = proj(p, o);
+      const tol = Math.max(o.j.hu, o.j.hw) + Math.max(s.j.hu, s.j.hw) + 1;
+      if (r.dist < tol && (!best || r.dist < best.dist)) best = r;
+    }
+    if (best) s[k] = best.q;
+  }
+  const pts = [];
+  const addPt = p => { for (let i = 0; i < pts.length; i++) if (len(sub(pts[i], p)) < 1.5) return i; pts.push(p); return pts.length - 1; };
+  segs.forEach(s => { addPt(s.a); addPt(s.b); });
+  const snapped = extraPts.map(p => {
+    let best = null;
+    for (const s of segs) { const r = proj(p, s); if (!best || r.dist < best.dist) best = r; }
+    return best ? { idx: addPt(best.q), dist: best.dist } : { idx: -1, dist: Infinity };
+  });
+  // subdivide: as fine as the dof budget allows (2-4 pieces per span)
+  const spans = [];
+  for (const s of segs) {
+    const on = [];
+    pts.forEach((p, i) => { const r = proj(p, s); if (r.dist < 1.5) on.push([r.t, i]); });
+    on.sort((x, y) => x[0] - y[0]);
+    for (let k = 1; k < on.length; k++) if (on[k][1] !== on[k - 1][1]) spans.push({ s, i1: on[k - 1][1], i2: on[k][1] });
+  }
+  const nodesNow = pts.length;
+  let div = 4;
+  while (div > 1 && (nodesNow + spans.length * (div - 1)) * 6 > maxDof) div--;
+  const els = [];
+  const byMember = {};
+  for (const sp of spans) {
+    let prev = sp.i1;
+    for (let k = 1; k <= div; k++) {
+      const next = k === div ? sp.i2 : (pts.push(v3.lerp(pts[sp.i1], pts[sp.i2], k / div)), pts.length - 1);
+      const j = sp.s.j;
+      els.push({ n1: prev, n2: next, sec: j.sec, id: j.id, ax: norm(sub(pts[next], pts[prev])), u: j.u, w: j.w });
+      (byMember[j.id] ||= new Set()).add(prev).add(next);
+      prev = next;
+    }
+  }
+  return { pts, els, snapped, byMember };
+}
+
+// Run every load case of a plan. Self weight of the frame is in every case, plus
+// the mass of plates and hardware spread over the nearest frame nodes.
+function runLoads(d) {
+  const { model, joints } = d;
+  const loads = model.loads || [];
+  if (!loads.length || !model.supports?.length) return [];
+  const extra = [...model.supports.map(s => s.at), ...loads.flatMap(l => l.at || [])];
+  const fm = frameModel(joints, extra);
+  const N = fm.pts.length;
+  let k = 0;
+  const supIdx = model.supports.map(s => ({ idx: fm.snapped[k++].idx, fix: s.fix || 'pin' }));
+  const fixed = supIdx.map(s => [s.idx, s.fix === 'fixed' ? [0, 1, 2, 3, 4, 5] : s.fix === 'roller' ? [2] : [0, 1, 2]]);
+  const used = [...new Set(fm.els.flatMap(e => [e.n1, e.n2]))];
+  // dead load: members on their own nodes, everything else spread to the 4 nearest
+  const lumps = new Float64Array(N);
+  for (const el of fm.els) {
+    const m = el.sec.A * el.sec.mat.rho * len(sub(fm.pts[el.n2], fm.pts[el.n1]));
+    lumps[el.n1] += m / 2; lumps[el.n2] += m / 2;
+  }
+  const spread = (p, m) => {
+    const near = used.map(i => [i, len(sub(fm.pts[i], p))]).sort((x, y) => x[1] - y[1]).slice(0, 4);
+    const w = near.map(([, dd]) => 1 / (dd + 50)), ws = w.reduce((x, y) => x + y, 0);
+    near.forEach(([i], j) => (lumps[i] += (m * w[j]) / ws));
+  };
+  for (const it of d.massItems) if (it.kind !== 'member' && it.m > 0) spread(it.c, it.m);
+  const cases = loads.map(l => {
+    const F = new Float64Array(N * 6);
+    for (let i = 0; i < N; i++) F[i * 6 + 2] -= lumps[i] * G0;
+    const dir = norm(l.dir || [0, 0, -1]);
+    const total = (l.kg != null ? l.kg * G0 : l.N) || 0;
+    let idx = [];
+    if (l.on) idx = [...new Set(l.on.flatMap(id => [...(fm.byMember[id] || [])]))];
+    if (l.at) idx = idx.concat(l.at.map(() => fm.snapped[k++].idx));
+    if (!idx.length) throw new Error(`load "${l.name}" lands on no member`);
+    idx.forEach(i => { for (let c = 0; c < 3; c++) F[i * 6 + c] += (total * dir[c]) / idx.length; });
+    return { l, F, idx };
+  });
+  const sols = solveFrame(fm, fixed, cases.map(c => c.F));
+  return cases.map((c, i) => {
+    const r = sols[i];
+    const disp = q => Math.hypot(r.u[q * 6], r.u[q * 6 + 1], r.u[q * 6 + 2]);
+    const maxDefl = Math.max(...used.map(disp));
+    const loadDefl = Math.max(...c.idx.map(disp));
+    // sag of the loaded members relative to the chord of their supports is what you feel;
+    // report the larger of the two so a racking sway is not hidden
+    return {
+      id: c.l.id, name: c.l.name, load: c.l, sf: r.worst.sf, worstMember: r.worst.id, vm: r.worst.vm,
+      maxDefl, loadDefl, stress: r.elStress, fm,
+    };
+  });
+}
+
+return { solveFrame, frameModel, runLoads };
+})();
+const __derive = (() => {
+// derive(plan, given, system): the one pipeline from a plan and its params to
+// everything a build pack shows. The page calls it on every input change; the
+// audit calls it at defaults and at every parameter's extremes. Nothing on the
+// page is computed anywhere else.
+const { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet } = __core;
+const { solveJoints, memberCorners, describeEnd } = __joints;
+const { runLoads } = __fea;
+const { sub, len, dot, add, mul } = v3;
+
+// ---------------------------------------------------------------- normalise
+function normalise(model, plan) {
+  model.axes ||= { x: ['right', 'left'], y: ['back', 'front'], z: ['top', 'bottom'] };
+  model.members ||= []; model.plates ||= []; model.hardware ||= []; model.consumables ||= [];
+  model.steps ||= []; model.checks ||= []; model.facts ||= [];
+  model.kerf ??= 2; model.trim ??= 10;
+  model.steps.sort((a, b) => a.n - b.n);
+  for (const s of model.steps) {
+    s.tasks ||= [];
+    for (const v of s.views || []) if (!['top', 'front', 'side'].includes(v)) throw new Error(`step ${s.n}: unknown view "${v}" (use 'top', 'front' or 'side')`);
+  }
+  model.currency ||= plan.currency || '';
+  return model;
+}
+
+// ---------------------------------------------------------------- piece marks
+const word = (v, axes) => {
+  const i = [0, 1, 2].reduce((b, k) => (Math.abs(v[k]) > Math.abs(v[b]) ? k : b), 0);
+  const names = [axes.x, axes.y, axes.z][i];
+  return v[i] > 0 ? names[0] : names[1];
+};
+const SIGNS = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
+
+// Four edge marks per piece, measured from one square end of the stock: mark each
+// edge at A and B, join the marks around the section, cut on the lines.
+function pieceMarks(j, axes) {
+  const t0 = Math.min(...j.edges.map(e => e.ta));
+  const edges = j.edges.map((e, k) => {
+    const [su, sw] = SIGNS[k];
+    return { label: `${word(j.w.map(v => v * sw), axes)}-${word(j.u.map(v => v * su), axes)}`, a: e.ta - t0, b: e.tb - t0 };
+  });
+  const stock = Math.max(...edges.map(e => e.b));
+  return { id: j.id, edges, stock, longPoint: j.longPoint, shortPoint: j.shortPoint, ends: j.ends, faces: { top: word(j.w, axes), side: word(j.u, axes) } };
+}
+
+// Identical pieces share one mark (A, B, C...): same section, same cut marks,
+// read from either end. Mirror images count as the same piece.
+function signature(pm, sec) {
+  const r = v => Math.round(v * 2) / 2;
+  const fwd = pm.edges.map(e => [r(e.a), r(e.b)]).sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+  const rev = pm.edges.map(e => [r(pm.stock - e.b), r(pm.stock - e.a)]).sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+  const s1 = JSON.stringify(fwd), s2 = JSON.stringify(rev);
+  return sec.id + '|' + (s1 < s2 ? s1 : s2);
+}
+const letter = i => (i < 26 ? String.fromCharCode(65 + i) : letter(Math.floor(i / 26) - 1) + String.fromCharCode(65 + (i % 26)));
+
+function groupPieces(model, joints) {
+  const groups = new Map();
+  for (const m of model.members) {
+    const j = joints[m.id];
+    const pm = pieceMarks(j, model.axes);
+    const sig = signature(pm, j.sec);
+    if (!groups.has(sig)) groups.set(sig, { sec: j.sec, pm, ids: [], members: [], step: m.step });
+    const g = groups.get(sig);
+    g.ids.push(m.id); g.members.push(m); g.step = Math.min(g.step, m.step);
+  }
+  const list = [...groups.values()].sort((a, b) => a.step - b.step || b.sec.bu * b.sec.bw - a.sec.bu * a.sec.bw || b.pm.longPoint - a.pm.longPoint);
+  list.forEach((g, i) => { g.mark = letter(i); g.qty = g.ids.length; g.name = [...new Set(g.members.map(m => m.name))].join(' / '); });
+  const markOf = {}, nameOf = {};
+  for (const g of list) for (const m of g.members) { markOf[m.id] = g.mark; nameOf[m.id] = m.name; }
+  // how a member is known in the shop: its mark and its name
+  const ref = id => (markOf[id] ? `${markOf[id]} (${(nameOf[id] || '').toLowerCase()})` : id);
+  // both ends of every piece in a mark, read in the drawn direction; ends that differ
+  // between members of one mark (a short rail onto a leg, or onto a long rail) are joined with "or"
+  for (const g of list) {
+    const ends = [[], []];
+    for (const m of g.members) {
+      const j = joints[m.id];
+      const da = describeEnd(j.ends.A, ref), db = describeEnd(j.ends.B, ref);
+      const key = pm => JSON.stringify(pm.edges.map(e => [Math.round(e.a * 2) / 2, Math.round(e.b * 2) / 2]).sort((x, y) => x[0] - y[0] || x[1] - y[1]));
+      const flip = key(pieceMarks(j, model.axes)) !== key(g.pm);
+      const [x, y] = flip ? [db, da] : [da, db];
+      ends[0].push(x); ends[1].push(y);
+    }
+    g.endText = ends.map(es => {
+      const angs = [...new Set(es.map(e => e.ang))], hows = [...new Set(es.map(e => e.how))];
+      const joined = hows.length > 1 && hows.every(h => h.startsWith('butt onto ')) ? 'butt onto ' + hows.map(h => h.slice(10)).join(' or ') : hows.join(' or ');
+      return { ang: angs.join(' or '), how: joined, square: es.every(e => e.square) };
+    });
+  }
+  return { pieces: list, markOf, ref };
+}
+
+// ---------------------------------------------------------------- nesting
+// First-fit decreasing into stock lengths, kerf per cut, a trim off the mill end.
+function nest(model, pieces) {
+  const bySec = new Map();
+  for (const g of pieces) for (const id of g.ids) {
+    if (!bySec.has(g.sec.id)) bySec.set(g.sec.id, { sec: g.sec, items: [] });
+    bySec.get(g.sec.id).items.push({ mark: g.mark, id, L: g.pm.stock });
+  }
+  const out = [];
+  for (const { sec, items } of bySec.values()) {
+    const S = sec.stockLen, bars = [];
+    items.sort((a, b) => b.L - a.L);
+    const tooLong = items.filter(it => it.L + model.trim > S);
+    for (const it of items) {
+      if (it.L + model.trim > S) continue;
+      let bar = bars.find(b => b.used + it.L + model.kerf <= S);
+      if (!bar) { bar = { used: model.trim, cuts: [] }; bars.push(bar); }
+      bar.cuts.push({ ...it, at: bar.used });
+      bar.used += it.L + model.kerf;
+    }
+    const total = items.reduce((s, it) => s + it.L, 0);
+    out.push({ sec, bars, total, tooLong, offcut: bars.reduce((s, b) => s + (S - b.used), 0) });
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------- mass
+function shapeBox(sh) {
+  if (!sh) return null;
+  if (Array.isArray(sh)) {
+    const bs = sh.map(shapeBox).filter(Boolean);
+    return bs.length ? [[0, 1, 2].map(i => Math.min(...bs.map(b => b[0][i]))), [0, 1, 2].map(i => Math.max(...bs.map(b => b[1][i])))] : null;
+  }
+  if (sh.type === 'box') return [sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)];
+  if (sh.type === 'cyl') {
+    // a disc of radius r around the axis reaches r * sqrt(1 - axis_i^2) along each world axis
+    const ax = v3.norm(sub(sh.b, sh.a)), e = ax.map(c => sh.r * Math.sqrt(Math.max(0, 1 - c * c)));
+    return [[0, 1, 2].map(i => Math.min(sh.a[i], sh.b[i]) - e[i]), [0, 1, 2].map(i => Math.max(sh.a[i], sh.b[i]) + e[i])];
+  }
+  return null;
+}
+const plateBox = pl => [pl.c.map((v, i) => v - pl.s[i] / 2), pl.c.map((v, i) => v + pl.s[i] / 2)];
+const boxGap = (A, B) => Math.max(0, ...[0, 1, 2].map(i => Math.max(A[0][i] - B[1][i], B[0][i] - A[1][i])));
+const memberBox = j => { const c = memberCorners(j); return [[0, 1, 2].map(i => Math.min(...c.map(q => q[i]))), [0, 1, 2].map(i => Math.max(...c.map(q => q[i])))]; };
+
+function massItems(model, joints) {
+  const items = [];
+  for (const m of model.members) {
+    const j = joints[m.id];
+    const L = j.edges.reduce((s, e) => s + (e.tb - e.ta), 0) / 4;
+    items.push({ kind: 'member', id: m.id, m: (j.sec.kgPerM * L) / 1000, c: v3.lerp(j.A, j.B, 0.5) });
+  }
+  for (const pl of model.plates) {
+    const rho = pl.rho ?? { steel: 7.85e-6, aluminium: 2.7e-6, stainless: 8e-6, timber: 4.2e-7, plywood: 6e-7, mdf: 7.5e-7 }[pl.material || 'steel'];
+    const cut = (pl.notches || []).reduce((a, n) => a + (n[2] - n[0]) * (n[3] - n[1]), 0);
+    const ax = [0, 1, 2].sort((a, b) => pl.s[b] - pl.s[a]);
+    items.push({ kind: 'plate', id: pl.id, m: (pl.s[0] * pl.s[1] * pl.s[2] - cut * pl.s[ax[2]]) * rho * (pl.fill ?? 1), c: pl.c });
+  }
+  for (const h of model.hardware) {
+    if (!h.kg) continue;
+    const b = shapeBox(h.shape);
+    items.push({ kind: 'hardware', id: h.id, m: h.kg * (h.qty || 1), c: h.at || (b ? b[0].map((v, i) => (v + b[1][i]) / 2) : [0, 0, 0]) });
+  }
+  return items;
+}
+
+// ---------------------------------------------------------------- plate notches
+// A plate or sheet that a straight, axis-aligned member passes through is notched
+// around it when it says notch: true (a shelf deck around the legs); otherwise it
+// is a clash. Notches are rectangles [a0, b0, a1, b1] on the plate's two biggest
+// axes, measured from its lower-left corner, the same frame as its holes.
+function notchPlates(model, joints, ref) {
+  const clashes = [];
+  for (const pl of model.plates) {
+    const ax = [0, 1, 2].sort((a, b) => pl.s[b] - pl.s[a]);
+    const pb = plateBox(pl);
+    pl.axes = ax;
+    pl.notches = [];
+    for (const m of model.members) {
+      const j = joints[m.id];
+      const straight = [0, 1, 2].filter(i => Math.abs(j.axis[i]) > 0.999).length === 1 && [j.u, j.w].every(v => v.some(c => Math.abs(c) > 0.999));
+      if (!straight) continue;
+      const mb = memberBox(j);
+      const pen = [0, 1, 2].map(i => Math.min(pb[1][i], mb[1][i]) - Math.max(pb[0][i], mb[0][i]));
+      if (pen.some(v => v <= 0.5)) continue;
+      if (!pl.notch) { clashes.push(`${pl.name} passes through ${ref(m.id)}: give the plate notch: true, or move it`); continue; }
+      const lo = i => Math.max(pb[0][i], mb[0][i]) - pb[0][i], hi = i => Math.min(pb[1][i], mb[1][i]) - pb[0][i];
+      pl.notches.push([lo(ax[0]), lo(ax[1]), hi(ax[0]), hi(ax[1])]);
+    }
+  }
+  return clashes;
+}
+
+// ---------------------------------------------------------------- geometry checks
+function segDist(p1, q1, p2, q2) {
+  const d1 = sub(q1, p1), d2 = sub(q2, p2), r = sub(p1, p2);
+  const a = dot(d1, d1), e = dot(d2, d2), f = dot(d2, r);
+  let s, t;
+  const c = dot(d1, r), b = dot(d1, d2), den = a * e - b * b;
+  s = den > 1e-9 ? Math.max(0, Math.min(1, (b * f - c * e) / den)) : 0;
+  t = (b * s + f) / e;
+  if (t < 0) { t = 0; s = Math.max(0, Math.min(1, -c / a)); } else if (t > 1) { t = 1; s = Math.max(0, Math.min(1, (b - c) / a)); }
+  return len(sub(add(p1, mul(d1, s)), add(p2, mul(d2, t))));
+}
+
+function geometryChecks(model, joints, sites, ref) {
+  const ids = model.members.map(m => m.id);
+  const sharesSite = new Set();
+  for (const s of sites) {
+    const here = [...new Set([...s.ends.map(e => e.t.m.id), ...s.through.map(t => t.m.id)])];
+    for (const a of here) for (const b of here) if (a !== b) sharesSite.add(a + '|' + b);
+  }
+  const half = j => Math.max(j.hu, j.hw), halfMin = j => Math.min(j.hu, j.hw);
+  const clashes = [], adj = new Map();
+  const link = (a, b) => { (adj.get(a) || adj.set(a, new Set()).get(a)).add(b); (adj.get(b) || adj.set(b, new Set()).get(b)).add(a); };
+  for (let i = 0; i < ids.length; i++) for (let k = i + 1; k < ids.length; k++) {
+    const A = joints[ids[i]], B = joints[ids[k]];
+    if (sharesSite.has(A.id + '|' + B.id)) { link(A.id, B.id); continue; }
+    const d = segDist(A.A, A.B, B.A, B.B);
+    if (d <= half(A) + half(B) + 1) link(A.id, B.id);
+    if (d < halfMin(A) + halfMin(B) - 1) clashes.push(`${ref(A.id)} passes through ${ref(B.id)} (${A.id}, ${B.id})`);
+  }
+  // plates and hardware touch a member, a plate, or name what they sit on
+  const boxes = {};
+  for (const id of ids) boxes[id] = memberBox(joints[id]);
+  for (const pl of model.plates) boxes[pl.id] = plateBox(pl);
+  for (const h of model.hardware) { const b = shapeBox(h.shape); if (b) boxes[h.id] = b; }
+  const others = [...model.plates.map(p => ({ id: p.id, on: p.on })), ...model.hardware.filter(h => boxes[h.id]).map(h => ({ id: h.id, on: h.on }))];
+  for (const o of others) {
+    if (o.on) { for (const t of [].concat(o.on)) if (boxes[t]) link(o.id, t); continue; }
+    for (const [id, b] of Object.entries(boxes)) if (id !== o.id && boxGap(boxes[o.id], b) <= 1) link(o.id, id);
+  }
+  const all = Object.keys(boxes);
+  const seen = new Set(), stack = all.length ? [all[0]] : [];
+  while (stack.length) { const n = stack.pop(); if (seen.has(n)) continue; seen.add(n); for (const q of adj.get(n) || []) stack.push(q); }
+  const floating = all.filter(n => !seen.has(n));
+  return { clashes, floating, boxes };
+}
+
+function hull2(pts) {
+  const p = pts.map(q => [q[0], q[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], up = [];
+  for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (const q of p.reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  return lo.slice(0, -1).concat(up.slice(0, -1));
+}
+
+// ---------------------------------------------------------------- derive
+function derive(plan, given = {}, system) {
+  const { p, notes, limits } = resolveParams(plan.params || [], given);
+  const units = makeUnits(system || p.units || plan.units || 'metric');
+  // the design gets its helpers injected, so a design.mjs needs no import paths
+  const kit = { u: units, p, v3, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet };
+  const model = normalise(plan.build(p, kit), plan);
+  const { joints, sites, report } = solveJoints(model);
+  const { pieces, markOf, ref } = groupPieces(model, joints);
+  // step text may name a piece by its mark: {mark:leg-FL} becomes "A"
+  const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { if (!markOf[id]) throw new Error(`{mark:${id}}: no member "${id}"`); return markOf[id]; }) : t);
+  for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); }
+  for (const c of model.checks) { c.value = fill(c.value); c.why = fill(c.why); }
+  for (const pl of model.plates) pl.note = fill(pl.note);
+  const plateClashes = notchPlates(model, joints, ref);
+  const nesting = nest(model, pieces);
+  // identical plates share a mark (P1, P2...): same size, thickness, holes and material
+  const pg = new Map();
+  for (const pl of model.plates) {
+    const key = [...pl.s].map(v => Math.round(v * 2) / 2).sort((a, b) => a - b).join('x') + '|' + (pl.material || 'steel') + '|' + JSON.stringify(pl.holes || []) + '|' + pl.name;
+    if (!pg.has(key)) pg.set(key, { pl, qty: 0, ids: [], step: pl.step });
+    const g = pg.get(key); g.qty += pl.qty || 1; g.ids.push(pl.id); g.step = Math.min(g.step, pl.step);
+  }
+  const plateGroups = [...pg.values()].sort((a, b) => a.step - b.step);
+  plateGroups.forEach((g, i) => { g.mark = 'P' + (i + 1); for (const pl of model.plates) if (g.ids.includes(pl.id)) pl.mark = g.mark; });
+  const mass = massItems(model, joints);
+  const totalKg = mass.reduce((s, it) => s + it.m, 0);
+  const cog = mass.reduce((c, it) => add(c, mul(it.c, it.m / (totalKg || 1))), [0, 0, 0]);
+  const geo = geometryChecks(model, joints, sites, ref);
+  const allBoxes = Object.values(geo.boxes);
+  const bbox = [[0, 1, 2].map(i => Math.min(...allBoxes.map(b => b[0][i]))), [0, 1, 2].map(i => Math.max(...allBoxes.map(b => b[1][i])))];
+  const d = { plan, p, notes, limits, units, model, joints, sites, pieces, markOf, ref, nesting, plateGroups, massItems: mass, totalKg, cog, bbox };
+
+  // joining: weld run (or fastener count) from every end that meets something
+  let weld = 0, joins = 0;
+  for (const j of Object.values(joints)) for (const e of ['A', 'B']) {
+    const c = j.ends[e];
+    if (c.kind === 'free') continue;
+    joins++;
+    weld += (4 * (j.hu + j.hw)) * (c.kind === 'miter' ? 0.5 : 1);
+  }
+  d.weld = { length: weld, joins };
+
+  // loads
+  let loadErr = null;
+  try { d.loads = runLoads(d); } catch (e) { d.loads = []; loadErr = e.message; }
+
+  // stability: tip over under a side push at a height
+  if (model.tip && model.supports?.length) {
+    const hull = hull2(model.supports.map(s => s.at));
+    let dmin = Infinity;
+    for (let i = 0; i < hull.length; i++) {
+      const a = hull[i], b = hull[(i + 1) % hull.length];
+      const ex = b[0] - a[0], ey = b[1] - a[1], L = Math.hypot(ex, ey);
+      dmin = Math.min(dmin, ((cog[0] - a[0]) * ey - (cog[1] - a[1]) * ex) / L * -1);
+    }
+    const F = model.tip.kg != null ? model.tip.kg * G0 : model.tip.N;
+    d.tip = { sf: (totalKg * G0 * dmin) / (F * model.tip.height), dmin, F, height: model.tip.height };
+  }
+
+  // checks: kit checks first, then the plan's own
+  const u = units, checks = [];
+  const add2 = (name, pass, value, why) => checks.push({ name, pass: !!pass, value, why });
+  add2('Every joint can be made as drawn', !report.length, report.length ? report[0] : `${d.weld.joins} joints`, 'Each end is a mitre, a butt onto a face, a flush cut or a free end; nothing overhangs.');
+  add2('Nothing floating', !geo.floating.length, geo.floating.length ? geo.floating.join(', ') : 'all connected', 'Every member, plate and part touches what holds it.');
+  const clashes = [...geo.clashes, ...plateClashes];
+  add2('No clashes', !clashes.length, clashes[0] || 'none', 'No member passes through another away from a joint, and no plate through a member it is not notched around.');
+  const longest = Math.max(...pieces.map(g => g.pm.stock));
+  const tooLongRef = it => `${markOf[it.id]} (${it.id})`;
+  const tooLong = nesting.flatMap(n => n.tooLong);
+  add2('Every piece fits the stock', !tooLong.length, tooLong.length ? `${tooLongRef(tooLong[0])} is ${u.len(tooLong[0].L, { u: true })}` : `longest ${u.len(longest, { u: true })}`, 'Cut from standard lengths with a trim and a kerf per cut.');
+  const shortest = pieces.reduce((m, g) => (g.pm.shortPoint < m.v ? { v: g.pm.shortPoint, g } : m), { v: Infinity });
+  const minPiece = model.minPiece ?? 30;
+  add2('Every piece can be clamped and cut', shortest.v >= minPiece, `shortest ${u.len(shortest.v, { u: true })}`, `No piece shorter than ${u.len(minPiece, { u: true })} on its short side.`);
+  if (loadErr) add2('Frame analysis', false, loadErr, 'The frame solver could not run.');
+  for (const r of d.loads) {
+    const need = r.load.sf ?? 2;
+    add2(`${r.name}: strength`, r.sf >= need, `safety factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + ref(r.worstMember) : ''}`, `Yield ÷ peak stress with ${r.load.kg != null ? u.mass(r.load.kg) : u.force(r.load.N)} ${r.load.what || 'applied'}, plus self weight.`);
+    if (r.load.defl != null) add2(`${r.name}: deflection`, r.loadDefl <= r.load.defl, `${u.deflection(r.loadDefl)} (limit ${u.deflection(r.load.defl)})`, 'Largest movement of the loaded members.');
+  }
+  if (d.tip && model.tip.anchored) add2('Does not tip over', true, `anchored (${model.tip.anchored}); free-standing factor ${d.tip.sf.toFixed(2)}`, `Free-standing it would tip with ${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high, so it is fixed down.`);
+  else if (d.tip) add2('Does not tip over', d.tip.sf >= (model.tip.sf ?? 1.5), `factor ${d.tip.sf.toFixed(2)} (need ${model.tip.sf ?? 1.5})`, `${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high against its own weight.`);
+  const stepNs = new Set(model.steps.map(s => s.n));
+  const orphan = [...model.members, ...model.plates, ...model.hardware].filter(x => !stepNs.has(x.step));
+  add2('Every part has a step', !orphan.length, orphan.length ? orphan.map(x => x.id).slice(0, 3).join(', ') : `${model.steps.length} steps`, 'Each piece is cut, fitted or bought in a numbered step.');
+  for (const c of model.checks) add2(c.name, c.pass, c.value, c.why);
+  d.checks = checks;
+  d.ok = checks.every(c => c.pass);
+
+  // cost
+  const price = { stock: 0, plates: 0, hardware: 0, known: true };
+  for (const n of nesting) { if (n.sec.price == null) price.known = false; else price.stock += (n.bars.length * n.sec.stockLen / 1000) * n.sec.price; }
+  for (const pl of model.plates) { if (pl.price == null) price.known = false; else price.plates += pl.price * (pl.qty || 1); }
+  for (const h of model.hardware) { if (h.price == null) price.known = false; else price.hardware += h.price * (h.qty || 1); }
+  for (const c of model.consumables) { if (c.price == null) price.known = false; else price.consumables = (price.consumables || 0) + c.price; }
+  price.consumables ||= 0;
+  price.total = price.stock + price.plates + price.hardware + price.consumables;
+  d.price = price;
+  d.hours = model.steps.reduce((s, st) => s + (st.hours || 0), 0);
+  return d;
+}
+
+return { pieceMarks, derive, hull2 };
+})();
+const __shop = (() => {
+// Shop drawings as SVG strings: cut sheets, jig views, the general arrangement,
+// plate sheets and the stock nesting. Pure functions of a derived plan (derive.mjs)
+// and the units in force, so imperial is a re-render, never a second drawing.
+const { esc, f1, r0 } = __core;
+const { memberCorners } = __joints;
+const { hull2 } = __derive;
+// ---------------------------------------------------------------- views
+// top: looking down, front at the bottom. front: from -y. side: from +x.
+// depth: larger is nearer the viewer, drawn later.
+const VIEWS = {
+  top: { title: 'Top', pr: q => [q[0], -q[1]], depth: q => q[2] },
+  front: { title: 'Front', pr: q => [q[0], -q[2]], depth: q => -q[1] },
+  side: { title: 'Side (from the right)', pr: q => [q[1], -q[2]], depth: q => q[0] },
+};
+const boxCorners = ([lo, hi]) => [0, 1, 2, 3, 4, 5, 6, 7].map(i => [i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
+const cylCorners = sh => {
+  const out = [];
+  for (const p of [sh.a, sh.b]) for (const dx of [-1, 1]) for (const dy of [-1, 1]) for (const dz of [-1, 1]) {
+    const ax = [sh.b[0] - sh.a[0], sh.b[1] - sh.a[1], sh.b[2] - sh.a[2]];
+    const m = Math.hypot(...ax) || 1;
+    const k = [dx, dy, dz].map((v, i) => v * sh.r * Math.sqrt(1 - (ax[i] / m) ** 2));
+    out.push([p[0] + k[0], p[1] + k[1], p[2] + k[2]]);
+  }
+  return out;
+};
+
+// Every solid in the plan as a list of corner sets, tagged.
+function solids(d, { upTo = Infinity, only = null } = {}) {
+  const out = [];
+  for (const m of d.model.members) if (m.step <= upTo && (!only || only(m))) out.push({ id: m.id, kind: 'member', step: m.step, pts: memberCorners(d.joints[m.id]) });
+  for (const pl of d.model.plates) if (pl.step <= upTo && (!only || only(pl))) out.push({ id: pl.id, kind: 'plate', step: pl.step, pts: boxCorners([pl.c.map((v, i) => v - pl.s[i] / 2), pl.c.map((v, i) => v + pl.s[i] / 2)]) });
+  for (const h of d.model.hardware) if (h.shape && h.step <= upTo && (!only || only(h))) {
+    const shapes = [].concat(h.shape);
+    for (const sh of shapes) out.push({ id: h.id, kind: 'hardware', step: h.step, pts: sh.type === 'box' ? boxCorners([sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)]) : cylCorners(sh) });
+  }
+  return out;
+}
+
+// One orthographic view with overall dimensions. now(id) marks the parts of this step.
+function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null }) {
+  const V = VIEWS[view];
+  const polys = items.map(it => ({ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }))
+    .sort((a, b) => a.depth - b.depth);
+  const all = polys.flatMap(p => p.hull);
+  const x0 = Math.min(...all.map(p => p[0])), x1 = Math.max(...all.map(p => p[0]));
+  const y0 = Math.min(...all.map(p => p[1])), y1 = Math.max(...all.map(p => p[1]));
+  const span = Math.max(x1 - x0, y1 - y0, 200);
+  const fs = fsIn || span / 34, pad = fs * 5;
+  // the dimensioned extent is what this step adds (or everything, when it is the GA)
+  // jigs dimension centre lines (like the joint table, marked ℄); the GA outside faces
+  const nowPts = dimPts ? dimPts.map(V.pr) : polys.filter(p => now(p)).flatMap(p => p.hull);
+  const cl = dimPts ? '℄ ' : '';
+  const dx0 = Math.min(...nowPts.map(p => p[0])), dx1 = Math.max(...nowPts.map(p => p[0]));
+  const dy0 = Math.min(...nowPts.map(p => p[1])), dy1 = Math.max(...nowPts.map(p => p[1]));
+  const vb = [x0 - pad, y0 - pad * 1.2, x1 - x0 + pad * 2.2, y1 - y0 + pad * 2.6];
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(f1).join(' ')}" class="${cls}" style="--fs:${f1(fs)}px" data-w="${f1(vb[2])}" role="img" aria-label="${esc(title || V.title)}">`;
+  for (const p of polys) s += `<polygon class="${now(p) ? 'jn' : 'jo'} k-${p.kind}" points="${p.hull.map(q => f1(q[0]) + ',' + f1(q[1])).join(' ')}"/>`;
+  if (dims && nowPts.length) {
+    const a = fs * 0.5, off = fs * 2.2, showH = dx1 - dx0 > 1, showV = dy1 - dy0 > 1;
+    const yb = y1 + off, xr = x1 + off;
+    // horizontal: under the view
+    if (showH) s += `<path class="dl" d="M${f1(dx0)} ${f1(dy1 + fs * 0.4)}V${f1(yb + a)}M${f1(dx1)} ${f1(dy1 + fs * 0.4)}V${f1(yb + a)}M${f1(dx0)} ${f1(yb)}H${f1(dx1)}"/>`;
+    if (showH) s += `<path class="da" d="M${f1(dx0)} ${f1(yb)}l${f1(a * 1.6)} ${f1(-a * 0.55)}v${f1(a * 1.1)}zM${f1(dx1)} ${f1(yb)}l${f1(-a * 1.6)} ${f1(-a * 0.55)}v${f1(a * 1.1)}z"/>`;
+    if (showH) s += `<text class="dt" x="${f1((dx0 + dx1) / 2)}" y="${f1(yb - fs * 0.35)}" text-anchor="middle">${cl}${esc(u.len(dx1 - dx0))}</text>`;
+    // vertical: right of the view
+    if (showV) s += `<path class="dl" d="M${f1(dx1 + fs * 0.4)} ${f1(dy0)}H${f1(xr + a)}M${f1(dx1 + fs * 0.4)} ${f1(dy1)}H${f1(xr + a)}M${f1(xr)} ${f1(dy0)}V${f1(dy1)}"/>`;
+    if (showV) s += `<path class="da" d="M${f1(xr)} ${f1(dy0)}l${f1(-a * 0.55)} ${f1(a * 1.6)}h${f1(a * 1.1)}zM${f1(xr)} ${f1(dy1)}l${f1(-a * 0.55)} ${f1(-a * 1.6)}h${f1(a * 1.1)}z"/>`;
+    if (showV) s += `<text class="dt" x="${f1(xr + fs * 0.4)}" y="${f1((dy0 + dy1) / 2)}" transform="rotate(-90 ${f1(xr + fs * 0.4)} ${f1((dy0 + dy1) / 2)})" text-anchor="middle" dy="${f1(-fs * 0.2)}">${cl}${esc(u.len(dy1 - dy0))}</text>`;
+  }
+  // points that land on the same spot in this view share one label: BL1…BL4
+  const spots = new Map();
+  for (const l of labels) {
+    const [x, y] = V.pr(l.p), k = `${Math.round(x)},${Math.round(y)}`;
+    if (!spots.has(k)) spots.set(k, { p: l.p, names: [] });
+    spots.get(k).names.push(l.name);
+  }
+  const merged = [...spots.values()].map(sp => ({ p: sp.p, name: sp.names.length > 2 ? `${sp.names[0]}…${sp.names[sp.names.length - 1]}` : sp.names.join(', ') }));
+  for (const l of merged) {
+    const [x, y] = V.pr(l.p);
+    s += `<circle class="jp" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.28)}"/><text class="jl" x="${f1(x + fs * 0.45)}" y="${f1(y - fs * 0.4)}">${esc(l.name)}</text>`;
+  }
+  s += `<text class="jt" x="${f1(vb[0] + fs * 0.6)}" y="${f1(vb[1] + fs * 1.6)}">${esc(title || V.title)}</text>`;
+  return s + '</svg>';
+}
+
+// Nodes the step's members end on, in a stable order.
+function stepNodes(d, n) {
+  const names = new Set();
+  for (const m of d.model.members.filter(x => x.step === n)) for (const q of [m.pts[0], m.pts[m.pts.length - 1]]) names.add(q);
+  return [...names].map(name => ({ name, p: d.model.nodes[name] }))
+    .sort((a, b) => a.p[2] - b.p[2] || a.p[1] - b.p[1] || a.p[0] - b.p[0]);
+}
+
+// Which views a step needs: a flat step (one level) only the top view.
+function stepViews(d, st) {
+  if (st.views) return st.views;
+  const zs = d.model.members.filter(m => m.step === st.n).flatMap(m => [d.joints[m.id].A[2], d.joints[m.id].B[2]]);
+  return zs.length && Math.max(...zs) - Math.min(...zs) < 1 ? ['top'] : ['front', 'side', 'top'];
+}
+
+// Views laid out as one third-angle sheet at one scale: top above front, side to
+// the right of front. One text size (fs) for every view on the sheet.
+function sheet(items, views, opts) {
+  const pts = items.flatMap(it => it.pts);
+  const ext = i => Math.max(...pts.map(q => q[i])) - Math.min(...pts.map(q => q[i]));
+  const fs = Math.max(ext(0), ext(1), ext(2), 200) / 34;
+  const svg = {};
+  for (const v of views) svg[v] = viewSvg(items, v, { ...opts, fs, title: opts.title ? opts.title(v) : VIEWS[v].title });
+  const w = v => +svg[v].match(/data-w="([\d.]+)"/)[1];
+  if (views.length === 1) return `<div class="sheet one"><figure>${svg[views[0]]}</figure></div>`;
+  const cols = views.includes('side') ? `${f1(w('front'))}fr ${f1(w('side'))}fr` : '1fr';
+  return `<div class="sheet" style="grid-template-columns:${cols}">` +
+    (views.includes('top') ? `<figure class="v-top">${svg.top}</figure>` : '') +
+    (views.includes('front') ? `<figure class="v-front">${svg.front}</figure>` : '') +
+    (views.includes('side') ? `<figure class="v-side">${svg.side}</figure>` : '') + `</div>`;
+}
+
+function jigSheet(d, st, views) {
+  const items = solids(d, { upTo: st.n, only: st.alone ? x => x.step === st.n : null });
+  const labels = stepNodes(d, st.n);
+  return sheet(items, views, { now: it => it.step === st.n, labels, dimPts: labels.map(l => l.p), title: v => `Step ${st.n}: ${VIEWS[v].title}`, u: d.units });
+}
+
+function gaSheet(d) {
+  return sheet(solids(d), ['top', 'front', 'side'], { u: d.units, cls: 'jig ga' });
+}
+
+// ---------------------------------------------------------------- cut sheet
+// One piece mark: the two faces you mark, both ends drawn large with the middle
+// broken out, the edge marks at each end, and how each end is joined.
+function pieceSvg(d, g) {
+  const u = d.units, pm = g.pm, sec = g.sec;
+  const [A, B] = g.endText;
+  const head = (total) => `<text class="pt" x="10" y="28">${esc(g.mark)}</text><text class="pq" x="${10 + 18 * g.mark.length + 8}" y="28">x${g.qty}</text>` +
+    `<text class="ps" x="10" y="52">${esc(g.name)} · ${esc(sec.short)} · step ${g.step}</text>` +
+    `<text class="ps pm2" x="10" y="72">${esc(g.ids.join(', '))}</text>` +
+    `<text class="pk" x="${total - 10}" y="28" text-anchor="end">${esc(u.len(pm.longPoint, { u: true }))}</text>` +
+    `<text class="ps" x="${total - 10}" y="52" text-anchor="end">long point</text>`;
+  // square both ends: no marks to transfer, one bar and its length is the whole sheet
+  if (A.square && B.square) {
+    const total = 760, x0 = 10, x1 = 600, y = 92, h = 22;
+    let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} 190" class="piece square" role="img" aria-label="Cut sheet, piece ${esc(g.mark)}">` + head(total);
+    s += `<rect class="pf" x="${x0}" y="${y}" width="${x1 - x0}" height="${h}"/>`;
+    s += `<path class="dl" d="M${x0} ${y + h + 6}v18M${x1} ${y + h + 6}v18M${x0} ${y + h + 16}H${x1}"/>`;
+    s += `<text class="pm" x="${(x0 + x1) / 2}" y="${y + h + 36}" text-anchor="middle">${esc(u.len(pm.longPoint))}, square both ends</text>`;
+    s += `<text class="ps" x="10" y="174">Left end: ${esc(A.how)} · Right end: ${esc(B.how)}</text>`;
+    return s + '</svg>';
+  }
+  const j = d.joints[g.ids[0]];
+  const sizeMax = Math.max(2 * j.hu, 2 * j.hw);
+  const k = Math.min(2.2, 70 / sizeMax), END = Math.max(60, sizeMax * 1.4);
+  // a thin face is drawn at least 34 px tall so its two edge names stay apart
+  const faces = [{ name: pm.faces.top, e: [0, 1], W: Math.max(34, 2 * j.hu * k) }, { name: pm.faces.side, e: [0, 3], W: Math.max(34, 2 * j.hw * k) }];
+  const gap = 46, x0 = 150, strip = END * 2 * k + gap;
+  let y = 96;
+  const rows = faces.map(f => { const r = { ...f, y0: y }; y += f.W + 64; return r; });
+  const H = y + 40;
+  const total = Math.max(760, x0 + strip + 190);
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${f1(H)}" class="piece" role="img" aria-label="Cut sheet, piece ${esc(g.mark)}">` + head(total);
+  for (const f of rows) {
+    const [e1, e2] = f.e.map(i => pm.edges[i]);
+    const X = v => x0 + v * k;
+    const XR = v => x0 + END * k + gap + (v - (pm.stock - END)) * k;
+    const yA = f.y0, yB = f.y0 + f.W;
+    s += `<text class="ps" x="10" y="${f1(yA + f.W / 2 + 5)}">${esc(f.name)} face</text>`;
+    s += `<polygon class="pf" points="${f1(X(e1.a))},${f1(yA)} ${f1(X(END))},${f1(yA)} ${f1(X(END))},${f1(yB)} ${f1(X(e2.a))},${f1(yB)}"/>`;
+    s += `<polygon class="pf" points="${f1(XR(pm.stock - END))},${f1(yA)} ${f1(XR(e1.b))},${f1(yA)} ${f1(XR(e2.b))},${f1(yB)} ${f1(XR(pm.stock - END))},${f1(yB)}"/>`;
+    const brk = x => `M${f1(x)} ${f1(yA - 6)}l${gap / 4} ${f1(f.W / 3)}l-${gap / 4} ${f1(f.W / 3)}l${gap / 4} ${f1(f.W / 3 + 12)}`;
+    s += `<path class="pb" d="${brk(X(END))}${brk(XR(pm.stock - END))}"/>`;
+    s += `<text class="pm" x="${f1(X(e1.a) - 5)}" y="${f1(yA - 6)}" text-anchor="end">${esc(u.len(e1.a))}</text>`;
+    s += `<text class="pm" x="${f1(X(e2.a) - 5)}" y="${f1(yB + 17)}" text-anchor="end">${esc(u.len(e2.a))}</text>`;
+    s += `<text class="pm" x="${f1(XR(e1.b) + 5)}" y="${f1(yA - 6)}">${esc(u.len(e1.b))}</text>`;
+    s += `<text class="pm" x="${f1(XR(e2.b) + 5)}" y="${f1(yB + 17)}">${esc(u.len(e2.b))}</text>`;
+    s += `<text class="pe" x="${f1(x0 + strip + 64)}" y="${f1(yA + 9)}">${esc(e1.label)}</text><text class="pe" x="${f1(x0 + strip + 64)}" y="${f1(yB)}">${esc(e2.label)}</text>`;
+  }
+  s += `<text class="ps" x="10" y="${f1(H - 34)}">Left end: ${esc(A.ang)}, ${esc(A.how)}</text>`;
+  s += `<text class="ps" x="10" y="${f1(H - 12)}">Right end: ${esc(B.ang)}, ${esc(B.how)}</text>`;
+  return s + '</svg>';
+}
+
+// ---------------------------------------------------------------- plates
+// A plate drawn on its two big dimensions, holes dimensioned from the lower-left
+// corner. at: [a, b] in the plate's own drawing axes (first big axis, second).
+function plateSvg(d, pl) {
+  const u = d.units;
+  const ax = [0, 1, 2].sort((a, b) => pl.s[b] - pl.s[a]);
+  const W = pl.s[ax[0]], H = pl.s[ax[1]], T = pl.s[ax[2]];
+  const k = Math.min(520 / W, 260 / H);
+  const ox = 70, oy = 60, w = W * k, h = H * k;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f1(Math.max(700, w + 220))} ${f1(h + 172)}" class="piece plate" role="img" aria-label="Plate ${esc(pl.id)}">`;
+  s += `<text class="pt" x="10" y="28">${esc(pl.mark || pl.id)}</text><text class="pq" x="${10 + 18 * String(pl.mark || pl.id).length + 8}" y="28">x${pl.qty || 1}</text>`;
+  s += `<text class="ps" x="10" y="50">${esc(pl.name)} · ${esc(u.len(T, { u: true }))} ${esc(pl.materialLabel || pl.material || 'steel')} · step ${pl.step}</text>`;
+  const notches = pl.notches || [];
+  if (!notches.length) s += `<rect class="pf" x="${ox}" y="${oy}" width="${f1(w)}" height="${f1(h)}" rx="${f1((pl.r || 0) * k)}"/>`;
+  else {
+    // the outline minus its notches, as grid cells: fill the kept cells, ink the edges between kept and cut
+    const xs = [...new Set([0, W, ...notches.flatMap(n => [n[0], n[2]])])].sort((a, b) => a - b);
+    const ys = [...new Set([0, H, ...notches.flatMap(n => [n[1], n[3]])])].sort((a, b) => a - b);
+    const cut = (a, b) => notches.some(n => a > n[0] && a < n[2] && b > n[1] && b < n[3]);
+    const keep = (i, j) => i >= 0 && j >= 0 && i < xs.length - 1 && j < ys.length - 1 && !cut((xs[i] + xs[i + 1]) / 2, (ys[j] + ys[j + 1]) / 2);
+    const X = v => ox + v * k, Y = v => oy + h - v * k;
+    let fillD = '', edgeD = '';
+    for (let i = 0; i < xs.length - 1; i++) for (let j = 0; j < ys.length - 1; j++) {
+      if (!keep(i, j)) continue;
+      fillD += `M${f1(X(xs[i]))} ${f1(Y(ys[j]))}H${f1(X(xs[i + 1]))}V${f1(Y(ys[j + 1]))}H${f1(X(xs[i]))}Z`;
+      if (!keep(i - 1, j)) edgeD += `M${f1(X(xs[i]))} ${f1(Y(ys[j]))}V${f1(Y(ys[j + 1]))}`;
+      if (!keep(i + 1, j)) edgeD += `M${f1(X(xs[i + 1]))} ${f1(Y(ys[j]))}V${f1(Y(ys[j + 1]))}`;
+      if (!keep(i, j - 1)) edgeD += `M${f1(X(xs[i]))} ${f1(Y(ys[j]))}H${f1(X(xs[i + 1]))}`;
+      if (!keep(i, j + 1)) edgeD += `M${f1(X(xs[i]))} ${f1(Y(ys[j + 1]))}H${f1(X(xs[i + 1]))}`;
+    }
+    s += `<path class="pf" style="stroke:none" d="${fillD}"/><path class="pb" style="stroke:var(--ink);stroke-width:1.5" d="${edgeD}"/>`;
+  }
+  for (const hole of pl.holes || []) {
+    const cx = ox + hole.at[0] * k, cy = oy + h - hole.at[1] * k;
+    s += `<circle class="ph" cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(Math.max(2.5, (hole.d / 2) * k))}"/>`;
+  }
+  // overall dims
+  s += `<path class="dl" d="M${ox} ${f1(oy + h + 22)}H${f1(ox + w)}M${ox} ${f1(oy + h + 6)}v24M${f1(ox + w)} ${f1(oy + h + 6)}v24"/>`;
+  s += `<text class="pm" x="${f1(ox + w / 2)}" y="${f1(oy + h + 44)}" text-anchor="middle">${esc(u.len(W))}</text>`;
+  s += `<path class="dl" d="M${f1(ox + w + 22)} ${oy}V${f1(oy + h)}M${f1(ox + w + 6)} ${oy}h24M${f1(ox + w + 6)} ${f1(oy + h)}h24"/>`;
+  s += `<text class="pm" x="${f1(ox + w + 34)}" y="${f1(oy + h / 2 + 5)}">${esc(u.len(H))}</text>`;
+  if (pl.holes?.length) {
+    const hs = [...new Map(pl.holes.map(hh => [hh.d, hh])).values()];
+    s += `<text class="ps" x="10" y="${f1(oy + h + 76)}">${pl.holes.length} hole${pl.holes.length > 1 ? 's' : ''}: ${hs.map(hh => `⌀${esc(u.len(hh.d))}`).join(', ')} · centres from the lower-left corner: ${pl.holes.map(hh => `(${u.len(hh.at[0])}, ${u.len(hh.at[1])})`).join(' ')}</text>`;
+  }
+  let ty = oy + h + (pl.holes?.length ? 98 : 76);
+  if (notches.length) {
+    const sizes = [...new Set(notches.map(n => `${u.len(n[2] - n[0])} × ${u.len(n[3] - n[1])}`))];
+    s += `<text class="ps" x="10" y="${f1(ty)}">${notches.length} notch${notches.length > 1 ? 'es' : ''} ${sizes.join(', ')} for the members that pass through, at: ${notches.map(n => `(${u.len(n[0])}, ${u.len(n[1])})`).join(' ')}</text>`;
+    ty += 22;
+  }
+  if (pl.note) s += `<text class="ps" x="10" y="${f1(ty)}">${esc(pl.note)}</text>`;
+  return s + '</svg>';
+}
+
+// ---------------------------------------------------------------- nesting
+function nestSvg(d, n) {
+  const u = d.units, S = n.sec.stockLen, W = 720, k = W / S, bh = 26, gap = 12;
+  const H = n.bars.length * (bh + gap) + 44;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W + 120} ${H}" class="nest" role="img" aria-label="Cutting plan ${esc(n.sec.short)}">`;
+  s += `<text class="ps" x="0" y="16">${esc(n.sec.short)} · ${n.bars.length} x ${esc(u.size(S))} lengths · kerf ${esc(u.len(d.model.kerf))}</text>`;
+  n.bars.forEach((b, i) => {
+    const y = 30 + i * (bh + gap);
+    s += `<rect class="nb" x="0" y="${y}" width="${f1(W)}" height="${bh}"/>`;
+    for (const c of b.cuts) {
+      const x = c.at * k, w = c.L * k;
+      s += `<rect class="nc" x="${f1(x)}" y="${y}" width="${f1(w)}" height="${bh}"/>`;
+      if (w > 22) s += `<text class="nt" x="${f1(x + w / 2)}" y="${y + bh / 2 + 5}" text-anchor="middle">${esc(c.mark)}</text>`;
+    }
+    s += `<text class="ps" x="${W + 8}" y="${y + bh / 2 + 5}">off ${esc(u.len(S - b.used))}</text>`;
+  });
+  return s + '</svg>';
+}
+
+const SHOP_CSS = `
+.piece,.jig,.nest{background:var(--paper);max-width:100%;height:auto;display:block}
+.pt{font:700 24px var(--mono);fill:var(--ink)}.pq{font:400 20px var(--mono);fill:var(--muted)}
+.ps{font:14px var(--sans);fill:var(--ink2)}.pm2{font:12px var(--mono);fill:var(--muted)}
+.pk{font:700 20px var(--mono);fill:var(--ink)}.pm{font:700 15px var(--mono);fill:var(--ink)}.pe{font:12px var(--mono);fill:var(--muted)}
+.pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
+.ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+.jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
+.ga .jn{fill:var(--face)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
+.dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
+.dt,.jl{paint-order:stroke;stroke:var(--paper);stroke-width:calc(var(--fs) * .3);stroke-linejoin:round}
+.jp{fill:var(--ink)}.jl{font:700 calc(var(--fs) * .8) var(--mono);fill:var(--ink)}.jt{font:700 calc(var(--fs) * 1.1) var(--sans);fill:var(--ink)}
+.nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
+`;
+
+return { VIEWS, solids, stepNodes, stepViews, jigSheet, gaSheet, pieceSvg, plateSvg, nestSvg, SHOP_CSS };
+})();
+const __pack = (() => {
+// The build pack as HTML strings, from one derived plan (derive.mjs). The same
+// functions feed the live page and its printed form; nothing here computes a
+// number of its own, it only lays out what derive() found.
+const { esc } = __core;
+const { jigSheet, gaSheet, pieceSvg, plateSvg, nestSvg, stepNodes, stepViews } = __shop;
+const money = (d, v) => (d.model.currency ? `${d.model.currency}${Math.round(v).toLocaleString('en-US')}` : '');
+
+function plateLine(d) {
+  const metal = d.plateGroups.filter(g => ['steel', 'aluminium', 'stainless'].includes(g.pl.material || 'steel')).reduce((s, g) => s + g.qty, 0);
+  const sheet = d.plateGroups.reduce((s, g) => s + g.qty, 0) - metal;
+  return [metal ? `${metal} plate${metal > 1 ? 's' : ''}` : '', sheet ? `${sheet} sheet${sheet > 1 ? 's' : ''}` : ''].filter(Boolean).join(', ');
+}
+
+function factsHtml(d) {
+  const u = d.units, [lo, hi] = d.bbox;
+  const rows = [
+    ['Overall', `${u.len(hi[0] - lo[0])} × ${u.len(hi[1] - lo[1])} × ${u.len(hi[2] - lo[2])}${u.imperial ? '' : ' mm'}`, 'length × depth × height'],
+    ['Mass', u.mass(d.totalKg), 'as built, with every part listed'],
+    ['Pieces', `${d.model.members.length} cut (${d.pieces.length} different)`, plateLine(d)],
+    [d.model.join === 'screw' || d.model.join === 'bolt' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join === 'screw' || d.model.join === 'bolt' ? '' : `about ${u.run(d.weld.length)} of weld`],
+    ...d.loads.map(r => [r.name, `factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(1)}`, `${(r.load.dir && Math.abs(r.load.dir[2]) < 0.5) ? 'moves' : 'sags'} ${u.deflection(r.loadDefl)}`]),
+    ['Build time', d.hours ? `${d.hours} h` : '', `${d.model.steps.length} steps`],
+    ...(d.price.total && d.model.currency ? [['Cost', `~${money(d, d.price.total)}`, d.price.known ? 'everything on the materials list' : 'priced lines only; see the materials list']] : []),
+    ...d.model.facts,
+  ];
+  return rows.filter(r => r[1]).map(([k, v, s]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}${s ? `<small>${esc(s)}</small>` : ''}</dd></div>`).join('');
+}
+
+function checksHtml(d) {
+  const bad = d.checks.filter(c => !c.pass).length;
+  return `<p class="${bad ? 'warn' : 'muted'}">${bad ? `${bad} check${bad > 1 ? 's' : ''} failing at this size. Change the size or the stock before you cut anything.` : `All ${d.checks.length} checks pass at this size.`}</p>` +
+    `<div class="wrap"><table class="doc checks"><tr><th></th><th>Check</th><th>Result</th></tr>` +
+    d.checks.map(c => `<tr class="${c.pass ? 'ok' : 'bad'}"><td>${c.pass ? '✓' : '✗'}</td><td>${esc(c.name)}<small>${esc(c.why || '')}</small></td><td>${esc(c.value)}</td></tr>`).join('') +
+    `</table></div>`;
+}
+
+function bomHtml(d) {
+  const u = d.units, md = d.model;
+  let h = `<h3>Stock</h3><div class="wrap"><table class="doc"><tr><th>Section</th><th class=n>Pieces</th><th class=n>Cut length</th><th class=n>Buy</th><th class=n>Mass</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
+  for (const n of d.nesting) {
+    const pieces = n.bars.reduce((s, b) => s + b.cuts.length, 0) + n.tooLong.length;
+    const kg = (n.total / 1000) * n.sec.kgPerM;
+    h += `<tr><td>${esc(n.sec.label)}</td><td class=n>${pieces}</td><td class=n>${esc(u.run(n.total))}</td><td class=n>${n.bars.length} × ${esc(u.size(n.sec.stockLen))}</td><td class=n>${esc(u.mass(kg))}</td>${md.currency ? `<td class=n>${n.sec.price != null ? money(d, (n.bars.length * n.sec.stockLen / 1000) * n.sec.price) : ''}</td>` : ''}</tr>`;
+  }
+  h += `</table></div>`;
+  if (md.plates.length) {
+    h += `<h3>Plate and sheet</h3><div class="wrap"><table class="doc"><tr><th>Mark</th><th>Part</th><th>Size</th><th class=n>Qty</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
+    for (const g of d.plateGroups) {
+      const pl = g.pl, s = [...pl.s].sort((a, b) => b - a);
+      h += `<tr><td>${esc(g.mark)}</td><td>${esc(pl.name)}</td><td>${esc(u.len(s[0]))} × ${esc(u.len(s[1]))} × ${esc(u.len(s[2]))} ${esc(pl.materialLabel || pl.material || 'steel')}</td><td class=n>${g.qty}</td><td class=n>${g.step}</td>${md.currency ? `<td class=n>${pl.price != null ? money(d, pl.price * g.qty) : ''}</td>` : ''}</tr>`;
+    }
+    h += `</table></div>`;
+  }
+  if (md.hardware.length) {
+    h += `<h3>Parts to buy</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Spec</th><th class=n>Qty</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
+    for (const x of md.hardware) h += `<tr><td>${esc(x.name)}</td><td>${esc(x.spec || '')}</td><td class=n>${x.qty || 1}</td><td class=n>${x.step}</td>${md.currency ? `<td class=n>${x.price != null ? money(d, x.price * (x.qty || 1)) : ''}</td>` : ''}</tr>`;
+    h += `</table></div>`;
+  }
+  if (md.consumables.length) h += `<h3>Consumables</h3><ul class="plain">${md.consumables.map(c => `<li>${esc(c.name)}${c.qty ? ` · ${esc(c.qty)}` : ''}${c.note ? ` <span class="muted">${esc(c.note)}</span>` : ''}</li>`).join('')}</ul>`;
+  if (md.tools?.length) h += `<h3>Tools</h3><ul class="plain cols">${md.tools.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  return h;
+}
+
+function drawingsHtml(d) {
+  return gaSheet(d);
+}
+
+function legendHtml(d) {
+  const u = d.units, md = d.model;
+  const joinWord = md.join === 'screw' ? 'screw' : md.join === 'bolt' ? 'bolt' : 'weld';
+  const rows = [
+    ['Units', u.imperial ? 'inches (to 1/16"), pounds, degrees' : 'millimetres, kilograms, degrees'],
+    ['Datum', md.datum || 'x along the length, y front to back, z up from the floor'],
+    ['Piece marks', 'A, B, C… one letter per different piece. "x4" = cut four the same. Mirror images share a mark.'],
+    ['Cut marks', 'From one square end, mark each edge at the two numbers, join the marks around the section, cut on the lines. Angles are for reference.'],
+    ['Edges', `named by where they face on the finished build (${md.axes.z[0]}-${md.axes.y[1]}, ${md.axes.z[1]}-${md.axes.x[0]}…)`],
+    ['Joints', `mitre = same section, on the bisector · butt onto X = square onto the face of X · flush with X = cut level with X's outer face · then ${joinWord}`],
+    ['Long point', 'the overall length of the piece, tip to tip'],
+    ['Dimensions', 'jig drawings and joint tables give centre lines (℄), where the members\' centres cross; the general arrangement gives outside sizes'],
+    ['Tolerance', md.tolerance || `cut ${u.tol(1)} · tacked ${u.tol(1)} · finished ${u.tol(2)} · diagonals equal within ${u.len(3)}`],
+  ];
+  return `<div class="wrap"><table class="doc legend">${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table></div>`;
+}
+
+function orderHtml(d) {
+  const steps = d.model.steps, phases = [...new Set(steps.map(s => s.phase || 'Build'))];
+  return (d.model.orderNote ? `<p>${esc(d.model.orderNote)}</p>` : '') +
+    `<div class="phases">` + phases.map(ph => {
+      const ss = steps.filter(s => (s.phase || 'Build') === ph);
+      return `<div><h4>${esc(ph)}</h4><ol start="${ss[0].n}">${ss.map(s => `<li><a href="#step-${s.n}">${esc(s.title)}</a> <span class="muted">${s.hours ? s.hours + ' h' : ''}</span></li>`).join('')}</ol></div>`;
+    }).join('') + `</div>`;
+}
+
+function piecesOfStep(d, n) { return d.pieces.filter(g => g.members.some(m => m.step === n)); }
+
+function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
+  const u = d.units, n = st.n;
+  let h = `<section class="step" id="step-${n}"><div class="step-h"><h3><span class="sn">${String(n).padStart(2, '0')}</span>${esc(st.title)}</h3>` +
+    `<p class="muted">${esc(st.phase || 'Build')}${st.hours ? ` · ${st.hours} h` : ''}${interactive ? ` · <button type="button" class="linkish" data-show-step="${n}">Show in 3D</button>` : ''}</p></div>` +
+    (st.summary ? `<p>${esc(st.summary)}</p>` : '');
+  h += interactive
+    ? `<ol class="tasks">${st.tasks.map((t, i) => { const id = `t-${n}-${i}`; return `<li><input type="checkbox" id="${id}" data-check="${id}" ${checked[id] ? 'checked' : ''}><label for="${id}">${esc(t)}</label></li>`; }).join('')}</ol>`
+    : `<ol>${st.tasks.map(t => `<li>${esc(t)}</li>`).join('')}</ol>`;
+  if (st.check) h += `<p class="gate"><b>Check</b> ${esc(st.check)}</p>`;
+  if (st.tip) h += `<p class="note">${esc(st.tip)}</p>`;
+  const hw = d.model.hardware.filter(x => x.step === n);
+  if (hw.length) h += `<h4>Parts</h4><ul class="plain">${hw.map(x => `<li>${esc(x.name)} x${x.qty || 1}${x.spec ? ` <span class="muted">${esc(x.spec)}</span>` : ''}</li>`).join('')}</ul>`;
+  const ms = d.model.members.filter(m => m.step === n);
+  if (ms.length) {
+    h += `<h4>Jig</h4>${jigSheet(d, st, stepViews(d, st))}`;
+    h += `<h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr>` +
+      stepNodes(d, n).map(q => `<tr><td>${esc(q.name)}</td><td class=n>${esc(u.len(q.p[0]))}</td><td class=n>${esc(u.len(q.p[1]))}</td><td class=n>${esc(u.len(q.p[2]))}</td></tr>`).join('') + `</table></div>`;
+    const pcs = piecesOfStep(d, n);
+    const first = pcs.filter(g => g.step === n), earlier = pcs.filter(g => g.step !== n);
+    const label = `Pieces: ${pcs.map(g => `${g.mark} x${g.members.filter(m => m.step === n).length}`).join(', ')}`;
+    const sheets = (first.length ? `<div class="piece-list">${first.map(g => pieceSvg(d, g)).join('')}</div>` : '') +
+      (earlier.length ? `<p class="muted">${earlier.map(g => `${g.mark}: cut sheet in <a href="#step-${g.step}">step ${g.step}</a>`).join(' · ')}</p>` : '');
+    h += interactive ? `<details class="sheets" open><summary>${esc(label)}</summary>${sheets}</details>` : `<h4>${esc(label)}</h4>${sheets}`;
+  }
+  const pls = d.plateGroups.filter(g => g.step === n && g.pl.drawing !== false);
+  if (pls.length) h += `<h4>Plates</h4><div class="piece-list">${pls.map(g => plateSvg(d, { ...g.pl, mark: g.mark, qty: g.qty })).join('')}</div>`;
+  return h + `</section>`;
+}
+
+function cutListHtml(d) {
+  const u = d.units;
+  return `<div class="wrap"><table class="doc"><tr><th>Mark</th><th class=n>Qty</th><th>Section</th><th class=n>Long point</th><th>Left end</th><th>Right end</th><th class=n>Step</th></tr>` +
+    d.pieces.map(g => {
+      const [A, B] = g.endText;
+      return `<tr><td><b>${esc(g.mark)}</b> <span class="muted">${esc(g.name)}</span></td><td class=n>${g.qty}</td><td>${esc(g.sec.short)}</td><td class=n>${esc(u.len(g.pm.longPoint))}</td><td>${esc(A.ang)} · ${esc(A.how)}</td><td>${esc(B.ang)} · ${esc(B.how)}</td><td class=n>${g.step}</td></tr>`;
+    }).join('') + `</table></div><h3>Cutting plan</h3><p class="muted">Each bar is one stock length; cut the pieces left to right.</p>` +
+    d.nesting.map(n => `<figure>${nestSvg(d, n)}</figure>`).join('');
+}
+
+// an option label may be a function of the units, so a size in it follows them
+const optLabel = (o, u) => (o ? (typeof o.label === 'function' ? o.label(u) : o.label) : '');
+
+function paramsSummary(d) {
+  const u = d.units;
+  return (d.plan.params || []).map(pd => {
+    const v = d.p[pd.id];
+    const s = pd.type === 'choice' ? optLabel(pd.options.find(o => o.value === v), u) : pd.type === 'bool' ? (v ? 'yes' : 'no')
+      : pd.type === 'len' ? u.len(v, { u: true }) : pd.type === 'kg' ? u.mass(v) : `${v}${pd.unit ? ' ' + pd.unit : ''}`;
+    return `${pd.label} ${s}`;
+  }).join(' · ');
+}
+
+return { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, optLabel, paramsSummary };
+})();
+const __viewer = (() => {
+// three.js viewer, drawn as a technical illustration rather than a photo:
+// an orthographic camera, every face flat-filled with one of
+// four greys by the way it faces, thin dark outlines found from depth and normal
+// edges, a paper background and no colour except one lit accent for the parts you
+// are meant to look at. setModel() rebuilds the geometry whenever the params change.
+// Design coordinates (mm, z up) live inside one group rotated into three's y-up metres.
+
+
+const { memberCorners } = __joints;
+const TONES = {
+  light: {
+    paper: 0xfbfbfa, ink: 0x232326, grid: [0xd6d6d2, 0xe9e9e5],
+    hi: [0x9d9d9a, 0xbcbcb8, 0xd6d6d2, 0xededea], mid: [0x777775, 0x909090, 0xa8a8a5, 0xbebebb],
+    lo: [0x5a5a5c, 0x6d6d6f, 0x808082, 0x949496], faint: [0xd2d2ce, 0xdededa, 0xe8e8e4, 0xf2f2ef],
+    lit: [0xa8343a, 0xc63f45, 0xe5484d, 0xef7478],
+  },
+  dark: {
+    paper: 0x141416, ink: 0x0a0a0b, grid: [0x2e2e31, 0x232326],
+    hi: [0x6e6e6c, 0x8c8c89, 0xaaaaa6, 0xc8c8c4], mid: [0x4c4c4d, 0x5e5e5f, 0x717172, 0x858586],
+    lo: [0x2f2f31, 0x3a3a3c, 0x464648, 0x535355], faint: [0x5b5b5a, 0x676766, 0x737372, 0x80807f],
+    lit: [0xa8343a, 0xc63f45, 0xe5484d, 0xef7478],
+  },
+};
+
+function toneMat(cols, { opacity = 1 } = {}) {
+  return new THREE.ShaderMaterial({
+    uniforms: { tones: { value: cols.map(c => new THREE.Color(c)) }, opacity: { value: opacity } },
+    transparent: opacity < 1, depthWrite: opacity >= 1, side: THREE.DoubleSide,
+    vertexShader: `varying vec3 wp; void main() { vec4 w = modelMatrix * vec4(position, 1.0); wp = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `uniform vec3 tones[4]; uniform float opacity; varying vec3 wp;
+      void main() {
+        vec3 n = normalize(cross(dFdx(wp), dFdy(wp)));
+        int k;
+        if (n.y > 0.6) k = 3; else if (n.y < -0.6) k = 0;
+        else k = dot(normalize(n.xz + 1e-5), normalize(vec2(0.62, 0.78))) > 0.0 ? 2 : 1;
+        gl_FragColor = vec4(tones[k], opacity);
+      }`,
+  });
+}
+
+function createViewer(el, { onPick, theme = 'light' } = {}) {
+  const T = TONES[theme] || TONES.light;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(T.paper, 1);
+  el.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -50, 100);
+  camera.layers.enable(1);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.1;
+  controls.minZoom = 0.5;
+  controls.maxZoom = 10;
+  controls.maxPolarAngle = Math.PI * 0.5;
+  // inside a long page: the wheel scrolls the page unless Ctrl / pinch; one finger scrolls
+  el.addEventListener('wheel', e => { controls.enableZoom = e.ctrlKey || e.metaKey; }, { capture: true, passive: true });
+  controls.touches = { ONE: null, TWO: THREE.TOUCH.DOLLY_ROTATE };
+  renderer.domElement.style.touchAction = 'pan-y';
+
+  // outlines: view-space normals and depth, then a line wherever either jumps
+  const ndMat = new THREE.ShaderMaterial({
+    side: THREE.DoubleSide,
+    vertexShader: `varying vec3 vp; void main() { vec4 v = modelViewMatrix * vec4(position, 1.0); vp = v.xyz; gl_Position = projectionMatrix * v; }`,
+    fragmentShader: `varying vec3 vp; void main() { vec3 n = normalize(cross(dFdx(vp), dFdy(vp))); gl_FragColor = vec4(n * 0.5 + 0.5, -vp.z / 100.0); }`,
+  });
+  const ndTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.FloatType });
+  const edgeMat = new THREE.ShaderMaterial({
+    uniforms: { nd: { value: ndTarget.texture }, px: { value: new THREE.Vector2() }, ink: { value: new THREE.Color(T.ink) }, dzK: { value: 0.012 } },
+    transparent: true, depthTest: false, depthWrite: false,
+    vertexShader: `varying vec2 uv0; void main() { uv0 = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+    fragmentShader: `uniform sampler2D nd; uniform vec2 px; uniform vec3 ink; uniform float dzK; varying vec2 uv0;
+      // an edge is where the normal turns, the silhouette meets paper, or depth stops
+      // being linear across the pixel (second difference), so big flat faces seen at a
+      // low angle stay clean
+      void main() {
+        vec4 c = texture2D(nd, uv0);
+        vec4 l = texture2D(nd, uv0 - vec2(px.x, 0.0)), r = texture2D(nd, uv0 + vec2(px.x, 0.0));
+        vec4 d = texture2D(nd, uv0 - vec2(0.0, px.y)), t = texture2D(nd, uv0 + vec2(0.0, px.y));
+        float e = 0.0;
+        vec4 s4[4]; s4[0] = l; s4[1] = r; s4[2] = d; s4[3] = t;
+        for (int i = 0; i < 4; i++) {
+          vec4 s = s4[i];
+          float bg = step(c.a, 0.0) + step(s.a, 0.0);
+          float dn = 1.0 - dot(c.rgb * 2.0 - 1.0, s.rgb * 2.0 - 1.0);
+          e = max(e, max(bg > 0.5 && bg < 1.5 ? 1.0 : 0.0, step(0.25, dn)));
+        }
+        if (l.a > 0.0 && r.a > 0.0 && d.a > 0.0 && t.a > 0.0) {
+          float lap = max(abs(l.a + r.a - 2.0 * c.a), abs(d.a + t.a - 2.0 * c.a)) * 100.0;
+          e = max(e, step(dzK, lap));
+        }
+        gl_FragColor = vec4(ink, e * 0.88);
+      }`,
+  });
+  const edgeScene = new THREE.Scene();
+  edgeScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), edgeMat));
+  const edgeCam = new THREE.Camera();
+
+  const root = new THREE.Group();
+  root.rotation.x = -Math.PI / 2;
+  root.scale.setScalar(0.001);
+  scene.add(root);
+  let grid = null;
+
+  const mats = Object.fromEntries(['hi', 'mid', 'lo', 'faint', 'lit'].map(k => [k, toneMat(T[k])]));
+  const ghost = toneMat(T.faint, { opacity: 0.35 });
+  const STRESS = [[4, 'hi'], [3, 'mid'], [2, 'lo'], [0, 'lit']];
+  let meshes = [], size = 2, camDist = 4, center = new THREE.Vector3();
+  let stepLimit = null, stepHi = null, selected = null, stress = null, dirty = true;
+
+  const V = a => new THREE.Vector3(a[0], a[1], a[2]);
+  function hexGeo(c) {
+    const quads = [[0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7], [0, 3, 2, 1], [4, 5, 6, 7]];
+    const pos = [];
+    for (const [a, b, cc, d] of quads) for (const i of [a, b, cc, a, cc, d]) pos.push(...c[i]);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    return g;
+  }
+  function boxGeo(c, s) { const g = new THREE.BoxGeometry(s[0], s[1], s[2]); g.translate(c[0], c[1], c[2]); return g; }
+  function cylGeo(a, b, r, seg = 28) {
+    const va = V(a), vb = V(b), d = new THREE.Vector3().subVectors(vb, va);
+    const g = new THREE.CylinderGeometry(r, r, d.length(), seg);
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()));
+    g.translate(...va.add(vb).multiplyScalar(0.5).toArray());
+    return g;
+  }
+  function add(geo, info, tone) {
+    const m = new THREE.Mesh(geo, mats[tone]);
+    m.userData = info;
+    root.add(m);
+    meshes.push({ mesh: m, tone, ...info });
+  }
+
+  function setModel(d) {
+    for (const r of meshes) { root.remove(r.mesh); r.mesh.geometry.dispose(); }
+    meshes = [];
+    const md = d.model;
+    for (const m of md.members) {
+      const j = d.joints[m.id];
+      const info = { id: m.id, name: m.name, step: m.step, kind: 'member', mark: d.markOf[m.id], spec: j.sec.short };
+      if (j.sec.round) {
+        const tA = Math.min(...j.edges.map(e => e.ta)), tB = Math.max(...j.edges.map(e => e.tb));
+        add(cylGeo(j.A.map((v, i) => v + j.axis[i] * tA), j.A.map((v, i) => v + j.axis[i] * tB), j.hu), info, m.tone || 'hi');
+      } else add(hexGeo(memberCorners(j)), info, m.tone || 'hi');
+    }
+    for (const pl of md.plates) {
+      const info = { id: pl.id, name: pl.name, step: pl.step, kind: 'plate', mark: pl.mark, spec: pl.spec };
+      const tone = pl.tone || (pl.material === 'steel' || !pl.material ? 'mid' : 'faint');
+      if (!pl.notches?.length) { add(boxGeo(pl.c, pl.s), info, tone); continue; }
+      // notched: the kept cells of the outline as boxes (coplanar, so no seams are inked)
+      const [a0, a1] = pl.axes, W = pl.s[a0], H = pl.s[a1];
+      const xs = [...new Set([0, W, ...pl.notches.flatMap(n => [n[0], n[2]])])].sort((a, b) => a - b);
+      const ys = [...new Set([0, H, ...pl.notches.flatMap(n => [n[1], n[3]])])].sort((a, b) => a - b);
+      const geos = [];
+      for (let i = 0; i < xs.length - 1; i++) for (let j = 0; j < ys.length - 1; j++) {
+        const mx = (xs[i] + xs[i + 1]) / 2, my = (ys[j] + ys[j + 1]) / 2;
+        if (pl.notches.some(n => mx > n[0] && mx < n[2] && my > n[1] && my < n[3])) continue;
+        const c = pl.c.slice(), sz = pl.s.slice();
+        c[a0] = pl.c[a0] - W / 2 + mx; sz[a0] = xs[i + 1] - xs[i];
+        c[a1] = pl.c[a1] - H / 2 + my; sz[a1] = ys[j + 1] - ys[j];
+        geos.push(boxGeo(c, sz));
+      }
+      for (const g of geos) add(g, info, tone);
+    }
+    for (const h of md.hardware) for (const sh of [].concat(h.shape || [])) {
+      const info = { id: h.id, name: h.name, step: h.step, kind: 'hardware', spec: h.spec };
+      add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');
+    }
+    const [lo, hi] = d.bbox;
+    const span = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
+    size = (span / 1000) * 0.6;
+    // close enough that half-float depth in the outline pass resolves millimetres
+    camDist = Math.max(1.5, (span / 1000) * 1.6);
+    camera.near = -camDist * 2; camera.far = camDist * 4;
+    // design (x, y, z) -> three (x, z, -y), in metres
+    center.set((lo[0] + hi[0]) / 2000, (lo[2] + hi[2]) / 2000, -(lo[1] + hi[1]) / 2000);
+    if (grid) scene.remove(grid);
+    const gs = Math.ceil((span * 2.2) / 1000);
+    grid = new THREE.GridHelper(gs, gs * 10, T.grid[0], T.grid[1]);
+    grid.position.set(center.x, lo[2] / 1000 - 0.001, center.z);
+    grid.layers.set(1);
+    scene.add(grid);
+    edgeMat.uniforms.dzK.value = Math.max(0.008, span / 1000 * 0.006);
+    if (!framed) { view('iso', true); framed = true; }
+    resize();
+    refresh();
+  }
+  let framed = false;
+
+  function refresh() {
+    for (const r of meshes) {
+      r.mesh.visible = stepLimit == null || r.step <= stepLimit;
+      let mat = mats[r.tone];
+      if (stepHi != null) mat = r.step === stepHi ? mats.lit : r.kind === 'hardware' || r.kind === 'plate' ? ghost : mats[r.tone];
+      if (selected && r.id === selected) mat = mats.lit;
+      if (stress) {
+        const sf = r.kind === 'member' ? stress[r.id] : undefined;
+        mat = sf === undefined ? ghost : mats[STRESS.find(([lo]) => sf >= lo)[1]];
+      }
+      r.mesh.material = mat;
+    }
+    dirty = true;
+  }
+
+  const dirOf = (az, el) => {
+    const a = (az * Math.PI) / 180, e = (el * Math.PI) / 180;
+    // azimuth 0 looks from the front (-y in design = +z in three)
+    return new THREE.Vector3(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e));
+  };
+  const presets = { iso: [35, 28], front: [0, 0], side: [90, 0], top: [0, 89.9] };
+  let anim = null;
+  function view(name, instant = false) {
+    const [az, elv] = presets[name];
+    const from = { p: camera.position.clone(), t: controls.target.clone(), z: camera.zoom };
+    const to = { p: center.clone().add(dirOf(az, elv).multiplyScalar(camDist)), t: center.clone(), z: 1 };
+    const reduce = instant || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const start = performance.now(), dur = reduce ? 0 : 600;
+    anim = now => {
+      const k = dur ? Math.min(1, (now - start) / dur) : 1;
+      const e = 1 - Math.pow(1 - k, 3);
+      camera.position.lerpVectors(from.p, to.p, e);
+      controls.target.lerpVectors(from.t, to.t, e);
+      camera.zoom = from.z + (to.z - from.z) * e;
+      camera.updateProjectionMatrix();
+      dirty = true;
+      if (k >= 1) anim = null;
+    };
+    if (reduce) anim(performance.now());
+  }
+
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  let down = null;
+  renderer.domElement.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; });
+  renderer.domElement.addEventListener('pointerup', e => {
+    if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+    const r = renderer.domElement.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects(meshes.filter(m => m.mesh.visible).map(m => m.mesh), false)[0]?.object;
+    selected = hit ? hit.userData.id : null;
+    refresh();
+    onPick && onPick(hit ? hit.userData : null);
+  });
+
+  function resize() {
+    const w = el.clientWidth, h = el.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    renderer.domElement.style.width = w + 'px';
+    renderer.domElement.style.height = h + 'px';
+    const half = size, a = w / h;
+    Object.assign(camera, a >= 1 ? { left: -half * a, right: half * a, top: half, bottom: -half } : { left: -half, right: half, top: half / a, bottom: -half / a });
+    camera.updateProjectionMatrix();
+    const dpr = renderer.getPixelRatio();
+    ndTarget.setSize(Math.round(w * dpr), Math.round(h * dpr));
+    edgeMat.uniforms.px.value.set(1 / (w * dpr), 1 / (h * dpr));
+    dirty = true;
+  }
+  new ResizeObserver(resize).observe(el);
+
+  let visible = true;
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(el);
+  renderer.setAnimationLoop(now => {
+    if (anim) anim(now);
+    if (controls.update()) dirty = true;
+    if (!dirty || !visible) return;
+    dirty = false;
+    renderer.render(scene, camera);
+    camera.layers.set(0);
+    scene.overrideMaterial = ndMat;
+    renderer.setRenderTarget(ndTarget);
+    renderer.setClearColor(0x000000, 0);
+    renderer.clear();
+    renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+    renderer.setClearColor(T.paper, 1);
+    scene.overrideMaterial = null;
+    camera.layers.enable(1);
+    renderer.autoClear = false;
+    renderer.render(edgeScene, edgeCam);
+    renderer.autoClear = true;
+  });
+
+  return {
+    setModel, view, resize,
+    setStep(limit, hi) { stepLimit = limit; stepHi = hi; refresh(); },
+    setStress(map) { stress = map; refresh(); },
+    select(id) { selected = id; refresh(); },
+  };
+}
+
+return { createViewer };
+})();
+const __app = (() => {
+// Browser runtime for a build pack page. Reads the params from the URL hash (so a
+// size can be shared as a link), shows them as input fields, and on every change
+// re-runs derive() and re-renders every section and the 3D model. Units switch
+// between metric (default) and imperial without changing the design.
+const { derive } = __derive;
+const { makeUnits, esc } = __core;
+const { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel } = __pack;
+const { createViewer } = __viewer;
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch { return def; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode: ticks just do not persist */ } },
+};
+
+function readHash(plan) {
+  const q = new URLSearchParams(location.hash.slice(1));
+  const given = {};
+  for (const pd of plan.params || []) if (q.has(pd.id)) given[pd.id] = pd.type === 'choice' ? q.get(pd.id) : pd.type === 'bool' ? q.get(pd.id) === '1' : Number(q.get(pd.id));
+  const units = q.get('units') === 'imperial' || q.get('units') === 'metric' ? q.get('units') : null;
+  return { given, units };
+}
+
+function mountPlan(plan) {
+  const key = `blueprint:${plan.id}`;
+  const fromHash = readHash(plan);
+  let system = fromHash.units || store.get(key + ':units', null) || plan.units || 'metric';
+  let given = fromHash.given;
+  let d = null;
+  const ticks = store.get(key + ':ticks', {});
+
+  // ---------------------------------------------------------------- form
+  const form = $('#size-form');
+  function fieldHtml(pd, u) {
+    const v = d ? d.p[pd.id] : pd.value;
+    const id = `f-${pd.id}`;
+    const hint = pd.hint ? `<small>${esc(pd.hint)}</small>` : '';
+    if (pd.type === 'choice') return `<label class="field" for="${id}"><span>${esc(pd.label)}</span><select id="${id}" data-param="${pd.id}">${pd.options.map(o => `<option value="${esc(o.value)}" ${o.value === v ? 'selected' : ''}>${esc(optLabel(o, u))}</option>`).join('')}</select>${hint}</label>`;
+    if (pd.type === 'bool') return `<label class="field check" for="${id}"><input type="checkbox" id="${id}" data-param="${pd.id}" ${v ? 'checked' : ''}><span>${esc(pd.label)}</span>${hint}</label>`;
+    const lim = d?.limits[pd.id] || { min: pd.min, max: pd.max };
+    let val = v, min = lim.min, max = lim.max, step = pd.step ?? 1, unit = pd.unit || '';
+    if (pd.type === 'len') { val = u.toInput(v); min = u.toInput(lim.min); max = u.toInput(lim.max); step = u.imperial ? 0.0625 : (pd.step ?? 10); unit = u.lenUnit; }
+    if (pd.type === 'kg') { val = u.massToInput(v); min = u.massToInput(lim.min); max = u.massToInput(lim.max); step = u.imperial ? 5 : (pd.step ?? 5); unit = u.massUnit; }
+    const range = pd.type === 'len' ? `${u.len(lim.min)}–${u.len(lim.max)}` : pd.type === 'kg' ? `${u.mass(lim.min)}–${u.mass(lim.max)}` : `${min}–${max}`;
+    return `<label class="field" for="${id}"><span>${esc(pd.label)}</span><span class="inp"><input type="number" inputmode="decimal" id="${id}" data-param="${pd.id}" value="${val}" min="${min}" max="${max}" step="${step}"><i>${esc(unit)}</i></span><small>${esc(range)}${pd.hint ? ' · ' + esc(pd.hint) : ''}</small></label>`;
+  }
+  function renderForm() {
+    const u = makeUnits(system);
+    const groups = [...new Set((plan.params || []).map(p => p.group || 'Size'))];
+    form.innerHTML = groups.map(g => `<fieldset><legend>${esc(g)}</legend>${plan.params.filter(p => (p.group || 'Size') === g).map(p => fieldHtml(p, u)).join('')}</fieldset>`).join('');
+    document.querySelectorAll('[data-units]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.units === system)));
+  }
+  function readForm() {
+    const u = makeUnits(system), out = {};
+    for (const el of form.querySelectorAll('[data-param]')) {
+      const pd = plan.params.find(p => p.id === el.dataset.param);
+      if (pd.type === 'choice') out[pd.id] = el.value;
+      else if (pd.type === 'bool') out[pd.id] = el.checked;
+      else {
+        const n = parseFloat(el.value);
+        if (!Number.isFinite(n)) continue;
+        out[pd.id] = pd.type === 'len' ? u.fromInput(n) : pd.type === 'kg' ? u.massFromInput(n) : n;
+      }
+    }
+    return out;
+  }
+  // after a clamp, show the value actually used, without rebuilding the fields
+  function syncForm() {
+    const u = makeUnits(system);
+    for (const el of form.querySelectorAll('[data-param]')) {
+      if (el === document.activeElement) continue;
+      const pd = plan.params.find(p => p.id === el.dataset.param), v = d.p[pd.id];
+      if (pd.type === 'choice') el.value = v;
+      else if (pd.type === 'bool') el.checked = v;
+      else {
+        el.value = pd.type === 'len' ? u.toInput(v) : pd.type === 'kg' ? u.massToInput(v) : v;
+        if (typeof pd.min === 'function' || typeof pd.max === 'function') el.closest('.field').outerHTML = fieldHtml(pd, u);
+      }
+    }
+  }
+  function writeHash() {
+    const q = new URLSearchParams();
+    for (const pd of plan.params || []) {
+      const v = d.p[pd.id];
+      if (v === pd.value) continue;
+      q.set(pd.id, pd.type === 'bool' ? (v ? '1' : '0') : pd.type === 'len' || pd.type === 'kg' ? String(Math.round(v * 10) / 10) : String(v));
+    }
+    if (system !== (plan.units || 'metric')) q.set('units', system);
+    const h = q.toString();
+    history.replaceState(null, '', h ? '#' + h : location.pathname + location.search);
+  }
+
+  // ---------------------------------------------------------------- viewer
+  let viewer = null;
+  try {
+    const theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    viewer = createViewer($('#viewer'), {
+      theme,
+      onPick: info => {
+        const el = $('#pick');
+        if (!info) { el.hidden = true; return; }
+        el.hidden = false;
+        el.innerHTML = `<b>${esc(info.mark ? info.mark + ' · ' : '')}${esc(info.name)}</b> <span class="muted">${esc(info.id)}${info.spec ? ' · ' + esc(info.spec) : ''} · step ${info.step}</span>`;
+      },
+    });
+  } catch (e) {
+    $('#viewer').innerHTML = `<p class="muted pad">3D view unavailable (${esc(e.message)}). The drawings below show the same build.</p>`;
+  }
+  document.querySelectorAll('[data-cam]').forEach(b => b.addEventListener('click', () => viewer?.view(b.dataset.cam)));
+  const badge = $('#step-badge');
+  function showStep(n) {
+    viewer?.setStep(n, n);
+    badge.hidden = n == null;
+    if (n != null) $('#step-badge-text').textContent = `After step ${n}: ${d.model.steps.find(s => s.n === n)?.title || ''}`;
+  }
+  $('#step-badge-off').addEventListener('click', () => showStep(null));
+  $('#show-stress').addEventListener('change', e => {
+    if (!e.target.checked) return viewer?.setStress(null);
+    const map = {};
+    for (const r of d.loads) r.fm.els.forEach((el, i) => { const sf = el.sec.mat.yield / Math.max(r.stress[i], 1e-9); map[el.id] = Math.min(map[el.id] ?? Infinity, sf); });
+    viewer?.setStress(map);
+  });
+
+  // ---------------------------------------------------------------- render
+  function render() {
+    try {
+      d = derive(plan, given, system);
+    } catch (e) {
+      $('#notes').innerHTML = `<p class="warn">This size cannot be built: ${esc(e.message)}. Go back toward the defaults.</p>`;
+      return;
+    }
+    const u = d.units;
+    $('#notes').innerHTML = d.notes.length ? `<p class="warn">${esc(d.notes.join('. '))}.</p>` : '';
+    $('#built-for').textContent = paramsSummary(d);
+    $('#facts').innerHTML = factsHtml(d);
+    $('#status').className = 'status ' + (d.ok ? 'ok' : 'bad');
+    $('#status').textContent = d.ok ? `✓ All ${d.checks.length} checks pass` : `✗ ${d.checks.filter(c => !c.pass).length} check(s) failing`;
+    $('#checks-body').innerHTML = checksHtml(d);
+    $('#bom-body').innerHTML = bomHtml(d);
+    $('#drawings-body').innerHTML = drawingsHtml(d);
+    $('#legend-body').innerHTML = legendHtml(d);
+    $('#order-body').innerHTML = orderHtml(d);
+    $('#steps-body').innerHTML = d.model.steps.map(st => stepHtml(d, st, { interactive: true, checked: ticks })).join('');
+    $('#cutlist-body').innerHTML = cutListHtml(d);
+    document.querySelectorAll('.unit-len').forEach(el => (el.textContent = u.lenUnit));
+    viewer?.setModel(d);
+    if ($('#show-stress').checked) $('#show-stress').dispatchEvent(new Event('change'));
+    writeHash();
+    document.dispatchEvent(new CustomEvent('blueprint:render', { detail: { ok: d.ok } }));
+  }
+  let timer = null;
+  form.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { given = readForm(); render(); }, 180); });
+  form.addEventListener('change', () => { clearTimeout(timer); given = readForm(); render(); syncForm(); });
+  $('#reset').addEventListener('click', () => { given = {}; d = null; render(); renderForm(); });
+  $('#copy-link').addEventListener('click', async e => {
+    try { await navigator.clipboard.writeText(location.href); e.target.textContent = 'Link copied'; } catch { e.target.textContent = 'Copy the address bar'; }
+    setTimeout(() => (e.target.textContent = 'Copy link'), 1600);
+  });
+  document.querySelectorAll('[data-units]').forEach(b => b.addEventListener('click', () => {
+    system = b.dataset.units; store.set(key + ':units', system); render(); renderForm();
+  }));
+  $('#print').addEventListener('click', () => window.print());
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-show-step]');
+    if (!b) return;
+    showStep(+b.dataset.showStep);
+    $('#model').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
+  document.addEventListener('change', e => {
+    const c = e.target.closest('[data-check]');
+    if (!c) return;
+    ticks[c.dataset.check] = c.checked; store.set(key + ':ticks', ticks);
+  });
+
+  render();
+  renderForm();
+  window.__blueprint = { get d() { return d; }, render, setParams(p) { given = { ...given, ...p }; render(); renderForm(); }, setUnits(s) { system = s; render(); renderForm(); } };
+}
+
+return { mountPlan };
+})();
+const __plan = (() => {
+// Welded steel workbench: four square-tube legs that run to the top, a top
+// frame and a lower frame of square tube butted onto the leg faces, cross
+// rails under the top every 600 mm or less, a plywood or steel top, an
+// optional plywood lower shelf, and levelling feet on welded foot plates.
+// Benches longer than 1800 get a middle leg front and back.
+// Datum: x from the left end of the top, y from the front edge, z up from the floor.
+
+const plan = {
+  id: 'metal-workbench',
+  name: 'Welded steel workbench',
+  short: 'Workbench',
+  version: '1',
+  summary: 'Four square-tube legs, a welded top frame and lower frame, a plywood or steel top and an optional lower shelf. Straight square cuts only: every rail butts onto a leg face.',
+  units: 'metric',
+  currency: '$',
+  params: [
+    { id: 'length', label: 'Length', type: 'len', value: 1500, min: 900, max: 2400, group: 'Size', hint: 'top, end to end; a middle leg above 1800' },
+    { id: 'depth', label: 'Depth', type: 'len', value: 700, min: 500, max: 900, group: 'Size', hint: 'top, front to back' },
+    { id: 'height', label: 'Work height', type: 'len', value: 900, min: 750, max: 1050, group: 'Size', hint: 'floor to top surface, feet mid-travel' },
+    { id: 'load', label: 'Rated load', type: 'kg', value: 300, min: 100, max: 500, group: 'Load', hint: 'spread over the top' },
+    { id: 'top', label: 'Top', type: 'choice', value: 'ply', group: 'Options', options: [
+      { value: 'ply', label: 'Plywood, screwed' },
+      { value: 'steel', label: 'Steel plate, welded' },
+    ] },
+    { id: 'shelf', label: 'Lower shelf', type: 'bool', value: true, group: 'Options' },
+  ],
+
+  build(p, { u, squareTube }) {
+    const SHS = squareTube(40, 2, { id: 'SHS40x2', label: '40 × 40 × 2 square tube', short: 'SHS 40×40×2', stockLen: 6000, price: 4 });
+
+    const L = p.length, D = p.depth, H = p.height;
+    const steelTop = p.top === 'steel';
+    const tt = steelTop ? 5 : 18;          // top thickness
+    const shelfT = 18;                      // lower shelf plywood
+    const h = 20;                           // half the tube size
+    const lev = 30;                         // levelling foot height, mid-travel
+    const footT = 6, footS = 40;            // foot plate
+    const z0 = lev + footT;                 // bottom of the legs
+    const zTop = H - tt - h;                // top frame centre line
+    const zLow = 200;                       // lower frame centre line
+    const x0 = h, x1 = L - h, y0 = h, y1 = D - h;
+    const mid = L > 1800;
+    const xm = L / 2;
+    // cross rails under the top: bays no wider than 600, an even count when there is a middle leg
+    let bays = Math.ceil((x1 - x0) / 600);
+    if (mid && bays % 2) bays += 1;
+    const crossX = Array.from({ length: bays - 1 }, (_, i) => x0 + ((x1 - x0) * (i + 1)) / bays);
+    const bay = (x1 - x0) / bays;
+
+    const nodes = {};
+    const legs = { FL: [x0, y0], FR: [x1, y0], BL: [x0, y1], BR: [x1, y1] };
+    if (mid) Object.assign(legs, { FM: [xm, y0], BM: [xm, y1] });
+    for (const [k, [x, y]] of Object.entries(legs)) {
+      nodes[k + '0'] = [x, y, z0];
+      nodes[k + '1'] = [x, y, zLow];
+      nodes[k + '2'] = [x, y, zTop];
+    }
+    // cross-rail nodes on the front and back top rails (the middle one is the middle legs when there are any)
+    const crossIds = [];
+    crossX.forEach((x, i) => {
+      if (mid && Math.abs(x - xm) < 1e-6) { crossIds.push(['FM2', 'BM2']); return; }
+      nodes[`F${i + 1}T`] = [x, y0, zTop];
+      nodes[`B${i + 1}T`] = [x, y1, zTop];
+      crossIds.push([`F${i + 1}T`, `B${i + 1}T`]);
+    });
+    // shelf supports on the lower frame: same x as the top cross rails
+    const lowIds = [];
+    if (p.shelf) crossX.forEach((x, i) => {
+      if (mid && Math.abs(x - xm) < 1e-6) { lowIds.push(['FM1', 'BM1']); return; }
+      nodes[`F${i + 1}L`] = [x, y0, zLow];
+      nodes[`B${i + 1}L`] = [x, y1, zLow];
+      lowIds.push([`F${i + 1}L`, `B${i + 1}L`]);
+    });
+
+    const members = [];
+    for (const k of Object.keys(legs)) members.push({ id: `leg-${k}`, name: 'Leg', sec: 'SHS', prio: 1, step: 2, pts: [k + '0', k + '1', k + '2'] });
+    // end frames: end rails top and bottom
+    for (const s of ['L', 'R']) {
+      members.push({ id: `end-${s}-top`, name: 'Short rail', sec: 'SHS', step: 2, pts: [`F${s}2`, `B${s}2`] });
+      members.push({ id: `end-${s}-low`, name: 'Short rail', sec: 'SHS', step: 2, pts: [`F${s}1`, `B${s}1`] });
+    }
+    // long rails, split at the middle legs when there are any; interior nodes where cross rails land
+    const xOf = id => nodes[id][0];
+    const longRail = (side, lvl, ids, name) => {
+      const a = `${side}L${lvl}`, b = `${side}R${lvl}`;
+      const inner = ids.filter(id => id !== `${side}M${lvl}`).sort((m, n) => xOf(m) - xOf(n));
+      if (!mid) return [{ pts: [a, ...inner, b] }];
+      return [
+        { pts: [a, ...inner.filter(id => xOf(id) < xm), `${side}M${lvl}`], half: 'left' },
+        { pts: [`${side}M${lvl}`, ...inner.filter(id => xOf(id) > xm), b], half: 'right' },
+      ];
+    };
+    const topF = crossIds.map(c => c[0]), topB = crossIds.map(c => c[1]);
+    const lowF = lowIds.map(c => c[0]), lowB = lowIds.map(c => c[1]);
+    const segs = [
+      ['F', 2, topF, 'Long rail'], ['B', 2, topB, 'Long rail'],
+      ['F', 1, lowF, 'Long rail'], ['B', 1, lowB, 'Long rail'],
+    ];
+    for (const [side, lvl, ids, name] of segs) {
+      longRail(side, lvl, ids, name).forEach(s => members.push({
+        id: `long-${side}-${lvl === 2 ? 'top' : 'low'}${s.half ? '-' + s.half : ''}`, name, sec: 'SHS', step: 3, pts: s.pts,
+      }));
+    }
+    crossIds.forEach(([f, b], i) => members.push({ id: `cross-top-${i + 1}`, name: 'Short rail', sec: 'SHS', step: 4, pts: [f, b] }));
+    lowIds.forEach(([f, b], i) => members.push({ id: `cross-low-${i + 1}`, name: 'Short rail', sec: 'SHS', step: 4, pts: [f, b] }));
+    const topRails = members.filter(m => m.id.startsWith('end-') && m.id.endsWith('-top') || m.id.startsWith('long-') && m.id.includes('-top') || m.id.startsWith('cross-top')).map(m => m.id);
+    const lowRails = members.filter(m => m.id.includes('-low')).map(m => m.id);
+
+    const nLegs = Object.keys(legs).length;
+    const plates = [];
+    for (const [k, [x, y]] of Object.entries(legs)) plates.push({
+      id: `foot-${k}`, name: 'Foot plate', c: [x, y, lev + footT / 2], s: [footS, footS, footT], step: 6,
+      holes: [{ at: [footS / 2, footS / 2], d: 13 }], price: 0.6,
+      note: 'Weld an M12 nut over the hole on the top face first, then weld the plate centred under the leg, all round.',
+    });
+    const topArea = (L * D) / 1e6;
+    plates.push(steelTop
+      ? { id: 'top', name: 'Top, steel plate', material: 'steel', materialLabel: 'steel plate', c: [L / 2, D / 2, H - tt / 2], s: [L, D, tt], step: 5, drawing: false, price: topArea * 45, note: 'Buy cut to size; stitch-welded to the top frame.' }
+      : { id: 'top', name: 'Top, plywood', material: 'plywood', materialLabel: 'plywood', c: [L / 2, D / 2, H - tt / 2], s: [L, D, tt], step: 8, drawing: false, price: topArea * 18 });
+    if (p.shelf) plates.push({
+      id: 'shelf', name: 'Lower shelf', material: 'plywood', materialLabel: 'plywood', notch: true,
+      c: [L / 2, D / 2, zLow + h + shelfT / 2], s: [L, D, shelfT], step: 8, price: topArea * 18,
+    });
+
+    const plyScrews = (steelTop ? 0 : 2 * (bays + 1) + 2 * (bays - 1)) + (p.shelf ? 2 * (bays + 1) + 2 * (bays - 1) : 0);
+    const hardware = [
+      { id: 'nut', name: 'Hex nut, M12', spec: 'plain steel, welded to the foot plate', qty: nLegs, step: 6, kg: 0.02, price: 0.15 },
+      { id: 'leveller', name: 'Levelling foot, M12, bolt-down base', spec: `40 mm base with an anchor hole, M12 stud at least ${u.len(60, { u: true })}, 500 kg rating`, qty: nLegs, step: 8, kg: 0.25, price: 4,
+        shape: Object.values(legs).map(([x, y]) => ({ type: 'cyl', a: [x, y, 0], b: [x, y, lev], r: 20 })) },
+    ];
+    hardware.push({ id: 'anchor', name: 'Floor anchor, M8', spec: 'sleeve or wedge anchor, to suit the levelling foot base hole', qty: nLegs, step: 8, kg: 0.05, price: 1.2 });
+    if (plyScrews) hardware.push({ id: 'screws', name: 'Self-drilling screws, countersunk', spec: '5.5 × 45 mm, for steel up to 3 mm', qty: plyScrews, step: 8, price: 0.12 });
+
+    const legSpan = mid ? xm - x0 : x1 - x0;
+    const shelfClear = zTop - h - (zLow + h + shelfT);
+    const steps = [];
+    steps.push({ n: 1, phase: 'Fabricate', title: 'Cut, deburr, foot plates', hours: 3, tasks: [
+      'Safety glasses, gloves and hearing protection from here on. Use bare or oiled tube, never galvanised.',
+      'Cut every piece from the cutting plan, square ends; check each cut with a square.',
+      'Deburr every end and write its piece mark on it in marker.',
+      `Lay the pieces out by mark and count them against the cut list: ${nLegs} legs ({mark:leg-FL}), ${members.length - nLegs} rails.`,
+      `Cut ${nLegs} foot plates ${u.len(footS)} × ${u.len(footS)} from ${u.len(footT, { u: true })} plate and drill a ${u.len(13, { u: true })} hole in the centre of each.`,
+    ], check: `Every piece within ${u.tol(1)} of its long point on the cut list.` });
+    steps.push({ n: 2, phase: 'Fabricate', title: 'Two end frames (tack)', hours: 2, views: ['side'], tasks: [
+      'Lay two legs ({mark:leg-FL}) flat on the welding table, parallel, outer faces against a straight edge.',
+      `Fit a short rail ({mark:end-L-top}) between them at the top, its top face flush with the leg tops, and a second one lower down with its centre line ${u.len(zLow - z0)} up from the leg bottoms.`,
+      `Set the outside width to ${u.len(D)} at the top and the bottom, clamp each joint square, tack each joint on two faces.`,
+      'Build the second end frame on top of the first so the two match.',
+    ], check: `Diagonals of each frame equal within ${u.len(2, { u: true })}; both frames the same within ${u.tol(1)}; flat on the table at all four corners.` });
+    steps.push({ n: 3, phase: 'Fabricate', title: mid ? 'Join the end frames, middle legs (tack)' : 'Join the end frames (tack)', hours: mid ? 3 : 2, tasks: [
+      'Stand both end frames up on the table, top ends up, and brace each with a clamp to a square.',
+      mid
+        ? `Stand the two middle legs ({mark:leg-FM}) with their centre lines ${u.len(xm)} from the left end, front and back, and clamp each long rail ({mark:long-F-top-left}) between an end frame and a middle leg.`
+        : `Clamp the long rails ({mark:long-F-top}) between the end frames: top rails flush with the leg tops, lower rails at the same height as the lower end rails.`,
+      `Set the outside length to ${u.len(L)} on the top and the bottom rails.`,
+      'Tack the top long rails first, then the lower ones, one tack per joint.',
+      'Measure the top diagonals, nudge the frame until they are equal, then tack every joint on two faces.',
+    ], check: `Top diagonals equal within ${u.len(3, { u: true })}; every leg plumb within ${u.tol(1)} over its height; the frame sits on all ${nLegs} legs without rocking.`,
+      tip: 'Tack only: the frame is welded out in step 5, once every rail is in.' });
+    steps.push({ n: 4, phase: 'Fabricate', title: p.shelf ? 'Cross rails and shelf rails (tack)' : 'Cross rails (tack)', hours: 1, tasks: [
+      `Mark the cross rail positions on the top long rails, front and back: ${crossX.map(x => u.len(x)).join(', ')} from the left end to the centre line of each cross rail.`,
+      'Fit a short rail ({mark:end-L-top}) as a cross rail at each mark, between the top long rails, top face flush with them, square to the front rail, and tack both ends.',
+      ...(p.shelf ? [`Mark the same positions on the lower long rails and tack a short rail at each as a shelf rail, flush with the top of the lower rails.`] : []),
+    ], check: `Cross rails flush with the top within ${u.tol(1)} (lay a straight edge across), and ${u.len(bay)} apart centre to centre within ${u.tol(2)}.` });
+    steps.push({ n: 5, phase: 'Fabricate', title: steelTop ? 'Weld out and fit the steel top' : 'Weld out', hours: steelTop ? 4 : 3, tasks: [
+      'Re-check the top diagonals and the leg plumb before any weld; fix them while it is only tacked.',
+      'Weld every joint all round in short runs, alternating diagonally opposite corners so the heat does not pull the frame out of square.',
+      'Weld the top frame joints first, then the lower frame, then the cross rails. Leave it clamped until cold.',
+      'Grind the welds on the top faces of the top frame flush, so the top sits flat.',
+      ...(steelTop ? [
+        `Two people: lift the ${u.mass(L * D * tt * 7.85e-6)} top plate onto the frame, edges flush with the frame outside on all four sides.`,
+        `Clamp it down and stitch-weld it to the frame from underneath: ${u.len(30)} long welds every ${u.len(300)}, alternating ends.`,
+      ] : []),
+    ], check: `Top diagonals still equal within ${u.len(3, { u: true })}; a straight edge across the top shows no gap over ${u.tol(1)}.`,
+      tip: 'Ventilate: weld fumes from mill scale and paint are toxic.' });
+    steps.push({ n: 6, phase: 'Fabricate', title: 'Foot plates', hours: 1, tasks: [
+      `Weld an M12 nut on the top face of each foot plate, centred over the ${u.len(13, { u: true })} hole: thread a bolt through both to hold it straight while you weld.`,
+      `Lay the bench on its back (two people). Centre a foot plate on the bottom of each leg, nut inside the tube, and weld it all round.`,
+      'Chase each nut with an M12 tap or run a bolt in and out to clear spatter.',
+    ], check: 'A bolt screws into every nut by hand, straight.' });
+    steps.push({ n: 7, phase: 'Finish', title: 'Clean and paint', hours: 2, tasks: [
+      'Degrease, wire-brush the welds, and sand any mill scale on show.',
+      ...(steelTop ? ['Mask the top surface of the steel plate if you want a bare working surface.'] : []),
+      'Prime and paint with two coats of enamel; let it dry overnight.',
+    ], check: 'No bare steel left except where masked; paint dry to the touch.' });
+    steps.push({ n: 8, phase: 'Assemble', title: 'Feet, top and load test', hours: 2, tasks: [
+      `Screw a levelling foot into each leg and set each to ${u.len(lev)} under the foot plate.`,
+      ...(steelTop ? [] : [
+        `Cut the top ${u.len(L)} × ${u.len(D)} from ${u.len(18, { u: true })} plywood, lay it on the frame flush all round.`,
+        `Screw it down into the top frame and cross rails with countersunk self-drilling screws: two per cross rail and per end rail, and two per bay on the front and back rails (${2 * (bays + 1) + 2 * (bays - 1)} screws).`,
+      ]),
+      ...(p.shelf ? [
+        `Cut the shelf ${u.len(L)} × ${u.len(D)} from ${u.len(shelfT, { u: true })} plywood and cut the notches for the legs as its drawing (step 8) shows.`,
+        `Drop it onto the lower frame and screw it down the same way (${2 * (bays + 1) + 2 * (bays - 1)} screws).`,
+      ] : []),
+      'Stand it in place and level it with the feet: a level on the top, front to back and end to end. Lock each foot with its nut.',
+      `Mark the anchor hole of every foot base on the floor, move the bench, drill for the M8 anchors, set them, and bolt every foot down (${nLegs} anchors).`,
+      `Load it gradually, in steps of about a quarter, up to ${u.mass(p.load)} spread over the top, and leave it an hour.`,
+    ], check: `Level within ${u.tol(1)} over the length; does not move or lift when pushed hard at the top edge; no visible sag or cracked weld after the load test.` });
+
+    return {
+      sections: { SHS },
+      axes: { x: ['right', 'left'], y: ['back', 'front'], z: ['top', 'bottom'] },
+      datum: 'x from the left end of the top, y from the front edge, z up from the floor',
+      nodes, members, plates, hardware,
+      consumables: [
+        { name: 'MIG wire, 0.8 mm', qty: '1 kg spool' },
+        { name: 'Shielding gas, Ar/CO2', qty: 'one small cylinder' },
+        { name: 'Cut-off discs, 1 mm', qty: '5' },
+        { name: 'Flap discs, 80 grit', qty: '3' },
+        { name: 'Primer and enamel', qty: '1 L each' },
+        { name: 'Degreaser and rags', qty: '' },
+      ],
+      tools: ['MIG welder', 'Hammer drill and masonry bit for the anchors', 'Chop saw or angle grinder with cut-off discs', 'Angle grinder with flap disc', 'Welding table or flat floor', 'Square, tape, scriber, spirit level', 'Six or more clamps', 'Drill, 13 mm bit, M12 tap', ...(p.top === 'ply' || p.shelf ? ['Circular saw or jigsaw for the plywood', 'Impact driver'] : [])],
+      tip: { N: 300, height: H, sf: 1.5, anchored: 'step 8, an M8 floor anchor through the base of every levelling foot' },
+      supports: Object.keys(legs).map(k => ({ at: nodes[k + '0'], fix: 'pin' })),
+      loads: [
+        { id: 'spread', name: 'Rated load on the top', kg: p.load, what: 'spread over the top frame', on: topRails, sf: 2, defl: legSpan / 300 },
+        { id: 'corner', name: 'Point load at a front corner', kg: 150, what: 'on one front corner', at: [[x0, y0, zTop]], sf: 2 },
+        { id: 'shove', name: 'Shoved sideways at the top', N: 400, what: 'pushing the top end-on', dir: [1, 0, 0], on: [members.find(m => m.id.startsWith('long-F-top')).id], sf: 2 },
+        { id: 'shove-y', name: 'Shoved front to back at the top', N: 400, what: 'pushing the top front edge', dir: [0, 1, 0], on: ['end-L-top', 'end-R-top'], sf: 2 },
+        ...(p.shelf ? [{ id: 'shelf', name: 'Loaded lower shelf', kg: 100, what: 'spread over the shelf', on: lowRails, sf: 2, defl: legSpan / 250 }] : []),
+      ],
+      checks: [
+        { name: 'Top supported often enough', pass: bay <= 600, value: `${u.len(bay, { u: true })} between cross rails`, why: `Plywood and plate stay flat with supports no more than ${u.len(600, { u: true })} apart.` },
+        { name: 'Work height', pass: H >= 750 && H <= 1050, value: u.len(H, { u: true }), why: 'Standing work: about wrist height for a vise, elbow height for fine work.' },
+        ...(p.shelf ? [{ name: 'Room above the shelf', pass: shelfClear >= 300, value: `${u.len(shelfClear, { u: true })} clear`, why: `At least ${u.len(300, { u: true })} between the shelf and the top frame for boxes and cases.` }] : []),
+      ],
+      steps,
+      facts: [['Work height', u.len(H, { u: true }), 'top surface, feet mid-travel'], ['Top', `${u.len(tt, { u: true })} ${steelTop ? 'steel plate' : 'plywood'}`, '']],
+      orderNote: 'Cut everything, tack the end frames, join them, weld out, then feet, paint and top.',
+    };
+  },
+};
+
+return plan;
+})();
+__app.mountPlan(__plan);
+
+</script>
+</body>
+</html>

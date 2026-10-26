@@ -117,7 +117,7 @@ export function makeUnits(system = 'metric') {
     deflection: mm => (imp ? `${(mm / INCH).toFixed(3)}"` : `${mm.toFixed(1)} mm`),
     num: group3,
     // input fields
-    toInput: mm => (imp ? +(mm / INCH).toFixed(3) : Math.round(mm)),
+    toInput: mm => (imp ? Math.round((mm / INCH) * 16) / 16 : Math.round(mm)),
     fromInput: v => (imp ? v * INCH : v),
     inputStep: mm => (imp ? 0.0625 : mm),
     massToInput: kg => (imp ? Math.round(kg * 2.2046) : kg),

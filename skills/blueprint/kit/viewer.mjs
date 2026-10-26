@@ -145,7 +145,25 @@ export function createViewer(el, { onPick, theme = 'light' } = {}) {
         add(cylGeo(j.A.map((v, i) => v + j.axis[i] * tA), j.A.map((v, i) => v + j.axis[i] * tB), j.hu), info, m.tone || 'hi');
       } else add(hexGeo(memberCorners(j)), info, m.tone || 'hi');
     }
-    for (const pl of md.plates) add(boxGeo(pl.c, pl.s), { id: pl.id, name: pl.name, step: pl.step, kind: 'plate', mark: pl.mark, spec: pl.spec }, pl.tone || (pl.material === 'steel' || !pl.material ? 'mid' : 'faint'));
+    for (const pl of md.plates) {
+      const info = { id: pl.id, name: pl.name, step: pl.step, kind: 'plate', mark: pl.mark, spec: pl.spec };
+      const tone = pl.tone || (pl.material === 'steel' || !pl.material ? 'mid' : 'faint');
+      if (!pl.notches?.length) { add(boxGeo(pl.c, pl.s), info, tone); continue; }
+      // notched: the kept cells of the outline as boxes (coplanar, so no seams are inked)
+      const [a0, a1] = pl.axes, W = pl.s[a0], H = pl.s[a1];
+      const xs = [...new Set([0, W, ...pl.notches.flatMap(n => [n[0], n[2]])])].sort((a, b) => a - b);
+      const ys = [...new Set([0, H, ...pl.notches.flatMap(n => [n[1], n[3]])])].sort((a, b) => a - b);
+      const geos = [];
+      for (let i = 0; i < xs.length - 1; i++) for (let j = 0; j < ys.length - 1; j++) {
+        const mx = (xs[i] + xs[i + 1]) / 2, my = (ys[j] + ys[j + 1]) / 2;
+        if (pl.notches.some(n => mx > n[0] && mx < n[2] && my > n[1] && my < n[3])) continue;
+        const c = pl.c.slice(), sz = pl.s.slice();
+        c[a0] = pl.c[a0] - W / 2 + mx; sz[a0] = xs[i + 1] - xs[i];
+        c[a1] = pl.c[a1] - H / 2 + my; sz[a1] = ys[j + 1] - ys[j];
+        geos.push(boxGeo(c, sz));
+      }
+      for (const g of geos) add(g, info, tone);
+    }
     for (const h of md.hardware) for (const sh of [].concat(h.shape || [])) {
       const info = { id: h.id, name: h.name, step: h.step, kind: 'hardware', spec: h.spec };
       add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');

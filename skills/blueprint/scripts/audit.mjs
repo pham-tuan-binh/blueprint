@@ -56,6 +56,15 @@ if (numeric.length > 1) {
   cases.push({ name: 'all min', given: Object.fromEntries(numeric.map(p => [p.id, -1e9])) });
   cases.push({ name: 'all max', given: Object.fromEntries(numeric.map(p => [p.id, 1e9])) });
 }
+// sweeps: each numeric param in 12 steps across its range with every other param at
+// its max, then at its min, so a threshold in the design (a middle leg above some
+// length) is met at its worst neighbours, not only by luck in the random samples
+for (const pd of numeric) for (const corner of ['max', 'min']) for (let i = 0; i <= 11; i++) {
+  const g = Object.fromEntries(numeric.filter(q => q !== pd).map(q => [q.id, corner === 'max' ? 1e9 : -1e9]));
+  const lim = resolveParams(params, g).limits[pd.id];
+  g[pd.id] = lim.min + ((lim.max - lim.min) * i) / 11;
+  cases.push({ name: `sweep ${pd.id} ${i}/11, rest ${corner}`, given: g, sweep: true });
+}
 let seed = 7;
 const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const N = +opt('samples', 40);
@@ -74,7 +83,7 @@ const prints = {};
 const metricNum = /(^|[^\w.])\d+(\.\d+)?\s?(mm|cm|m)\b/;
 let worst = {};
 for (const c of cases) {
-  for (const system of ['metric', 'imperial']) {
+  for (const system of c.sweep ? ['metric'] : ['metric', 'imperial']) {
     let d;
     const where = `${c.name} [${system}]`;
     try { d = derive(plan, c.given, system); } catch (e) { fail(where, `derive threw: ${e.message}`); continue; }
@@ -101,6 +110,12 @@ for (const c of cases) {
       if (!md.loads?.length) fail('model', 'no load case: say what it must hold and prove it');
       if (!md.supports?.length) fail('model', 'no supports: say where it stands');
       if (!md.tools?.length) fail('model', 'no tools list');
+      if (md.tip?.anchored) {
+        const n = +(/step (\d+)/.exec(md.tip.anchored) || [])[1];
+        const fixings = md.hardware.filter(h => h.step === n && /anchor|bolt|screw|lag|fixing/i.test(h.name + ' ' + (h.spec || '')));
+        if (!n || !md.steps.some(s => s.n === n)) fail('tip', 'anchored must name the step that fixes it down: "step 6, four M8 anchors"');
+        else if (!fixings.length) fail('tip', `anchored in step ${n}, but no anchor, bolt or screw is fitted in step ${n}`);
+      }
       const nsteps = md.steps.map(s => s.n);
       nsteps.forEach((n, i) => { if (n !== i + 1) fail('steps', `numbered ${nsteps.join(',')}: number them 1, 2, 3…`); });
       for (const m of md.members) if (!m.name) fail(`member ${m.id}`, 'has no name');
@@ -116,7 +131,7 @@ for (const pd of params) {
   } else if (prints[`${pd.id}=min`] && prints[`${pd.id}=min`] === prints[`${pd.id}=max`]) fail(`param ${pd.id}`, 'min and max give the same plan: the field does nothing');
 }
 
-const runs = cases.length * 2;
+const runs = cases.reduce((n, c) => n + (c.sweep ? 1 : 2), 0);
 if (verbose || problems.length) {
   for (const [k, w] of Object.entries(worst)) console.log(`  tightest ${k}: ${w.v} at ${w.at}`);
 }
@@ -127,6 +142,6 @@ if (problems.length) {
   console.log(`\naudit FAILED: ${uniq.length} problem(s) across ${runs} runs`);
   process.exit(1);
 }
-console.log(`${runs} runs (${cases.length} sizes × metric, imperial), every check passing`);
+console.log(`${runs} runs over ${cases.length} sizes (sweeps, extremes and random, metric and imperial), every check passing`);
 for (const [k, w] of Object.entries(worst)) console.log(`  tightest ${k}: ${w.v} at ${w.at}`);
 console.log('audit passed');
