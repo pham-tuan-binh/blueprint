@@ -109,7 +109,9 @@ const vol = sh => {
 export function printEstimate(part) {
   const f = FILAMENTS[part.material || 'PETG'];
   if (!f) throw new Error(`print ${part.id}: unknown filament "${part.material}" (${Object.keys(FILAMENTS).join(', ')})`);
-  const solid = Math.max(0, part.shapes.reduce((s, sh) => s + vol(sh), 0) - (part.cuts || []).reduce((s, c) => s + vol(c), 0)) * (part.overlap ?? 0.85);
+  // cuts can overlap each other or cut air, so never let them take more than 70% away
+  const whole = part.shapes.reduce((s, sh) => s + vol(sh), 0);
+  const solid = Math.max(0.3 * whole, whole - (part.cuts || []).reduce((s, c) => s + vol(c), 0)) * (part.overlap ?? 0.85);
   const [lo, hi] = printBox(part);
   const size = Math.min(...[0, 1, 2].map(i => hi[i] - lo[i]));
   const shell = Math.min(1, ((part.walls ?? 3) * 0.45 * 2) / Math.max(size, 1) + 0.15);

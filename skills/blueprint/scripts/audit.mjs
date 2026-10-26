@@ -65,6 +65,16 @@ for (const pd of numeric) for (const corner of ['max', 'min']) for (let i = 0; i
   g[pd.id] = lim.min + ((lim.max - lim.min) * i) / 11;
   cases.push({ name: `sweep ${pd.id} ${i}/11, rest ${corner}`, given: g, sweep: true });
 }
+// every option of every choice at the numeric corners: a choice that is only weak
+// together with a big size or a big load is met there
+const choices = params.filter(p => p.type === 'choice' || p.type === 'bool');
+for (const pd of choices) for (const v of pd.type === 'bool' ? [true, false] : pd.options.map(o => o.value)) for (const corner of ['max', 'min']) {
+  const g = Object.fromEntries(numeric.map(q => [q.id, corner === 'max' ? 1e9 : -1e9]));
+  // the other choices at their heaviest-looking option: the last listed
+  for (const o of choices) if (o !== pd) g[o.id] = o.type === 'bool' ? true : o.options[o.options.length - 1].value;
+  g[pd.id] = v;
+  cases.push({ name: `${pd.id}=${v}, rest ${corner}`, given: g, sweep: true });
+}
 let seed = 7;
 const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const N = +opt('samples', 40);
@@ -81,7 +91,8 @@ for (let i = 0; i < N; i++) {
 // what a person would see change: sizes, pieces, parts and their specs, sections, loads, and every check's result
 const fingerprint = d => JSON.stringify([d.bbox.map(b => b.map(Math.round)), d.pieces.map(g => [g.mark, g.qty, Math.round(g.pm.longPoint), g.sec.id]), d.model.plates.map(p => [p.s.map(Math.round), p.material]), d.model.hardware.map(h => [h.qty, h.spec, h.name]), d.loads.map(l => l.load.kg ?? l.load.N), d.checks.map(c => c.value), d.model.prints.map(p => p.material)]);
 const prints = {};
-const metricNum = /(^|[^\w.])\d+(\.\d+)?\s?(mm|cm|m)\b/;
+// a metric length in text; a wire gauge ("2.5 mm²") is a product name, not a length
+const metricNum = /(^|[^\w.])\d+(\.\d+)?\s?(mm|cm|m)\b(?![²2])/;
 let worst = {};
 for (const c of cases) {
   for (const system of c.sweep ? ['metric'] : ['metric', 'imperial']) {

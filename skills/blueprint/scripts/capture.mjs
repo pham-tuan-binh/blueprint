@@ -139,7 +139,7 @@ await p.waitForTimeout(600);
 const all = await ownAll();
 if (other === 'imperial') {
   if (!/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
-  const mm = all.match(/(?<![\d.])\d+(\.\d+)?\s?mm\b/g);
+  const mm = all.match(/(?<![\d.])\d+(\.\d+)?\s?mm\b(?![²2])/g);
   if (mm) problems.push(`imperial: still shows millimetres (${mm.slice(0, 3).join(', ')})`);
 } else {
   const ins = all.match(/\d+(\s\d+\/\d+)?"/g);

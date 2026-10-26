@@ -52,7 +52,7 @@ export const plan = {
 | `k.u` | units, for every number in text: `u.len(mm)` (a bare number for drawings and tables, whole mm), `u.len(mm, { u: true })` (with its unit, for sentences), `u.fine(mm, { u: true })` (to a tenth: a drill, a clearance, a wall), `u.size(mm)`, `u.mass(kg)`, `u.tol(mm)` (`±1 mm` / `±1/16"`), `u.force(N)` |
 | `k.squareTube(b, t, o)`, `k.rectTube(bu, bw, t, o)`, `k.roundTube(d, t, o)`, `k.flatBar(b, t, o)`, `k.bar(bu, bw, o)`, `k.timber(bu, bw, o)`, `k.rod(d, o)` (solid round), `k.pvcPipe(d, t, o)` | stock sections. `bu` is the width across the member (horizontal), `bw` its height (up for a level member). `o`: `{ id, label, short, stockLen, price (per metre) or pricePerFt, material }` |
 | `k.inch(v)`, `k.feet(v)` | imperial stock sizes in mm |
-| `k.MATERIALS` | steel, stainless, aluminium (welded strength), aluminium-bare (bolted), timber, pvc, copper, brass: pass `material:` in a section's `o` |
+| `k.MATERIALS` | steel, stainless, aluminium (welded strength), aluminium-bare (bolted), timber, pvc, copper (half hard), copper-annealed (house wire), brass: pass `material:` in a section's `o` |
 | `k.FILAMENTS` | PLA, PETG, ASA, ABS, TPU, PA for prints |
 | `k.v3` | small vector helpers |
 

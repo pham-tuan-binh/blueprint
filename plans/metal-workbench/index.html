@@ -191,6 +191,8 @@ const MATERIALS = {
   // PVC-U pipe: a long-term design stress, since PVC creeps under a steady load
   pvc: { name: 'PVC-U pipe', E: 3000, G: 1100, yield: 25, rho: 1.4e-6, join: 'glue' },
   copper: { name: 'Copper (half hard)', E: 117000, G: 44000, yield: 200, rho: 8.96e-6, join: 'solder' },
+  // house wire and other soft-drawn copper
+  'copper-annealed': { name: 'Copper (annealed, house wire)', E: 117000, G: 44000, yield: 70, rho: 8.96e-6, join: 'solder' },
   brass: { name: 'Brass CZ121', E: 100000, G: 37000, yield: 250, rho: 8.5e-6, join: 'solder' },
 };
 
@@ -444,7 +446,9 @@ const vol = sh => {
 function printEstimate(part) {
   const f = FILAMENTS[part.material || 'PETG'];
   if (!f) throw new Error(`print ${part.id}: unknown filament "${part.material}" (${Object.keys(FILAMENTS).join(', ')})`);
-  const solid = Math.max(0, part.shapes.reduce((s, sh) => s + vol(sh), 0) - (part.cuts || []).reduce((s, c) => s + vol(c), 0)) * (part.overlap ?? 0.85);
+  // cuts can overlap each other or cut air, so never let them take more than 70% away
+  const whole = part.shapes.reduce((s, sh) => s + vol(sh), 0);
+  const solid = Math.max(0.3 * whole, whole - (part.cuts || []).reduce((s, c) => s + vol(c), 0)) * (part.overlap ?? 0.85);
   const [lo, hi] = printBox(part);
   const size = Math.min(...[0, 1, 2].map(i => hi[i] - lo[i]));
   const shell = Math.min(1, ((part.walls ?? 3) * 0.45 * 2) / Math.max(size, 1) + 0.15);
@@ -2446,8 +2450,11 @@ function mountPlan(plan) {
   // moved so it sits on the bed at the origin; the .scad is its OpenSCAD source
   const save = (name, blob) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
   function stlOf(geo, part) {
-    const { lo, turn } = bedBox(part);
+    // seat the part on the bed by its real (cut) mesh, not its uncut solids
+    const { turn } = bedBox(part);
     const g = geo.index ? geo.toNonIndexed() : geo, pos = g.attributes.position, n = pos.count / 3;
+    const lo = [Infinity, Infinity, Infinity];
+    for (let i = 0; i < pos.count; i++) turn([pos.getX(i), pos.getY(i), pos.getZ(i)]).forEach((v, k) => { if (v < lo[k]) lo[k] = v; });
     const buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf);
     dv.setUint32(80, n, true);
     for (let t = 0; t < n; t++) {

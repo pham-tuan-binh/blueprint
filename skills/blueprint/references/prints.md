@@ -38,7 +38,7 @@ prints: [{
 - Everything is in the plan's coordinates (mm), so the print sits where it goes in the 3D view and the drawings.
 - `bed` is the face, in plan axes, that goes down on the printer bed: `'-z'` (as modelled, the default), `'+z'` (upside down), `'-x'`, `'+x'`, `'-y'`, `'+y'`. The STL and .scad come out turned that way and moved onto the bed at the origin, so the person never rotates it in the slicer. Say the same in `orient`.
 - `shapes` are unioned; `cuts`, and the bore of every `tube`, are taken out. Overlap solids by a millimetre where they join. A `tube`'s bore cuts through everything it overlaps, so where a bore must stop against a plate, use a `cyl` and a `hole` cut of the length you want instead.
-- Cuts can be `hole` (round, from a to b), `cyl` or `box` (a pocket or a slot) or `prism` (a shaped pocket).
+- Cuts can be `hole` (round, from a to b), `cyl` or `box` (a pocket or a slot) or `prism` (a shaped pocket). Run a cut 1 mm past any face it opens onto: a cut face lying exactly on a solid's face can leave a skin behind.
 - `prism` extrudes a 2D outline: `axis: 'z'` takes `pts` as [x, y]; `'x'` as [y, z]; `'y'` as [x, z].
 - `material`: PLA, PETG, ASA, ABS, TPU or PA. `infill` is 0 to 1. `orient` is the sentence the step prints after "print it".
 - A print touches what it holds, like a plate (the floating check sees it); `on: 'member-id'` names a holder it does not touch.

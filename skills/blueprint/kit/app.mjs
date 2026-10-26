@@ -178,8 +178,11 @@ export function mountPlan(plan) {
   // moved so it sits on the bed at the origin; the .scad is its OpenSCAD source
   const save = (name, blob) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
   function stlOf(geo, part) {
-    const { lo, turn } = bedBox(part);
+    // seat the part on the bed by its real (cut) mesh, not its uncut solids
+    const { turn } = bedBox(part);
     const g = geo.index ? geo.toNonIndexed() : geo, pos = g.attributes.position, n = pos.count / 3;
+    const lo = [Infinity, Infinity, Infinity];
+    for (let i = 0; i < pos.count; i++) turn([pos.getX(i), pos.getY(i), pos.getZ(i)]).forEach((v, k) => { if (v < lo[k]) lo[k] = v; });
     const buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf);
     dv.setUint32(80, n, true);
     for (let t = 0; t < n; t++) {

@@ -35,6 +35,8 @@ export const MATERIALS = {
   // PVC-U pipe: a long-term design stress, since PVC creeps under a steady load
   pvc: { name: 'PVC-U pipe', E: 3000, G: 1100, yield: 25, rho: 1.4e-6, join: 'glue' },
   copper: { name: 'Copper (half hard)', E: 117000, G: 44000, yield: 200, rho: 8.96e-6, join: 'solder' },
+  // house wire and other soft-drawn copper
+  'copper-annealed': { name: 'Copper (annealed, house wire)', E: 117000, G: 44000, yield: 70, rho: 8.96e-6, join: 'solder' },
   brass: { name: 'Brass CZ121', E: 100000, G: 37000, yield: 250, rho: 8.5e-6, join: 'solder' },
 };
 
