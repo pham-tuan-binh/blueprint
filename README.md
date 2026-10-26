@@ -47,10 +47,14 @@ node $B check plans/welding-cart/design.mjs         # build + audit + capture: "
 
 ## Examples
 
-- [`plans/metal-workbench/`](plans/metal-workbench/): an all-steel welded workbench with a bar top, generated with the skill
-- [`plans/v-dipole-137/`](plans/v-dipole-137/): a 137 MHz V-dipole antenna with a 3D-printed feed hub and an SMA jack on a PVC mast, generated with the skill
-- [`skills/blueprint/examples/shelf-rack/`](skills/blueprint/examples/shelf-rack/): a welded shelf rack, the skill's reference example
-- [`skills/blueprint/examples/pvc-drying-stand/`](skills/blueprint/examples/pvc-drying-stand/): a PVC pipe stand in solvent-weld fittings, started by a fresh agent from the quickstart
+In `skills/blueprint/examples/`, inside the skill so they install with it, and on the site:
+
+- [`metal-workbench`](skills/blueprint/examples/metal-workbench/): an all-steel welded workbench with a bar top
+- [`v-dipole-137`](skills/blueprint/examples/v-dipole-137/): a 137 MHz V-dipole antenna with a 3D-printed feed hub and an SMA jack on a PVC mast
+- [`shelf-rack`](skills/blueprint/examples/shelf-rack/): a welded shelf rack, the smallest complete plan
+- [`pvc-drying-stand`](skills/blueprint/examples/pvc-drying-stand/): a PVC pipe stand in solvent-weld fittings
+
+Plans other people share go in [`plans/`](plans/).
 
 ## Share your plan
 
@@ -70,7 +74,7 @@ A plan needs an `author: { github: 'your-handle', name: 'Your Name' }` line, a n
 
 ## The plans site
 
-Every plan in `plans/` is published to GitHub Pages by `.github/workflows/pages.yml`: it runs the solver test and every plan's audit, builds each plan (and each of the skill's examples) into its own page with `tools/site.mjs`, and puts them on a landing page that shows how to install and use the skill. To add a plan, add `plans/<id>/design.mjs` (made with the skill, passing its audit); nothing else changes. Build the site locally with `node tools/site.mjs` and open `_site/index.html` through a local server (`npx http-server _site`).
+The skill's examples and every shared plan in `plans/` are published to GitHub Pages by `.github/workflows/pages.yml`: it runs the solver test and every plan's audit, builds each into its own page (with its guide) with `tools/site.mjs`, and puts them on a landing page that shows how to install and use the skill. To add a plan, add `plans/<id>/design.mjs` (made with the skill, passing its audit, or through `blueprint-share`); nothing else changes. Build the site locally with `node tools/site.mjs` and open `_site/index.html` through a local server (`npx http-server _site`).
 
 One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions.
 
@@ -96,4 +100,7 @@ skills/blueprint-share/
 
 A plan is a pure function from its params to a model (nodes, members, plates, parts, loads, steps). The kit solves how every member end is cut and joined, groups identical pieces under one mark, nests the cuts into stock lengths, runs the load cases, and lays out the pack. Because every plan goes through the same kit and must pass the same audit, every plan comes out with the same sections, drawings and checks.
 
-Plans are a starting point, not an engineer's sign-off. Check your stock, wear eye and hand protection, and load-test gently before you trust a build.
+
+## License
+
+MIT, see [LICENSE](LICENSE).

@@ -6,6 +6,10 @@ import { memberCorners } from './joints.mjs';
 import { printSolids, printBox } from './print.mjs';
 import { hull2 } from './derive.mjs';
 
+// The colour code, like an IKEA or LEGO guide: one meaning each, everything else black
+// and white. Yellow: look here (new in this step, help). Green: a check to pass. Red: a warning.
+export const CODE = { yellow: '#ffd100', green: '#14934a', red: '#e1251b' };
+
 // ---------------------------------------------------------------- views
 // top: looking down, front at the bottom. front: from -y. side: from +x.
 // depth: larger is nearer the viewer, drawn later.
@@ -460,8 +464,8 @@ export const SHOP_CSS = `
 .pk{font:700 20px var(--mono);fill:var(--ink)}.pm{font:700 15px var(--mono);fill:var(--ink)}.pe{font:12px var(--mono);fill:var(--muted)}
 .pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
-.jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
-.jn.f{stroke:var(--now);stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
+.jn{fill:${CODE.yellow};stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
+.jn.f{stroke:${CODE.yellow};stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
 .ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}

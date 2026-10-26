@@ -31,7 +31,7 @@ const designsIn = dir => existsSync(dir) ? readdirSync(dir, { withFileTypes: tru
 const plans = designsIn(join(ROOT, 'plans'));
 const designs = [...plans, ...designsIn(join(SKILL, 'examples')).filter(x => !plans.some(p => p.id === x.id))]
   .sort((a, b) => a.id.localeCompare(b.id));
-if (!designs.length) { console.error('no plans/<id>/design.mjs found'); process.exit(1); }
+if (!designs.length) { console.error('no examples or plans/<id>/design.mjs found'); process.exit(1); }
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
@@ -53,6 +53,8 @@ for (const { id, file } of designs) {
 const REPO = 'https://github.com/pham-tuan-binh/blueprint';
 const GH_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
 const COPY_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1"/><path d="M10.5 3.5v-1h-8v8h1"/></svg>';
+const EXT_SMALL = '<svg class="ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5"/></svg>';
+const LAW_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v12M4 14h8M2.5 4.5h11M4.5 4.5L2 9.5a2.5 2.5 0 0 0 5 0zM11.5 4.5L9 9.5a2.5 2.5 0 0 0 5 0z"/></svg>';
 const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 11L11 5M6 5h5v5"/></svg>';
 
 // what the visitor copies: install, ask, open, share
@@ -68,11 +70,12 @@ const STEPS = [
 ];
 
 const GALLERY_CSS = `
-.gh{display:inline-flex;align-items:center;gap:8px;font:500 15px/1 var(--sans);color:var(--ink2);text-decoration:none}
-.gh svg{width:18px;height:18px;flex:none}.gh .ext{width:11px;height:11px;margin-left:3px}
-.gh span{display:inline-flex;align-items:center;padding-bottom:2px;border-bottom:1px solid var(--line)}
-.gh:hover,.gh:focus-visible{color:var(--ink)}.gh:hover span,.gh:focus-visible span{border-bottom-color:var(--ink)}
-.hero{max-width:66ch;margin:40px 0 28px}
+.gh{font:500 15px/1.5 var(--sans);color:var(--ink2);text-decoration:none;white-space:nowrap}
+.gh span{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:5px;text-decoration-thickness:1px}
+/* icons on the text line, centred on the capitals (cap height ~0.7em): vertical-align = cap/2 - height/2 */
+.gh svg{width:18px;height:18px;vertical-align:calc(.35em - 9px);margin-right:8px}.gh .ext{width:11px;height:11px;vertical-align:calc(.35em - 5.5px);margin:0 0 0 4px}
+.gh:hover,.gh:focus-visible{color:var(--ink)}.gh:hover span,.gh:focus-visible span{text-decoration-color:var(--ink)}
+.hero{max-width:66ch;margin:40px 0 28px}.links{display:flex;flex-wrap:wrap;gap:8px 24px;margin:0}
 .hero h1{margin:0 0 10px;font-size:48px;letter-spacing:-.02em}
 .hero .tag{font-size:20px;line-height:1.4;color:var(--ink);margin:0 0 20px}
 @media (max-width:600px){.hero{margin-top:16px}.hero h1{font-size:36px}.hero .tag{font-size:18px}}
@@ -124,7 +127,7 @@ const index = `<!doctype html>
   <div class="hero">
     <h1>Blueprint</h1>
     <p class="tag">An agent skill that generates build plans for your fabrication shop.</p>
-    <a class="gh" href="${REPO}">${GH_ICON}<span>pham-tuan-binh/blueprint on GitHub<svg class="ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
+    <p class="links"><a class="gh" href="${REPO}">${GH_ICON}<span>pham-tuan-binh/blueprint on GitHub</span>${EXT_SMALL}</a><a class="gh" href="${REPO}/blob/main/LICENSE">${LAW_ICON}<span>MIT license</span>${EXT_SMALL}</a></p>
   </div>
   <ol class="start">
 ${STEPS.map(st => `    <li><span class="n">${st.n}</span><div><h3>${esc(st.title)}</h3><p>${esc(st.note)}</p></div>
@@ -145,7 +148,6 @@ ${cards.map(c => `    <a class="card" href="${esc(c.id)}/">
     </a>`).join('\n')}
   </div>
 </main>
-<footer class="foot"><p><a href="${REPO}">Blueprint on GitHub</a> · MIT. Plans are a starting point, not an engineer's sign-off. Check your stock, wear eye and hand protection, and load-test gently before you trust a build.</p></footer>
 <script>${COPY_JS}</script>
 </body>
 </html>

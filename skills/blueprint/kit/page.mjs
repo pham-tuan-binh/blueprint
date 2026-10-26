@@ -14,10 +14,11 @@ export const PAGE_CSS = `
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
 a{color:inherit}code{font:.88em var(--mono);background:var(--th);padding:.05em .35em}.muted{color:var(--muted)}.pad{padding:16px}
 main{max-width:1000px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right)) 80px max(16px,env(safe-area-inset-left))}
-.back{display:inline-block;text-decoration:none;color:var(--muted);font-size:14px;margin:0 0 8px}.back:hover{color:var(--ink)}
+.back{margin:0 0 8px;text-decoration:none}
 h1{font-size:40px;line-height:1.15;margin:24px 0 32px;letter-spacing:-.01em;text-wrap:balance}.lede{font-size:18px;max-width:68ch;margin:0 0 24px}
 .sec{margin-top:144px}.sec>h2{display:flex;align-items:baseline;gap:14px;font-size:28px;line-height:1.2;margin:0 0 24px}
-.secn{font:400 .85em var(--mono);color:var(--muted)}h3{font-size:19px;margin:40px 0 8px}h4{font-size:15px;margin:40px 0 12px}
+.secn{color:var(--muted)}   /* same font and size as its title, so number and title read as one line */
+h3{font-size:19px;margin:40px 0 8px}h4{font-size:15px;margin:40px 0 12px}
 p,li{max-width:72ch}
 .seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
@@ -27,7 +28,7 @@ p,li{max-width:72ch}
 .contents-h{margin:48px 0 4px;font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .contents{list-style:none;margin:0 0 48px;padding:0}.contents li{max-width:none}
 .contents a,.contents .crow{display:flex;align-items:baseline;gap:10px;padding:5px 0;color:inherit;text-decoration:none;width:100%;font:inherit;background:none;border:0;cursor:pointer;text-align:left}
-.contents .cn{flex:none;width:1.4em;font:400 .9em var(--mono);color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
+.contents .cn{flex:none;width:1.6em;font-weight:600;color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
 .contents .cl{flex:1;min-width:16px;border-bottom:1.5px dotted #9aa5b1;transform:translateY(-4px)}
 .contents .cm{flex:0 1 auto;min-width:0;text-align:right;font:.82em var(--mono);color:var(--muted);align-self:center}.contents .cm svg{width:16px;height:16px;display:block}
 .contents a:hover .ct,.contents .crow:hover .ct{text-decoration:underline}
@@ -35,6 +36,7 @@ p,li{max-width:72ch}
 @media (max-width:880px){.split{grid-template-columns:1fr}}
 .viewer-box{position:relative;border:1px solid var(--line);aspect-ratio:4/3;background:#fbfbfa}
 .viewer{position:absolute;inset:0}.viewer canvas{display:block}
+.loading{position:absolute;inset:0;margin:0;display:grid;place-items:center;font:13px var(--mono);color:var(--muted);pointer-events:none}
 .cams{position:absolute;left:12px;bottom:12px;display:flex;border:1px solid var(--ink);background:var(--paper)}
 .cams button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;border-right:1px solid var(--line);padding:6px 11px;cursor:pointer}.cams button:last-child{border-right:0}
 .cams button:hover{background:var(--th)}
@@ -60,6 +62,8 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.q
 .doc small{display:block;color:var(--muted);font:12px var(--sans)}
 .checks td:nth-child(2){font-family:var(--sans);font-weight:600}.checks td:first-child{font-weight:700;width:2em;text-align:center}
 .checks tr.bad td{color:var(--lit)}
+.doc td.tick,.doc th.tick{text-align:center;vertical-align:middle;width:3.5em}.doc td.tick input{vertical-align:middle}.doc .box{display:inline-block;width:1.1rem;height:1.1rem;border:1.5px solid var(--ink);vertical-align:middle}
+.doc td.val{padding:0;min-width:5.5em}.doc td.val input{width:100%;border:0;background:none;padding:4px 8px;font:inherit;text-align:right;color:var(--ink)}.doc td.val input:focus{outline:2px solid var(--ink);outline-offset:-2px}
 .legend th{text-align:left;white-space:nowrap;width:1%}.legend td{text-align:left}
 .wrap{overflow-x:auto;max-width:100%}
 .sheet{display:grid;gap:0;border:1px solid var(--line);margin:8px 0}.sheet figure{margin:0;min-width:0}.sheet svg{border:0!important}
@@ -68,20 +72,20 @@ figure{margin:0}
 .views svg,.piece-list svg,figure>svg{border:1px solid var(--line);width:100%;height:auto;display:block}
 .piece-list{display:grid;gap:18px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
 .phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}.phases h4{margin:8px 0 0}.phases ol{margin:4px 0;padding-left:1.6em}.phases li{margin:2px 0}
-.step{margin-top:112px}.step-h{display:flex;align-items:center;gap:24px;margin-bottom:28px}.sn{font:700 64px/1 var(--sans);min-width:1.2em}
-.step-h h3{margin:0;font-size:22px}.step-h p{margin:4px 0 0}
+/* one left column per step: the number, every checkbox and the check and warning marks are centred in it; the title and all text start right of it */
+.step{margin-top:112px;--gut:76px;--gap:20px}.step-h{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);gap:var(--gap);align-items:start;margin-bottom:28px}.step-h>div{padding-top:var(--cap-pad,3px)}.sn{font:700 64px/1 var(--sans);text-align:center}
+.step-h h3{margin:0;font-size:22px;line-height:1.15}.step-h p{margin:13px 0 0;line-height:1.2}
 .tasks{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:t}
-.tasks li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;counter-increment:t}
-.tasks input{margin:.22rem 0 0}
+.tasks li{display:grid;grid-template-columns:var(--gut,76px) minmax(0,1fr);gap:var(--gap,20px);align-items:start;counter-increment:t}
+.tasks label{line-height:1.6}.tasks input{font:inherit;margin:calc((1.6em - 1.1rem) / 2) 0 0;justify-self:center}   /* centred on the first line, and in the step's left column */
 .tasks label::before{content:counter(t) ". ";font:600 .85rem var(--mono);color:var(--muted)}
 .tasks li:has(input:checked) label{color:var(--muted);text-decoration:line-through}
 /* square checkboxes, drawn: ink on paper, a tick when done */
 input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:none;width:1.1rem;height:1.1rem;border:1.5px solid var(--ink);border-radius:0;background:var(--paper);display:inline-grid;place-content:center;cursor:pointer}
 input[type=checkbox]:checked{background:var(--ink)}
 input[type=checkbox]:checked::after{content:"";width:.55rem;height:.28rem;border:2px solid var(--paper);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-.gate,.note{display:flex;align-items:center;gap:12px;max-width:none;margin:24px 0}
-.ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1.5px solid var(--ink);border-radius:50%;font:700 14px/1 var(--sans)}
-.note .ic{background:var(--ink);color:var(--paper)}
+.gate,.note{display:grid;grid-template-columns:var(--gut,76px) minmax(0,1fr);gap:var(--gap,20px);align-items:center;max-width:none;margin:24px 0}
+.ic{width:28px;height:28px;justify-self:center}
 /* the steps with a 3D view beside them that follows the step you are reading; on a phone a panel the 3D button opens */
 .steps-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,40%);gap:56px;align-items:start;width:min(1280px,calc(100vw - 32px));margin-left:calc(50% - min(640px,50vw - 16px))}
 .step-3d{position:sticky;top:24px;margin-top:112px}.step-3d .viewer-box{aspect-ratio:auto;height:calc(100vh - 110px)}
@@ -99,8 +103,7 @@ input[type=checkbox]:checked::after{content:"";width:.55rem;height:.28rem;border
 details.sheets{margin:40px 0 0}details.sheets summary{cursor:pointer;font-weight:600}details.sheets[open] summary{margin-bottom:12px}
 .linkish{font:inherit;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
 ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
-.foot{max-width:1000px;margin:0 auto;padding:48px 16px;color:var(--muted);font-size:13px}
-@media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px}.sn{font-size:48px}.inp input{width:84px}ul.cols{columns:1}}
+@media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px;--gut:62px;--gap:14px}.sn{font-size:52px}.step .step-h h3{font-size:18px}.step .step-h p{font-size:13px;margin-top:8px}.step .step-h>div{--cap-pad:4px}.inp input{width:84px}ul.cols{columns:1}}
 ${SHOP_CSS}
 ${Q_CSS}
 @media print{
@@ -128,7 +131,7 @@ export function pageHtml(d, { script = '', title, description, back = null, guid
 </head>
 <body>
 <main id="top">
-  ${back ? `<a class="back" href="${esc(back.href)}">← ${esc(back.label)}</a>` : ''}
+  ${back ? `<a class="btn back" href="${esc(back.href)}"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>${esc(back.label)}</a>` : ''}
   <h1>${esc(plan.name)}</h1>
   ${guide ? guideCta(guide) : ''}
   <nav aria-label="Contents" id="contents-body">${contentsHtml(d)}</nav>
@@ -157,13 +160,12 @@ export function pageHtml(d, { script = '', title, description, back = null, guid
   <section class="sec" id="steps"><h2><span class="secn">6</span>Steps</h2>
     <div class="steps-grid">
       <div id="steps-body">${steps.map(st => stepHtml(d, st, { interactive: true })).join('')}</div>
-      <aside class="step-3d" aria-label="3D model at the step you are reading"><div class="viewer-box"><div class="viewer" id="viewer-steps"></div></div><p class="step-3d-cap" id="step-3d-cap"></p></aside>
+      <aside class="step-3d" aria-label="3D model at the step you are reading"><div class="viewer-box"><div class="viewer" id="viewer-steps"></div><p class="loading" id="loading-steps">Loading 3D model</p></div><p class="step-3d-cap" id="step-3d-cap"></p></aside>
     </div>
     <button type="button" class="toggle-3d" id="toggle-3d" aria-pressed="false">3D</button>
   </section>
   <section class="sec" id="cutlist"><h2><span class="secn">7</span>Cut list</h2><div id="cutlist-body">${cutListHtml(d)}</div></section>
 </main>
-<footer class="foot"><p>${esc(plan.name)}${plan.version ? ' · v' + esc(plan.version) : ''}. ${esc(plan.footer || 'Generated by the blueprint skill. Check every dimension against your own stock before you cut, wear eye and hand protection, and load-test the build gently before trusting it.')}</p></footer>
 <script type="module">
 ${script}
 </script>

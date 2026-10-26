@@ -4,7 +4,7 @@
 import { esc } from './core.mjs';
 import { jigSheet, gaSheet, printSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
 import { printBox, bedBox, printQty } from './print.mjs';
-import { annotate, q } from './guide.mjs';
+import { annotate, q, ICON } from './guide.mjs';
 
 // a plate: its drawing, then its holes, notches and note as text that wraps
 const plateFigure = (d, pl) => `<figure class="plate-fig">${plateSvg(d, pl)}<figcaption>${plateNotes(d, pl).map(t => `<p>${esc(t)}</p>`).join('')}</figcaption></figure>`;
@@ -135,12 +135,12 @@ export function orderHtml(d) {
 }
 
 // a column is numeric (right-aligned) when every cell in it is a number or a length
-const numCol = (t, i) => i > 0 && t.rows.every(r => /^[\d\s.,/"'×x±-]+(mm|in|kg|lb|h)?$/.test(String(r[i]).trim()));
+const numCol = (t, i) => i > 0 && t.head[i] !== '✓' && !(t.fill || []).includes(i) && !(t.ticks || []).includes(i) && t.rows.every(r => /^[\d\s.,/"'×x±-]+(mm|in|kg|lb|h)?$/.test(String(r[i]).trim()));
 
 function piecesOfStep(d, n) { return d.pieces.filter(g => g.members.some(m => m.step === n)); }
 
 // a check to pass (✓) or a warning (!), as a circled mark, no box
-const mark = (kind, html) => `<p class="${kind === 'check' ? 'gate' : 'note'}"><span class="ic" aria-label="${kind === 'check' ? 'Check' : 'Warning'}">${kind === 'check' ? '✓' : '!'}</span><span>${html}</span></p>`;
+const mark = (kind, html) => `<p class="${kind === 'check' ? 'gate' : 'note'}"><span class="ic" role="img" aria-label="${kind === 'check' ? 'Check' : 'Warning'}">${kind === 'check' ? ICON.check : ICON.warn}</span><span>${html}</span></p>`;
 
 export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   const u = d.units, n = st.n, seen = new Set();
@@ -153,7 +153,15 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   if (st.check) h += mark('check', annotate(st.check, seen));
   if (st.tip) h += mark('warn', annotate(st.tip, seen));
   // a plan's own table for the step: { title, head: [...], rows: [[...]] }, numbers right-aligned
-  if (st.table) h += `<h4>${esc(st.table.title || 'Table')}</h4><div class="wrap"><table class="doc"><tr>${st.table.head.map((c, i) => `<th${numCol(st.table, i) ? ' class=n' : ''}>${esc(c)}</th>`).join('')}</tr>${st.table.rows.map(r => `<tr>${r.map((c, i) => `<td${numCol(st.table, i) ? ' class=n' : ''}>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  // columns headed ✓ or listed in table.ticks are ticked, those in table.fill filled in: on the page
+  // a real checkbox or number field (kept on this device), on paper an empty box for a pen
+  if (st.table) {
+    const t = st.table, fill = new Set(t.fill || []), tick = i => t.head[i] === '✓' || (t.ticks || []).includes(i);
+    const cell = (c, i, ri) => tick(i) ? (interactive ? `<td class="tick"><input type="checkbox" data-check="tbl-${n}-${ri}-${i}" aria-label="${esc(t.head[i])}"${checked[`tbl-${n}-${ri}-${i}`] ? ' checked' : ''}></td>` : '<td class="tick"><span class="box"></span></td>')
+      : fill.has(i) ? `<td class="val">${interactive ? `<input type="number" inputmode="decimal" step="0.5" data-val="tbl-${n}-${ri}-${i}" aria-label="${esc(t.head[i])}">` : ''}</td>`
+      : `<td${numCol(t, i) ? ' class=n' : ''}>${esc(c)}</td>`;
+    h += `<h4>${esc(t.title || 'Table')}</h4><div class="wrap"><table class="doc"><tr>${t.head.map((c, i) => `<th${numCol(t, i) || fill.has(i) ? ' class=n' : tick(i) ? ' class=tick' : ''}>${esc(c)}</th>`).join('')}</tr>${t.rows.map((r, ri) => `<tr>${t.head.map((_, i) => cell(r[i] ?? '', i, ri)).join('')}</tr>`).join('')}</table></div>`;
+  }
   for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
     h += `<h4>Print: ${esc(pr.name)}${printQty(pr) > 1 ? ` x${printQty(pr)}` : ''}${q('print')}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}${printCuts(d, pr)}<p>${dl(pr)}</p>${pr.note ? mark('warn', esc(pr.note)) : ''}`;
   }

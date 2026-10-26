@@ -110,7 +110,8 @@ async function scaffold() {
   src = src.replace(/^(\s*id:\s*)'[^']*'/m, `$1${q(id)}`)
     .replace(/^(\s*name:\s*)'[^']*'/m, `$1${q(name)}`)
     .replace(/^(\s*short:\s*)'[^']*'/m, `$1${q(short)}`)
-    .replace(/^(\s*version:\s*)'[^']*'/m, `$1'1'`);
+    .replace(/^(\s*version:\s*)'[^']*'/m, `$1'1'`)
+    .replace(/^\s*author:\s*\{[^}]*\},?\n/m, '');          // the example's designer is not this plan's
   const head = `// ${name}.\n// STARTED FROM examples/${from}: everything below is that plan. Rewrite the header,\n// summary, params, model and steps for this one; keep only the shape. Delete this note.\n//\n`;
   mkdirSync(dir, { recursive: true });
   writeFileSync(file, head + src);

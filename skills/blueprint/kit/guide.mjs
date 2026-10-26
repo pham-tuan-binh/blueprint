@@ -2,7 +2,7 @@
 // through the plan. The plan stays terse; what a first-timer needs lives here.
 // Every figure is generated from the plan (shop.mjs), so it changes with it.
 import { esc } from './core.mjs';
-import { pieceSvg, stepViews, stepNodes, markedJig, bayOf, diagJig, jointCloseup } from './shop.mjs';
+import { pieceSvg, stepViews, stepNodes, markedJig, bayOf, diagJig, jointCloseup, CODE } from './shop.mjs';
 import { partBoxes } from './derive.mjs';
 
 // ---------------------------------------------------------------- explainers
@@ -37,11 +37,23 @@ export const TIPS = {
   loadtest: ['Load it a little at a time up to the rated load, watching for movement, before you trust it.', 'checks'],
 };
 
+// The three marks as drawn icons, so each sits dead centre in its circle whatever the
+// font: a black outline always, the fill from the colour code (yellow ?, green ✓, red !).
+// Size and paint are also attributes, so an icon looks right even before a stylesheet applies.
+const mk = (cls, fill, ink, inner) => `<svg class="mk ${cls}" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="${fill}" stroke="#14171a" stroke-width="1.6"/>${inner(ink)}</svg>`;
+const ln = (d, ink) => `<path class="ln" d="${d}" fill="none" stroke="${ink}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+const dot = (cx, cy, r, ink) => `<circle class="dot" cx="${cx}" cy="${cy}" r="${r}" fill="${ink}"/>`;
+export const ICON = {
+  q: mk('mk-q', CODE.yellow, '#14171a', k => ln('M9.1 9.3a2.9 2.9 0 1 1 4.3 2.6c-.9.5-1.4 1.1-1.4 2.1v.4', k) + dot(12, 17.6, 1.25, k)),
+  check: mk('mk-ok', CODE.green, '#fff', k => ln('M7.4 12.4l3.1 3.1 6.1-6.6', k)),
+  warn: mk('mk-warn', CODE.red, '#fff', k => ln('M12 6.6v7.2', k) + dot(12, 17.4, 1.3, k)),
+};
+
 // the circled "?" itself
 export function q(key) {
   const t = TIPS[key];
   if (!t) return '';
-  return `<span class="q" role="button" tabindex="0" aria-label="Explain" data-tip="${esc(t[0])}" data-more="${t[1]}">?</span>`;
+  return `<span class="q" role="button" tabindex="0" aria-label="Explain" data-tip="${esc(t[0])}" data-more="${t[1]}">${ICON.q}</span>`;
 }
 
 // words in step text that get a "?" (the first time each appears in a step)
@@ -119,21 +131,23 @@ export function initTips(guideHref) {
 }
 
 export const Q_CSS = `
-.q{display:inline-flex;align-items:center;justify-content:center;width:1.15em;height:1.15em;margin-left:.3em;border:1.3px solid currentColor;border-radius:50%;font:700 .72em/1 var(--mono);vertical-align:middle;position:relative;top:-.1em;cursor:help;user-select:none;color:var(--ink);opacity:.75}
-.q:hover,.q:focus-visible{opacity:1;background:var(--ink);color:var(--paper)}
-th .q,h4 .q,summary .q{font-size:.62rem;width:1.35em;height:1.35em}
+.q{display:inline-block;width:1.2em;height:1.2em;margin-left:.3em;vertical-align:middle;position:relative;top:0;cursor:help;user-select:none}
+.mk{display:block;width:100%;height:100%;overflow:visible}.mk circle:first-child{stroke:var(--ink);stroke-width:1.6}.mk .ln{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.mk .dot{fill:var(--ink)}
+.mk-q circle:first-child{fill:${CODE.yellow}}.mk-ok circle:first-child{fill:${CODE.green}}.mk-warn circle:first-child{fill:${CODE.red}}.mk-ok .ln,.mk-warn .ln{stroke:#fff}.mk-warn .dot{fill:#fff}
+.q:hover .mk-q circle:first-child,.q:focus-visible .mk-q circle:first-child{fill:var(--ink)}.q:hover .mk-q .ln,.q:focus-visible .mk-q .ln{stroke:${CODE.yellow}}.q:hover .mk-q .dot,.q:focus-visible .mk-q .dot{fill:${CODE.yellow}}
+th .q,h4 .q,summary .q{width:15px;height:15px}
 .qpop{position:fixed;z-index:50;max-width:min(320px,calc(100vw - 16px));background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);padding:8px 12px;font:14px/1.45 var(--sans);text-align:left;white-space:normal}
 .qpop p{margin:0 0 4px}.qpop a{color:var(--ink);font-weight:600}
 .guide-cta{display:flex;align-items:center;gap:14px;margin:0 0 8px;padding:12px 16px;border:1.5px solid var(--ink);color:var(--ink);text-decoration:none;background:var(--paper)}
 .guide-cta:hover{background:var(--th)}
-.guide-cta .gq{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid currentColor;border-radius:50%;font:700 22px/1 var(--mono)}
+.guide-cta .gq{flex:none;width:40px;height:40px}
 .guide-cta b{display:block;font-size:17px}.guide-cta small{display:block;font-size:13px;color:var(--ink2);margin-top:2px}.guide-cta .arr{margin-left:auto;flex:none;width:22px;height:22px}
 @media print{.q,.qpop,.guide-cta{display:none!important}}
 `;
 
 const EXT = '<svg class="arr" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 export function guideCta(href = 'guide.html') {
-  return `<a class="guide-cta" href="${href}" target="_blank" rel="noopener"><span class="gq" aria-hidden="true">?</span><span><b>New to building? Start here: How to read this plan</b><small>Coordinates, cut sheets, joints and checks, with drawings from this plan. Then tap any <span class="q" aria-hidden="true" style="pointer-events:none">?</span> for a quick reminder.</small></span>${EXT}</a>`;
+  return `<a class="guide-cta" href="${href}" target="_blank" rel="noopener"><span class="gq">${ICON.q}</span><span><b>New to building? Start here: How to read this plan</b><small>Coordinates, cut sheets, joints and checks, with drawings from this plan. Then tap any <span class="q" style="pointer-events:none">${ICON.q}</span> for a quick reminder.</small></span>${EXT}</a>`;
 }
 
 // ---------------------------------------------------------------- the guide page
@@ -267,7 +281,7 @@ ${d.prints.length ? '<li>Printing: ventilate for ASA and ABS.</li>' : ''}
 <body>
 <main>
   <h1>How to read this plan</h1>
-  <p class="lede">${esc(plan.name)}: what the plan leaves out. Read once; after that the <span class="q" aria-hidden="true" style="pointer-events:none">?</span> marks remind you.</p>
+  <p class="lede">${esc(plan.name)}: what the plan leaves out. Read once; after that the <span class="q" style="pointer-events:none">${ICON.q}</span> marks remind you.</p>
   ${contents}
 ${S.map((s, i) => `<section class="sec" id="${s.id}"><h2><span class="secn">${i + 1}</span>${esc(s.title)}</h2>${s.body}</section>`).join('\n')}
 </main>

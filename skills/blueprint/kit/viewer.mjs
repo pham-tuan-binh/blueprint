@@ -1,8 +1,8 @@
 // three.js viewer, drawn as a technical illustration rather than a photo:
 // an orthographic camera, every face flat-filled with one of
 // four greys by the way it faces, thin dark outlines found from depth and normal
-// edges, a paper background and no colour except one lit accent for the parts you
-// are meant to look at. setModel() rebuilds the geometry whenever the params change.
+// edges, a paper background, and colour only as a code: yellow for the parts new in
+// the step you are reading, red for the part you clicked (CODE in shop.mjs). setModel() rebuilds the geometry whenever the params change.
 // Design coordinates (mm, z up) live inside one group rotated into three's y-up metres.
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/+esm';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm';
@@ -68,7 +68,8 @@ const TONES = {
     paper: 0xfbfbfa, ink: 0x232326, grid: [0xd6d6d2, 0xe9e9e5],
     hi: [0x9d9d9a, 0xbcbcb8, 0xd6d6d2, 0xededea], mid: [0x777775, 0x909090, 0xa8a8a5, 0xbebebb],
     lo: [0x5a5a5c, 0x6d6d6f, 0x808082, 0x949496], faint: [0xd2d2ce, 0xdededa, 0xe8e8e4, 0xf2f2ef],
-    lit: [0xa8343a, 0xc63f45, 0xe5484d, 0xef7478],
+    lit: [0xa8343a, 0xc63f45, 0xe5484d, 0xef7478],   // the part you clicked
+    new: [0xe0b400, 0xf2c600, 0xffd100, 0xffe04d],   // new in this step: the guide's yellow
   },
 };
 
@@ -153,7 +154,7 @@ export function createViewer(el, { onPick } = {}) {
   scene.add(root);
   let grid = null;
 
-  const mats = Object.fromEntries(['hi', 'mid', 'lo', 'faint', 'lit'].map(k => [k, toneMat(T[k])]));
+  const mats = Object.fromEntries(['hi', 'mid', 'lo', 'faint', 'lit', 'new'].map(k => [k, toneMat(T[k])]));
   const ghost = toneMat(T.faint, { opacity: 0.35 });
   const STRESS = [[4, 'hi'], [3, 'mid'], [2, 'lo'], [0, 'lit']];
   let meshes = [], size = 2, camDist = 4, center = new THREE.Vector3();
@@ -257,7 +258,7 @@ export function createViewer(el, { onPick } = {}) {
     for (const r of meshes) {
       r.mesh.visible = stepLimit == null || r.step <= stepLimit;
       let mat = mats[r.tone];
-      if (stepHi != null) mat = r.step === stepHi ? mats.lit : r.kind === 'hardware' || r.kind === 'plate' ? ghost : mats[r.tone];
+      if (stepHi != null) mat = r.step === stepHi ? mats.new : r.kind === 'hardware' || r.kind === 'plate' ? ghost : mats[r.tone];
       if (selected && r.id === selected) mat = mats.lit;
       if (stress) {
         const sf = r.kind === 'member' ? stress[r.id] : undefined;
