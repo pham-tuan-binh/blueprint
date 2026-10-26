@@ -3,8 +3,9 @@
 # also deploy it. One-time setup: Settings > Pages > Build and deployment >
 # Source: GitHub Actions.
 #
-# To add a plan, add plans/<id>/design.mjs: it is audited, built and listed on the
-# site's front page automatically.
+# To add a plan, add plans/<id>/design.mjs (the blueprint-share skill does it): it is
+# audited, built and listed on the site's front page automatically, next to the
+# skill's own examples.
 name: Plans site
 
 on:
@@ -36,6 +37,7 @@ jobs:
 
       - name: Every plan passes its audit at every size its fields allow
         run: |
+          shopt -s nullglob
           for f in plans/*/design.mjs skills/blueprint/examples/*/design.mjs; do
             echo "::group::audit $f"
             node skills/blueprint/scripts/blueprint.mjs audit "$f"

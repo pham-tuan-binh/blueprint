@@ -31,7 +31,7 @@ const designsIn = dir => existsSync(dir) ? readdirSync(dir, { withFileTypes: tru
 const plans = designsIn(join(ROOT, 'plans'));
 const designs = [...plans, ...designsIn(join(SKILL, 'examples')).filter(x => !plans.some(p => p.id === x.id))]
   .sort((a, b) => a.id.localeCompare(b.id));
-if (!designs.length) { console.error('no plans/<id>/design.mjs found'); process.exit(1); }
+if (!designs.length) { console.error('no examples or plans/<id>/design.mjs found'); process.exit(1); }
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 

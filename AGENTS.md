@@ -4,7 +4,7 @@ Notes for any agent working in this repo. The owner's direction is written here 
 
 ## What this repo is
 
-Blueprint: an agent skill (`skills/blueprint/`) that generates parametric build plans for anything a workshop makes, as one standalone HTML page per plan. Also `skills/blueprint-share/` (opens a PR that adds someone's plan here), `plans/` (published plans), and `tools/site.mjs` (the GitHub Pages site: a landing page plus every plan and its guide).
+Blueprint: an agent skill (`skills/blueprint/`) that generates parametric build plans for anything a workshop makes, as one standalone HTML page per plan. Also `skills/blueprint-share/` (opens a PR that adds someone's plan here), `skills/blueprint/examples/` (the official examples, shipped with the skill and shown on the site), `plans/` (plans people share), and `tools/site.mjs` (the GitHub Pages site: a landing page plus every plan and its guide).
 
 ## How it should look and read: an IKEA guide
 
@@ -24,7 +24,7 @@ The full rules are in `skills/blueprint/SKILL.md` ("How it looks and reads"); in
 
 - Every plan must pass its audit at every size its fields allow, and its capture: `node skills/blueprint/scripts/blueprint.mjs check plans/<id>/design.mjs`. Fix the design, never a check.
 - After a kit change, keep green: `blueprint.mjs test`, the audit of every plan and example, `node tools/site.mjs`, and the capture of each example. Existing plans should build to the same checks unless the change means to move them.
-- The examples in `skills/blueprint/examples/` and their copies in `plans/` stay identical.
+- The official examples live only in `skills/blueprint/examples/`; `plans/` is only for shared plans. Never keep a second copy of a plan.
 - Plans contributed through `blueprint-share` add exactly one file, `plans/<id>/design.mjs`.
 
 ## Writing style
