@@ -4,7 +4,7 @@
 import { esc } from './core.mjs';
 import { jigSheet, gaSheet, printSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
 import { printBox, bedBox, printQty } from './print.mjs';
-import { annotate, q } from './guide.mjs';
+import { annotate, q, ICON } from './guide.mjs';
 
 // a plate: its drawing, then its holes, notches and note as text that wraps
 const plateFigure = (d, pl) => `<figure class="plate-fig">${plateSvg(d, pl)}<figcaption>${plateNotes(d, pl).map(t => `<p>${esc(t)}</p>`).join('')}</figcaption></figure>`;
@@ -140,7 +140,7 @@ const numCol = (t, i) => i > 0 && t.rows.every(r => /^[\d\s.,/"'×x±-]+(mm|in|k
 function piecesOfStep(d, n) { return d.pieces.filter(g => g.members.some(m => m.step === n)); }
 
 // a check to pass (✓) or a warning (!), as a circled mark, no box
-const mark = (kind, html) => `<p class="${kind === 'check' ? 'gate' : 'note'}"><span class="ic" aria-label="${kind === 'check' ? 'Check' : 'Warning'}">${kind === 'check' ? '✓' : '!'}</span><span>${html}</span></p>`;
+const mark = (kind, html) => `<p class="${kind === 'check' ? 'gate' : 'note'}"><span class="ic" role="img" aria-label="${kind === 'check' ? 'Check' : 'Warning'}">${kind === 'check' ? ICON.check : ICON.warn}</span><span>${html}</span></p>`;
 
 export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   const u = d.units, n = st.n, seen = new Set();

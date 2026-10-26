@@ -72,7 +72,7 @@ figure{margin:0}
 .step-h h3{margin:0;font-size:22px}.step-h p{margin:4px 0 0}
 .tasks{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:t}
 .tasks li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;counter-increment:t}
-.tasks input{margin:.22rem 0 0}
+.tasks label{line-height:1.6}.tasks input{font:inherit;margin:calc((1.6em - 1.1rem) / 2) 0 0}   /* centred on the first line */
 .tasks label::before{content:counter(t) ". ";font:600 .85rem var(--mono);color:var(--muted)}
 .tasks li:has(input:checked) label{color:var(--muted);text-decoration:line-through}
 /* square checkboxes, drawn: ink on paper, a tick when done */
@@ -80,8 +80,7 @@ input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:none;width:1.1
 input[type=checkbox]:checked{background:var(--ink)}
 input[type=checkbox]:checked::after{content:"";width:.55rem;height:.28rem;border:2px solid var(--paper);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
 .gate,.note{display:flex;align-items:center;gap:12px;max-width:none;margin:24px 0}
-.ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1.5px solid var(--ink);border-radius:50%;font:700 14px/1 var(--sans)}
-.note .ic{background:var(--ink);color:var(--paper)}
+.ic{flex:none;width:28px;height:28px}
 /* the steps with a 3D view beside them that follows the step you are reading; on a phone a panel the 3D button opens */
 .steps-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,40%);gap:56px;align-items:start;width:min(1280px,calc(100vw - 32px));margin-left:calc(50% - min(640px,50vw - 16px))}
 .step-3d{position:sticky;top:24px;margin-top:112px}.step-3d .viewer-box{aspect-ratio:auto;height:calc(100vh - 110px)}

@@ -70,7 +70,7 @@ figure{margin:0}
 .step-h h3{margin:0;font-size:22px}.step-h p{margin:4px 0 0}
 .tasks{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:t}
 .tasks li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;counter-increment:t}
-.tasks input{margin:.22rem 0 0}
+.tasks label{line-height:1.6}.tasks input{font:inherit;margin:calc((1.6em - 1.1rem) / 2) 0 0}   /* centred on the first line */
 .tasks label::before{content:counter(t) ". ";font:600 .85rem var(--mono);color:var(--muted)}
 .tasks li:has(input:checked) label{color:var(--muted);text-decoration:line-through}
 /* square checkboxes, drawn: ink on paper, a tick when done */
@@ -78,8 +78,7 @@ input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:none;width:1.1
 input[type=checkbox]:checked{background:var(--ink)}
 input[type=checkbox]:checked::after{content:"";width:.55rem;height:.28rem;border:2px solid var(--paper);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
 .gate,.note{display:flex;align-items:center;gap:12px;max-width:none;margin:24px 0}
-.ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1.5px solid var(--ink);border-radius:50%;font:700 14px/1 var(--sans)}
-.note .ic{background:var(--ink);color:var(--paper)}
+.ic{flex:none;width:28px;height:28px}
 /* the steps with a 3D view beside them that follows the step you are reading; on a phone a panel the 3D button opens */
 .steps-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,40%);gap:56px;align-items:start;width:min(1280px,calc(100vw - 32px));margin-left:calc(50% - min(640px,50vw - 16px))}
 .step-3d{position:sticky;top:24px;margin-top:112px}.step-3d .viewer-box{aspect-ratio:auto;height:calc(100vh - 110px)}
@@ -106,8 +105,8 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 .pk{font:700 20px var(--mono);fill:var(--ink)}.pm{font:700 15px var(--mono);fill:var(--ink)}.pe{font:12px var(--mono);fill:var(--muted)}
 .pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
-.jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
-.jn.f{stroke:var(--now);stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
+.jn{fill:#ffd100;stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
+.jn.f{stroke:#ffd100;stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
 .ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
@@ -118,14 +117,16 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 .nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
 
 
-.q{display:inline-flex;align-items:center;justify-content:center;width:1.15em;height:1.15em;margin-left:.3em;border:1.3px solid currentColor;border-radius:50%;font:700 .72em/1 var(--mono);vertical-align:middle;position:relative;top:-.1em;cursor:help;user-select:none;color:var(--ink);opacity:.75}
-.q:hover,.q:focus-visible{opacity:1;background:var(--ink);color:var(--paper)}
-th .q,h4 .q,summary .q{font-size:.62rem;width:1.35em;height:1.35em}
+.q{display:inline-block;width:1.2em;height:1.2em;margin-left:.3em;vertical-align:middle;position:relative;top:-.08em;cursor:help;user-select:none}
+.mk{display:block;width:100%;height:100%;overflow:visible}.mk circle:first-child{stroke:var(--ink);stroke-width:1.6}.mk .ln{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.mk .dot{fill:var(--ink)}
+.mk-q circle:first-child{fill:#ffd100}.mk-ok circle:first-child{fill:#14934a}.mk-warn circle:first-child{fill:#e1251b}.mk-ok .ln,.mk-warn .ln{stroke:#fff}.mk-warn .dot{fill:#fff}
+.q:hover .mk-q circle:first-child,.q:focus-visible .mk-q circle:first-child{fill:var(--ink)}.q:hover .mk-q .ln,.q:focus-visible .mk-q .ln{stroke:#ffd100}.q:hover .mk-q .dot,.q:focus-visible .mk-q .dot{fill:#ffd100}
+th .q,h4 .q,summary .q{width:15px;height:15px}
 .qpop{position:fixed;z-index:50;max-width:min(320px,calc(100vw - 16px));background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);padding:8px 12px;font:14px/1.45 var(--sans);text-align:left;white-space:normal}
 .qpop p{margin:0 0 4px}.qpop a{color:var(--ink);font-weight:600}
 .guide-cta{display:flex;align-items:center;gap:14px;margin:0 0 8px;padding:12px 16px;border:1.5px solid var(--ink);color:var(--ink);text-decoration:none;background:var(--paper)}
 .guide-cta:hover{background:var(--th)}
-.guide-cta .gq{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid currentColor;border-radius:50%;font:700 22px/1 var(--mono)}
+.guide-cta .gq{flex:none;width:40px;height:40px}
 .guide-cta b{display:block;font-size:17px}.guide-cta small{display:block;font-size:13px;color:var(--ink2);margin-top:2px}.guide-cta .arr{margin-left:auto;flex:none;width:22px;height:22px}
 @media print{.q,.qpop,.guide-cta{display:none!important}}
 
@@ -146,7 +147,7 @@ th .q,h4 .q,summary .q{font-size:.62rem;width:1.35em;height:1.35em}
 <body>
 <main>
   <h1>How to read this plan</h1>
-  <p class="lede">137 MHz V-dipole for weather satellites: what the plan leaves out. Read once; after that the <span class="q" aria-hidden="true" style="pointer-events:none">?</span> marks remind you.</p>
+  <p class="lede">137 MHz V-dipole for weather satellites: what the plan leaves out. Read once; after that the <span class="q" style="pointer-events:none"><svg class="mk mk-q" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6"/><path class="ln" d="M9.1 9.3a2.9 2.9 0 1 1 4.3 2.6c-.9.5-1.4 1.1-1.4 2.1v.4"/><circle class="dot" cx="12" cy="17.6" r="1.25"/></svg></span> marks remind you.</p>
   <nav aria-label="Contents"><p class="contents-h">Contents</p><ol class="contents"><li><a href="#start"><span class="cn">1</span><span class="ct">How the plan works</span><span class="cl" aria-hidden="true"></span><span class="cm">parts of a step</span></a></li><li><a href="#tools"><span class="cn">2</span><span class="ct">Tools you need</span><span class="cl" aria-hidden="true"></span><span class="cm">what to have</span></a></li><li><a href="#coords"><span class="cn">3</span><span class="ct">Coordinates</span><span class="cl" aria-hidden="true"></span><span class="cm">x, y, z from the datum</span></a></li><li><a href="#jig"><span class="cn">4</span><span class="ct">Jig drawings</span><span class="cl" aria-hidden="true"></span><span class="cm">dark = now, light = done</span></a></li><li><a href="#stock"><span class="cn">5</span><span class="ct">Buying stock</span><span class="cl" aria-hidden="true"></span><span class="cm">3 sections</span></a></li><li><a href="#cut"><span class="cn">6</span><span class="ct">Cut sheets</span><span class="cl" aria-hidden="true"></span><span class="cm">marks, long point</span></a></li><li><a href="#prints"><span class="cn">7</span><span class="ct">3D prints</span><span class="cl" aria-hidden="true"></span><span class="cm">settings, files</span></a></li><li><a href="#checks"><span class="cn">8</span><span class="ct">The checks</span><span class="cl" aria-hidden="true"></span><span class="cm">what they prove</span></a></li><li><a href="#tol"><span class="cn">9</span><span class="ct">Tolerances</span><span class="cl" aria-hidden="true"></span><span class="cm">how close is close enough</span></a></li><li><a href="#safety"><span class="cn">10</span><span class="ct">Safety</span><span class="cl" aria-hidden="true"></span><span class="cm">before you start</span></a></li><li><a href="#glossary"><span class="cn">11</span><span class="ct">Glossary</span><span class="cl" aria-hidden="true"></span><span class="cm">every term</span></a></li><li><a href="index.html"><span class="cn"></span><span class="ct">Back to the plan</span><span class="cl" aria-hidden="true"></span><span class="cm">the steps</span></a></li></ol></nav>
 <section class="sec" id="start"><h2><span class="secn">1</span>How the plan works</h2>
 <p>9 steps, in order. Fit, check, then fix.</p>

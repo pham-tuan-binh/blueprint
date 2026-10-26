@@ -13,7 +13,8 @@ The full rules are in `skills/blueprint/SKILL.md` ("How it looks and reads"); in
 - **Clear above all.** If it does not help someone build the thing, remove it.
 - **Generated, not hand-made.** Every drawing, table, figure and number comes from a plan's `design.mjs` through the kit. New figures are generators in `kit/shop.mjs`, never hand-drawn SVG or HTML.
 - **Space, not boxes.** Sections ~144 px apart, steps ~112 px, step numbers 64 px bold. No rules or boxed panels between them.
-- **Minimal elements.** Black ink on white paper, never a dark theme. No shadows, gradients, coloured fills or decorative borders. Icons only where they mean something: ✓ check, ! warning, circled ? explainer, open-in-new-tab, printer.
+- **Minimal elements.** Black ink on white paper, never a dark theme. No shadows, gradients or decorative borders. Icons only where they mean something: ✓ check, ! warning, circled ? explainer, open-in-new-tab, printer.
+- **Colour is a code** (`CODE` in `kit/shop.mjs`): yellow = look here (new in this step, help), green = the check, red = the warning (and the clicked part in 3D). Everything else black and white.
 - **Minimal text.** Short imperative tasks. Teaching goes in the plan's guide (`guide.html`), reached through the `?` explainers.
 - **No header of any kind.** No bar, nav, logo or version line, nothing pinned to the top or its corners. Every page opens with its title, then the start-here link (plans), then a numbered Contents list with dotted leaders. The landing page opens on "Blueprint" and its tagline.
 - **Labels on drawings** in white boxes. **The 3D model** in the anatomy style.
