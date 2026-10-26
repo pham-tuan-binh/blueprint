@@ -68,19 +68,20 @@ figure{margin:0}
 .views svg,.piece-list svg,figure>svg{border:1px solid var(--line);width:100%;height:auto;display:block}
 .piece-list{display:grid;gap:18px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
 .phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}.phases h4{margin:8px 0 0}.phases ol{margin:4px 0;padding-left:1.6em}.phases li{margin:2px 0}
-.step{margin-top:112px}.step-h{display:flex;align-items:center;gap:24px;margin-bottom:28px}.sn{font:700 64px/1 var(--sans);min-width:1.2em}
+/* one left column per step: the number, every checkbox and the check and warning marks are centred in it; the title and all text start right of it */
+.step{margin-top:112px;--gut:76px;--gap:20px}.step-h{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);gap:var(--gap);align-items:center;margin-bottom:28px}.sn{font:700 64px/1 var(--sans);text-align:center}
 .step-h h3{margin:0;font-size:22px}.step-h p{margin:4px 0 0}
 .tasks{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:t}
-.tasks li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;counter-increment:t}
-.tasks label{line-height:1.6}.tasks input{font:inherit;margin:calc((1.6em - 1.1rem) / 2) 0 0}   /* centred on the first line */
+.tasks li{display:grid;grid-template-columns:var(--gut,76px) minmax(0,1fr);gap:var(--gap,20px);align-items:start;counter-increment:t}
+.tasks label{line-height:1.6}.tasks input{font:inherit;margin:calc((1.6em - 1.1rem) / 2) 0 0;justify-self:center}   /* centred on the first line, and in the step's left column */
 .tasks label::before{content:counter(t) ". ";font:600 .85rem var(--mono);color:var(--muted)}
 .tasks li:has(input:checked) label{color:var(--muted);text-decoration:line-through}
 /* square checkboxes, drawn: ink on paper, a tick when done */
 input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:none;width:1.1rem;height:1.1rem;border:1.5px solid var(--ink);border-radius:0;background:var(--paper);display:inline-grid;place-content:center;cursor:pointer}
 input[type=checkbox]:checked{background:var(--ink)}
 input[type=checkbox]:checked::after{content:"";width:.55rem;height:.28rem;border:2px solid var(--paper);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-.gate,.note{display:flex;align-items:center;gap:12px;max-width:none;margin:24px 0}
-.ic{flex:none;width:28px;height:28px}
+.gate,.note{display:grid;grid-template-columns:var(--gut,76px) minmax(0,1fr);gap:var(--gap,20px);align-items:center;max-width:none;margin:24px 0}
+.ic{width:28px;height:28px;justify-self:center}
 /* the steps with a 3D view beside them that follows the step you are reading; on a phone a panel the 3D button opens */
 .steps-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,40%);gap:56px;align-items:start;width:min(1280px,calc(100vw - 32px));margin-left:calc(50% - min(640px,50vw - 16px))}
 .step-3d{position:sticky;top:24px;margin-top:112px}.step-3d .viewer-box{aspect-ratio:auto;height:calc(100vh - 110px)}
@@ -99,7 +100,7 @@ details.sheets{margin:40px 0 0}details.sheets summary{cursor:pointer;font-weight
 .linkish{font:inherit;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
 ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 .foot{max-width:1000px;margin:0 auto;padding:48px 16px;color:var(--muted);font-size:13px}
-@media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px}.sn{font-size:48px}.inp input{width:84px}ul.cols{columns:1}}
+@media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px;--gut:52px;--gap:14px}.sn{font-size:44px}.inp input{width:84px}ul.cols{columns:1}}
 ${SHOP_CSS}
 ${Q_CSS}
 @media print{
