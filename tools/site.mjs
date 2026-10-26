@@ -93,6 +93,7 @@ p.sec{margin:0 0 18px;color:var(--ink2);max-width:70ch}
 .card .pic svg{width:100%;height:100%;border:0;background:transparent}
 .card .txt{padding:12px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
 .card h2{font-size:19px;margin:0;padding:0;border:0;display:block}.card p{margin:0;color:var(--ink2);font-size:14px}
+.card p.by{font:12px var(--mono);color:var(--muted)}
 .card .go{margin-top:auto;padding-top:10px;font-weight:600;font-size:14px}
 @media (prefers-reduced-motion:reduce){.card,.card .arrow,.gh,.code button{transition:none}}
 `;
@@ -119,14 +120,13 @@ const index = `<!doctype html>
   <div class="hero">
     <h1>Blueprint</h1>
     <p class="tag">An agent skill that generates build plans for your fabrication shop.</p>
-    <p class="lede">Steel, timber, PVC, 3D prints and the parts you buy. Ask for a welding cart, a shelf or an antenna and get one page to build from: a 3D model, sizes you can change in the page, checks that must all pass, the materials to buy and print, drawings, numbered steps and a cut sheet for every piece. Metric, with an inch switch.</p>
   </div>
   <ol class="start">
 ${STEPS.map(st => `    <li><span class="n">${st.n}</span><div><h3>${esc(st.title)}</h3><p>${esc(st.note)}</p></div>
       <div class="code"><pre><span class="ps">${st.prompt ? '&gt; ' : '$ '}</span><code>${esc(st.code)}</code></pre><button type="button" aria-label="Copy">${COPY_ICON}</button></div></li>`).join('\n')}
   </ol>
   <h2 class="sec">Examples</h2>
-  <p class="sec">Every one was generated with the skill and passed its audit at every size its fields allow. Open one and change the sizes.</p>
+  <p class="sec">Every one was generated with the skill and passed its audit at every size its fields allow. Open one and change the sizes. Made one? <a href="${REPO}#share-your-plan">Add it here</a> with the blueprint-share skill.</p>
   <div class="grid">
 ${cards.map(c => `    <a class="card" href="${esc(c.id)}/">
       <span class="arrow" aria-hidden="true">${ARROW}</span>
@@ -134,6 +134,7 @@ ${cards.map(c => `    <a class="card" href="${esc(c.id)}/">
       <div class="txt">
         <h2>${esc(c.plan.name)}</h2>
         <p>${esc(c.plan.summary || '')}</p>
+        ${c.plan.author?.github ? `<p class="by">by @${esc(c.plan.author.github)}</p>` : ''}
         <span class="go">Open the build plan →</span>
       </div>
     </a>`).join('\n')}

@@ -9,6 +9,7 @@ export const plan = {
   short: 'Workbench',             // top bar
   version: '1',
   summary: 'One sentence: what it is, what it holds, how it is built.',
+  author: { github: 'handle', name: 'Name' },   // optional; needed to share it on the plans site (blueprint-share), the card credits it
   units: 'metric',                // 'metric' (default) or 'imperial' when the user asked for it
   currency: '$',                  // optional; prices below are in it
   params: [ /* input fields, below */ ],

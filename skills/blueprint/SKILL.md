@@ -82,7 +82,7 @@ Work in this order. Write the requirements and the structure before any code: mo
    - **capture** opens the page in headless Chromium: types into a field, switches to inches, checks the 3D view, the downloads and the phone width, and writes PNGs (and the printed pages) to `plans/<id>/shots/`.
    For every `choice` option and every size where the design changes (a middle leg appears), add that variant: `--hash "top=steel"`.
 7. **Verify like a builder.** Read every PNG: desktop, phone, every step, the drawings, the cut list, the imperial pass. Then go through `references/verify.md` as someone standing at the saw with only this page. Iterate until every answer is yes.
-8. **Deliver.** The plan folder (`design.mjs`, `index.html`, `shots/`). Tell the user the size, the main numbers (mass, load and safety factor, cost if priced), the assumptions you made about stock and load, and how to change the size (the fields on the page; the URL keeps it).
+8. **Deliver.** The plan folder (`design.mjs`, `index.html`, `shots/`). Tell the user the size, the main numbers (mass, load and safety factor, cost if priced), the assumptions you made about stock and load, and how to change the size (the fields on the page; the URL keeps it). If they want to share it with everyone on the plans site, the `blueprint-share` skill opens the pull request.
 
 ## Setup
 
