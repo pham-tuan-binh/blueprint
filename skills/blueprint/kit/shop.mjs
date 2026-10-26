@@ -14,11 +14,11 @@ export const CODE = { yellow: '#ffd100', green: '#14934a', red: '#e1251b' };
 // top: looking down, front at the bottom. front: from -y. side: from +x.
 // depth: larger is nearer the viewer, drawn later.
 export const VIEWS = {
-  top: { title: 'Top', pr: q => [q[0], -q[1]], depth: q => q[2] },
-  front: { title: 'Front', pr: q => [q[0], -q[2]], depth: q => -q[1] },
-  side: { title: 'Side (from the right)', pr: q => [q[1], -q[2]], depth: q => q[0] },
+  top: { title: 'Top', pr: q => [q[0], -q[1]], depth: q => q[2], eye: [0, 0, 1] },
+  front: { title: 'Front', pr: q => [q[0], -q[2]], depth: q => -q[1], eye: [0, -1, 0] },
+  side: { title: 'Side (from the right)', pr: q => [q[1], -q[2]], depth: q => q[0], eye: [1, 0, 0] },
   // isometric from the front right, for gallery cards (painter's order by centroid)
-  iso: { title: 'Isometric', pr: q => [(q[0] + q[1]) * 0.7071, -(q[1] - q[0] + 2 * q[2]) * 0.4082], depth: q => q[0] - q[1] + q[2] },
+  iso: { title: 'Isometric', pr: q => [(q[0] + q[1]) * 0.7071, -(q[1] - q[0] + 2 * q[2]) * 0.4082], depth: q => q[0] - q[1] + q[2], eye: [0.577, -0.577, 0.577] },
 };
 const boxCorners = ([lo, hi]) => [0, 1, 2, 3, 4, 5, 6, 7].map(i => [i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
 const cylCorners = sh => {
@@ -32,6 +32,12 @@ const cylCorners = sh => {
   return out;
 };
 
+// points round a sphere's three great circles: its outline is a circle in every view
+const sphPoints = sh => [0, 1, 2].flatMap(ax => Array.from({ length: 24 }, (_, k) => {
+  const t = (k / 24) * 2 * Math.PI, u = [Math.cos(t) * sh.r, Math.sin(t) * sh.r], p = sh.c.slice(), [i, j] = [0, 1, 2].filter(a => a !== ax);
+  p[i] += u[0]; p[j] += u[1]; return p;
+}));
+
 // Every solid in the plan as a list of corner sets, tagged.
 export function solids(d, { upTo = Infinity, only = null } = {}) {
   const out = [];
@@ -40,7 +46,8 @@ export function solids(d, { upTo = Infinity, only = null } = {}) {
   for (const pr of d.model.prints || []) if (pr.step <= upTo && (!only || only(pr))) for (const pts of printSolids(pr, { all: true })) out.push({ id: pr.id, kind: 'print', step: pr.step, pts });
   for (const h of d.model.hardware) if (h.shape && h.step <= upTo && (!only || only(h))) {
     const shapes = [h.shape].flat(Infinity);
-    for (const sh of shapes) out.push({ id: h.id, kind: 'hardware', step: h.step, pts: sh.type === 'box' ? boxCorners([sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)]) : cylCorners(sh) });
+    for (const sh of shapes) out.push({ id: h.id, kind: 'hardware', step: h.step, mesh: sh.type === 'mesh' ? sh : null,
+      pts: sh.type === 'box' ? boxCorners([sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)]) : sh.type === 'sphere' ? sphPoints(sh) : sh.type === 'mesh' ? sh.pts : cylCorners(sh) });
   }
   return out;
 }
@@ -115,18 +122,37 @@ function memberSlices(it, V) {
   return out;
 }
 
+// A mesh in a flat view: its triangles filled, outlined only where it turns away from the
+// viewer (the silhouette) or ends (an open edge), so a curved or concave shape draws true.
+// Bought parts draw as dashed outlines only, so their triangles are not written.
+function meshPoly(it, V) {
+  const m = it.mesh, P = m.pts.map(V.pr), edges = new Map();
+  let fill = '';
+  for (const [a, b, c] of m.tris) {
+    const n = cross3(sub3(m.pts[b], m.pts[a]), sub3(m.pts[c], m.pts[a])), front = n[0] * V.eye[0] + n[1] * V.eye[1] + n[2] * V.eye[2] > 0;
+    if (front && it.kind !== 'hardware') fill += `M${f1(P[a][0])} ${f1(P[a][1])}L${f1(P[b][0])} ${f1(P[b][1])}L${f1(P[c][0])} ${f1(P[c][1])}Z`;
+    for (const [i, j] of [[a, b], [b, c], [c, a]]) { const k = i < j ? `${i},${j}` : `${j},${i}`; (edges.get(k) || edges.set(k, []).get(k)).push(front); }
+  }
+  let out = '';
+  for (const [k, f] of edges) if (f.length === 1 || f.some(x => x !== f[0])) { const [i, j] = k.split(',').map(Number); out += `M${f1(P[i][0])} ${f1(P[i][1])}L${f1(P[j][0])} ${f1(P[j][1])}`; }
+  return { ...it, hull: hull2(P), depth: m.pts.reduce((s, q) => s + V.depth(q), 0) / m.pts.length, fill, edges: out };
+}
+const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+
 // One orthographic view with overall dimensions. now(id) marks the parts of this step.
 // overlay(V, fs) adds marks of a figure's own; win { c, r } crops to a close-up round c.
 function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null, bare = false, overlay = null, win = null }) {
   const V = VIEWS[view];
   // in the flat views a member is drawn as short slices, each sorted by its own depth, so a
   // sloped member passing over or under another overlaps right (a whole member has no one depth)
-  let polys = items.flatMap(it => (view !== 'iso' && it.kind === 'member' && it.pts.length === 8) ? memberSlices(it, V)
+  let polys = items.flatMap(it => it.mesh ? [meshPoly(it, V)] : (view !== 'iso' && it.kind === 'member' && it.pts.length === 8) ? memberSlices(it, V)
     : [{ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }])
     .sort((a, b) => a.depth - b.depth);
   if (view === 'iso') polys = isoOrder(polys);
   const draw = p => {
     const c = `${now(p) ? 'jn' : 'jo'} k-${p.kind}`, pts = p.hull.map(q => f1(q[0]) + ',' + f1(q[1])).join(' ');
+    if (p.fill != null) return `<path class="${c} f" d="${p.fill}"/>${p.edges ? `<path class="${c} e" d="${p.edges}"/>` : ''}`;
     return p.edges == null ? `<polygon class="${c}" points="${pts}"/>` : `<polygon class="${c} f" points="${pts}"/>${p.edges ? `<path class="${c} e" d="${p.edges}"/>` : ''}`;
   };
   if (win) {
@@ -466,7 +492,7 @@ export const SHOP_CSS = `
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:${CODE.yellow};stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
 .jn.f{stroke:${CODE.yellow};stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
-.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}.jn.k-hardware.f,.jo.k-hardware.f{stroke:none}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
 .lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}

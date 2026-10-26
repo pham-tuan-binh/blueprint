@@ -10,7 +10,8 @@
 
 const OD = 32, WALL = 2.4;   // PVC-U pressure pipe, PN16
 const Z = 17;                // fitting: centre to the bottom of the socket (laying length)
-const FR = 21;               // fitting body radius
+const FR = 21;               // fitting radius over a socket hub
+const FB = 19;               // fitting radius over its body, between the hubs
 const SOCK = 22;             // socket depth
 const CAP = 3;               // end cap: thickness of its closed end
 
@@ -29,12 +30,12 @@ export const plan = {
     { id: 'load', label: 'Parts on the rail', type: 'kg', value: 6, min: 1, max: p => Math.max(1, Math.floor(Math.min(10, 10 * (1000 / p.length) ** 3) * Math.min(1, (800 / p.height) ** 2))), group: 'Load', hint: 'spread along the rail; the limit falls as the stand gets longer or taller' },
   ],
 
-  build(p, { u, pvcPipe }) {
+  build(p, { u, pvcPipe, shapes }) {
     const PIPE = pvcPipe(OD, WALL, { id: 'PVC32', label: `${OD} × ${WALL} PVC-U pressure pipe`, short: 'PVC 32', stockLen: 3000, price: 2.2 });
     const L = p.length, W = p.width, H = p.height;
     const yc = W / 2;
     const z0 = FR;               // foot tee centre
-    const zt = H - FR;           // top elbow centre
+    const zt = H - FB;           // top elbow centre (its rounded top at the height)
     const zm = z0 + (zt - z0) * 0.35;   // mid tee centre (stretcher)
     const ends = { L: 0, R: L };
 
@@ -42,6 +43,9 @@ export const plan = {
     const members = [];
     const hardware = [];
     const cyl = (a, b, r) => ({ type: 'cyl', a, b, r });
+    // a fitting as it looks: a socket hub at each opening, a slimmer body to the centre
+    const at = (c, d, t) => c.map((v, i) => v + d[i] * t);
+    const sock = (c, d) => [cyl(at(c, d, Z), at(c, d, Z + SOCK), FR), cyl(c, at(c, d, Z), FB)];
     const tees = [], elbows = [], caps = [];
     for (const [k, x] of Object.entries(ends)) {
       const dx = k === 'L' ? 1 : -1;
@@ -53,10 +57,13 @@ export const plan = {
       members.push({ id: `foot-${k}B`, name: 'Foot', sec: 'PIPE', pts: [`${k}B1`, `${k}B0`], step: 2 });
       members.push({ id: `up-${k}lo`, name: 'Upright, lower', sec: 'PIPE', pts: [`${k}U0`, `${k}U1`], step: 2 });
       members.push({ id: `up-${k}hi`, name: 'Upright, upper', sec: 'PIPE', pts: [`${k}U2`, `${k}U3`], step: 2 });
-      // one list per fitting: its run, then its branch
-      tees.push([cyl([x, yc - Z - SOCK, z0], [x, yc + Z + SOCK, z0], FR), cyl([x, yc, z0], [x, yc, z0 + Z + SOCK], FR)]);
-      tees.push([cyl([x, yc, zm - Z - SOCK], [x, yc, zm + Z + SOCK], FR), cyl([x, yc, zm], [x + dx * (Z + SOCK), yc, zm], FR)]);
-      elbows.push([cyl([x, yc, zt - Z - SOCK], [x, yc, zt], FR), cyl([x, yc, zt], [x + dx * (Z + SOCK), yc, zt], FR)]);
+      // one list per fitting: a tee is three sockets round its centre
+      const cF = [x, yc, z0], cM = [x, yc, zm], cT = [x, yc, zt];
+      tees.push([...sock(cF, [0, -1, 0]), ...sock(cF, [0, 1, 0]), ...sock(cF, [0, 0, 1])]);
+      tees.push([...sock(cM, [0, 0, -1]), ...sock(cM, [0, 0, 1]), ...sock(cM, [dx, 0, 0])]);
+      // an elbow: a socket hub at each end, a curved body between them (centre-line radius Z)
+      elbows.push([cyl(at(cT, [0, 0, -1], Z), at(cT, [0, 0, -1], Z + SOCK), FR), cyl(at(cT, [dx, 0, 0], Z), at(cT, [dx, 0, 0], Z + SOCK), FR),
+        shapes.bend([x + dx * Z, yc, zt - Z], [x, yc, zt - Z], [0, dx, 0], 90, FB)]);
       caps.push([cyl([x, 0, z0], [x, SOCK, z0], FR)], [cyl([x, W - SOCK, z0], [x, W, z0], FR)]);
     }
     nodes.T0 = [Z, yc, zt]; nodes.T1 = [L - Z, yc, zt];

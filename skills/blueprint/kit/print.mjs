@@ -16,6 +16,7 @@
 // again (clips along an arm): turned about a vertical axis through `about`, then
 // moved. One STL; the quantity is the copies plus one.
 import { v3 } from './core.mjs';
+import { meshVolume, meshBox } from './shapes.mjs';
 
 // g/cm³, $/kg, and what each is for
 export const FILAMENTS = {
@@ -42,6 +43,8 @@ const ext = (sh) => {
     lo[iz] = sh.z0; hi[iz] = sh.z0 + sh.h;
     return [lo, hi];
   }
+  if (sh.type === 'sphere') return [sh.c.map(v => v - sh.r), sh.c.map(v => v + sh.r)];
+  if (sh.type === 'mesh') return meshBox(sh);
   throw new Error(`unknown print solid "${sh.type}"`);
 };
 export const printQty = pr => pr.qty || (pr.copies?.length || 0) + 1;
@@ -76,6 +79,8 @@ function solidsOf(part) {
       }
       return out;
     }
+    if (sh.type === 'mesh') return sh.pts;
+    if (sh.type === 'sphere') return [0, 1, 2].flatMap(ax => Array.from({ length: 24 }, (_, k) => { const t = (k / 24) * 2 * Math.PI, q = sh.c.slice(), [i, j] = [0, 1, 2].filter(a => a !== ax); q[i] += sh.r * Math.cos(t); q[j] += sh.r * Math.sin(t); return q; }));
     const [lo, hi] = ext(sh);
     return [0, 1, 2, 3, 4, 5, 6, 7].map(i => [i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
   });
@@ -100,6 +105,8 @@ const vol = sh => {
   if (sh.type === 'tube') return Math.PI * (sh.r * sh.r - sh.ri * sh.ri) * L;
   if (sh.type === 'hole') return Math.PI * (sh.d / 2) ** 2 * L;
   if (sh.type === 'prism') return area(sh.pts) * sh.h;
+  if (sh.type === 'sphere') return (4 / 3) * Math.PI * sh.r ** 3;
+  if (sh.type === 'mesh') return Math.abs(meshVolume(sh));
   return 0;
 };
 
@@ -163,6 +170,9 @@ function scadSolid(sh, grow = 0) {
     const rot = sh.axis === 'x' ? 'rotate([90, 0, 90]) ' : sh.axis === 'y' ? 'rotate([90, 0, 0]) mirror([0, 0, 1]) ' : '';
     return `${rot}translate([0, 0, ${(sh.z0 - grow).toFixed(3)}]) linear_extrude(height = ${(sh.h + 2 * grow).toFixed(3)}) polygon(${JSON.stringify(sh.pts.map(p => p.map(x => +x.toFixed(3))))});`;
   }
+  if (sh.type === 'sphere') return `translate(${n3(sh.c)}) sphere(r = ${(sh.r + grow).toFixed(3)});`;
+  // OpenSCAD wants polyhedron faces wound clockwise seen from outside: reverse ours
+  if (sh.type === 'mesh') return `polyhedron(points = ${JSON.stringify(sh.pts.map(p => p.map(x => +x.toFixed(3))))}, faces = ${JSON.stringify(sh.tris.map(([a, b, c]) => [a, c, b]))});`;
   return '';
 }
 export function scadOf(part, plan) {

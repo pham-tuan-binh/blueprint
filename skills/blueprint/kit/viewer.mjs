@@ -46,7 +46,18 @@ function solidGeo(sh, grow = 0) {
     ng.computeVertexNormals();
     return ng;
   }
+  if (sh.type === 'sphere') { const g = new THREE.SphereGeometry(sh.r + grow, 32, 20); g.translate(...sh.c); return g; }
+  if (sh.type === 'mesh') return meshGeo(sh);
   throw new Error(`unknown print solid "${sh.type}"`);
+}
+// a mesh shape (kit/shapes.mjs) as three geometry, in plan coordinates
+function meshGeo(m) {
+  const out = new Float32Array(m.tris.length * 9);
+  m.tris.forEach(([a, b, c], t) => [a, b, c].forEach((v, k) => out.set(m.pts[v], t * 9 + k * 3)));
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(out, 3));
+  g.computeVertexNormals();
+  return g;
 }
 const clean = g => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal') n.deleteAttribute(k); n.computeVertexNormals(); return n; };
 export async function printGeometry(part) {
@@ -169,6 +180,7 @@ export function createViewer(el, { onPick } = {}) {
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     return g;
   }
+  function sphGeo(c, r) { const g = new THREE.SphereGeometry(r, 28, 18); g.translate(c[0], c[1], c[2]); return g; }
   function boxGeo(c, s) { const g = new THREE.BoxGeometry(s[0], s[1], s[2]); g.translate(c[0], c[1], c[2]); return g; }
   function cylGeo(a, b, r, seg = 28) {
     const va = V(a), vb = V(b), d = new THREE.Vector3().subVectors(vb, va);
@@ -230,7 +242,7 @@ export function createViewer(el, { onPick } = {}) {
     }
     for (const h of md.hardware) for (const sh of [h.shape || []].flat(Infinity)) {
       const info = { id: h.id, name: h.name, step: h.step, kind: 'hardware', spec: h.spec };
-      add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');
+      add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : sh.type === 'sphere' ? sphGeo(sh.c, sh.r) : sh.type === 'mesh' ? meshGeo(sh) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');
     }
     const [lo, hi] = d.bbox;
     const span = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);

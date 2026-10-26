@@ -280,6 +280,7 @@ ${d.prints.length ? '<li>Printing: ventilate for ASA and ABS.</li>' : ''}
 </head>
 <body>
 <main>
+  <a class="btn back" href="${esc(back)}"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>Back to the build plan</a>
   <h1>How to read this plan</h1>
   <p class="lede">${esc(plan.name)}: what the plan leaves out. Read once; after that the <span class="q" style="pointer-events:none">${ICON.q}</span> marks remind you.</p>
   ${contents}

@@ -6,6 +6,7 @@ import { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roun
 import { solveJoints, memberCorners, describeEnd } from './joints.mjs';
 import { runLoads } from './fea.mjs';
 import { printBox, printBoxAll, printEstimate, printQty, FILAMENTS, bedBox } from './print.mjs';
+import { shapes, meshBox } from './shapes.mjs';
 
 const { sub, len, dot, add, mul } = v3;
 
@@ -150,6 +151,8 @@ function shapeBox(sh) {
     return bs.length ? [[0, 1, 2].map(i => Math.min(...bs.map(b => b[0][i]))), [0, 1, 2].map(i => Math.max(...bs.map(b => b[1][i])))] : null;
   }
   if (sh.type === 'box') return [sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)];
+  if (sh.type === 'sphere') return [sh.c.map(v => v - sh.r), sh.c.map(v => v + sh.r)];
+  if (sh.type === 'mesh') return meshBox(sh);
   if (sh.type === 'cyl') {
     // a disc of radius r around the axis reaches r * sqrt(1 - axis_i^2) along each world axis
     const ax = v3.norm(sub(sh.b, sh.a)), e = ax.map(c => sh.r * Math.sqrt(Math.max(0, 1 - c * c)));
@@ -315,7 +318,7 @@ export function derive(plan, given = {}, system) {
   const { p, notes, limits } = resolveParams(plan.params || [], given);
   const units = makeUnits(system || p.units || plan.units || 'metric');
   // the design gets its helpers injected, so a design.mjs needs no import paths
-  const kit = { u: units, p, v3, MATERIALS, FILAMENTS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet };
+  const kit = { u: units, p, v3, MATERIALS, FILAMENTS, shapes, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet };
   const model = normalise(plan.build(p, kit), plan);
   const { joints, sites, report } = solveJoints(model);
   // identical plates share a mark (P1, P2...): same size, thickness, holes and material

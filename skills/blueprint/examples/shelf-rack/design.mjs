@@ -26,7 +26,7 @@ export const plan = {
     const deckT = 18, foot = 6, h = 20;                // rail half height
     const W = p.width, D = p.depth, H = p.height;
     const x0 = 20, x1 = W - 20, y0 = 20, y1 = D - 20;   // post centre lines
-    const topZ = H - deckT - h;                         // top rail centre line
+    const topZ = H - h;                                 // top rail centre line: the top deck sits flush with it
     const lowZ = foot + 120 + h;
     const levels = Array.from({ length: p.shelves }, (_, i) => lowZ + ((topZ - lowZ) * i) / (p.shelves - 1));
     const gapMin = Math.min(...levels.slice(1).map((z, i) => z - levels[i]));
@@ -49,10 +49,19 @@ export const plan = {
 
     const plates = [];
     for (const [k, [x, y]] of Object.entries(corners)) plates.push({ id: `foot-${k}`, name: 'Foot plate', c: [x, y, foot / 2], s: [40, 40, foot], step: 4, holes: [{ at: [20, 20], d: 10 }], note: 'Same size as the post. Drill for an M8 floor anchor, weld all round.' });
-    levels.forEach((z, i) => plates.push({
-      id: `deck-${i + 1}`, name: i === levels.length - 1 ? 'Top deck' : 'Deck', material: 'plywood', materialLabel: 'plywood',
-      c: [W / 2, D / 2, z + h + deckT / 2], s: [W, D, deckT], step: 5, notch: true, price: (W * D / 1e6) * 18,
-    }));
+    // Each deck sits INSIDE its rail frame, on two steel ledges, its top flush with the rails. It is
+    // the opening inside the rails less a clearance, so it drops down through every frame above it
+    // to its level: the decks go in last, after welding and paint, lowest first.
+    const inX = W - 60, inY = D - 60, gap = 3, ledgeW = 15, ledgeT = 3;
+    levels.forEach((z, i) => {
+      const zb = z + h - deckT;                       // underside of the deck
+      for (const [k, y] of [['F', 30 + ledgeW / 2], ['B', D - 30 - ledgeW / 2]])
+        plates.push({ id: `ledge-${k}${i + 1}`, name: 'Deck ledge', c: [W / 2, y, zb - ledgeT / 2], s: [inX - 30, ledgeW, ledgeT], step: 4, drawing: i === 0 && k === 'F', note: `Flat bar inside the long rail, its top ${u.len(deckT, { u: true })} below the rail top. Stitch-weld along its top edge, ${u.len(25, { u: true })} every ${u.len(100, { u: true })}.` });
+      plates.push({
+        id: `deck-${i + 1}`, name: i === levels.length - 1 ? 'Top deck' : 'Deck', material: 'plywood', materialLabel: 'plywood',
+        c: [W / 2, D / 2, zb + deckT / 2], s: [inX - 2 * gap, inY - 2 * gap, deckT], step: 5, notch: true, price: ((inX - 2 * gap) * (inY - 2 * gap) / 1e6) * 18,
+      });
+    });
 
     const totalKg = p.shelfKg * p.shelves;
     return {
@@ -62,7 +71,7 @@ export const plan = {
       nodes, members, plates,
       hardware: [
         { id: 'anchor', name: 'Floor anchor, M8', spec: 'sleeve or wedge anchor', qty: 4, step: 6, price: 1.2 },
-        { id: 'screws', name: 'Deck screws', spec: '4 × 30 mm pan head, self-drilling', qty: 8 * p.shelves, step: 5, price: 0.08 },
+        { id: 'screws', name: 'Deck screws', spec: '4 × 25 mm pan head, self-drilling, up through the ledges', qty: 8 * p.shelves, step: 5, price: 0.08 },
       ],
       consumables: [
         { name: 'MIG wire, 0.8 mm', qty: '1 kg spool' }, { name: 'Primer and enamel', qty: '1 L each' },
@@ -76,7 +85,7 @@ export const plan = {
       ],
       tip: { N: 150, height: H, sf: 1.5, anchored: 'step 6, four M8 floor anchors' },
       checks: [
-        { name: 'Room between shelves', pass: gapMin - 2 * h - deckT >= 150, value: `${u.len(gapMin - 2 * h - deckT, { u: true })} clear`, why: `At least ${u.len(150, { u: true })} between a deck and the rail above it.` },
+        { name: 'Room between shelves', pass: gapMin - 2 * h >= 150, value: `${u.len(gapMin - 2 * h, { u: true })} clear`, why: `At least ${u.len(150, { u: true })} between a deck and the rail above it.` },
       ],
       steps: [
         { n: 1, phase: 'Fabricate', title: 'Cut and deburr', hours: 2, tasks: [
@@ -95,16 +104,17 @@ export const plan = {
           'Tack the long rails ({mark:long-F1}): top level, bottom level, then the rest.',
           'Equal the top diagonals, then tack every joint on two faces.',
         ], check: `Top diagonals equal ${u.tol(3)}. Level on all four posts.`, tip: 'No welding until step 4.' },
-        { n: 4, phase: 'Fabricate', title: 'Weld out and feet', hours: 3, tasks: [
+        { n: 4, phase: 'Fabricate', title: 'Weld out, ledges and feet', hours: 4, tasks: [
           'Weld out, corners in turn.',
+          `Deck ledges: a flat bar inside each long rail, its top ${u.len(deckT, { u: true })} below the rail top. Stitch-weld.`,
           'Rack on its back. A foot plate centred under each post, welded all round.',
-          'Grind the welds under the decks flush.',
-        ], check: `Diagonals still equal ${u.tol(3)}.`, tip: 'Ventilate while welding.' },
+        ], check: `Diagonals still equal ${u.tol(3)}. Ledges level ${u.tol(1)}.`, tip: 'Ventilate while welding.' },
         { n: 5, phase: 'Finish', title: 'Paint and decks', hours: 3, tasks: [
-          'Degrease, prime, paint.',
-          `${p.shelves} decks ${u.len(W)} × ${u.len(D)} from ${u.len(18, { u: true })} plywood. Notch the lower ones as drawn.`,
-          'Screw each deck down, two screws per rail.',
-        ] },
+          'Degrease, prime, paint. Let it dry.',
+          `${p.shelves} decks ${u.len(inX - 2 * gap)} × ${u.len(inY - 2 * gap)} from ${u.len(deckT, { u: true })} plywood. Notch the corners as drawn.`,
+          'Lower each deck down through the frames to its ledges, the lowest first.',
+          'Screw up through each ledge into the deck, four per ledge.',
+        ], check: 'Every deck flush with its rails and sits without rocking.', tip: 'Decks go in only after all welding and paint.' },
         { n: 6, phase: 'Finish', title: 'Stand and anchor', hours: 1, tasks: [
           'In place: drill and anchor all four feet.',
           `Load-test: shelves up to ${u.mass(p.shelfKg)} each, gradually.`,
