@@ -15,7 +15,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans
 a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{padding:16px}
 .top{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
 .top-in{max-width:1080px;margin:0 auto;padding:8px 16px;display:flex;gap:14px;align-items:center}
-.brand{font-weight:700;text-decoration:none;white-space:nowrap}
+.brand{font-weight:700;text-decoration:none;white-space:nowrap}.back{text-decoration:none;color:var(--muted);white-space:nowrap;font-size:14px}.back:hover{color:var(--ink)}
 .toc{display:flex;gap:14px;overflow-x:auto;flex:1;scrollbar-width:none}.toc a{text-decoration:none;white-space:nowrap;color:var(--ink2)}.toc a:hover{color:var(--ink)}
 .seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
@@ -89,7 +89,7 @@ ${SHOP_CSS}
 }
 `;
 
-export function pageHtml(d, { script = '', title, description } = {}) {
+export function pageHtml(d, { script = '', title, description, back = null } = {}) {
   const plan = d.plan, steps = d.model.steps;
   const t = title || `${plan.name} build plan`;
   return `<!doctype html>
@@ -103,7 +103,7 @@ export function pageHtml(d, { script = '', title, description } = {}) {
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <a class="brand" href="#top">${esc(plan.short || plan.name)}</a>
+  ${back ? `<a class="back" href="${esc(back.href)}">← ${esc(back.label)}</a>` : ''}<a class="brand" href="#top">${esc(plan.short || plan.name)}</a>
   <nav class="toc" aria-label="Sections">
     <a href="#size">Size</a><a href="#checks">Checks</a><a href="#bom">Materials</a><a href="#drawings">Drawings</a><a href="#legend">Legend</a><a href="#steps">Steps</a><a href="#cutlist">Cut list</a>
   </nav>

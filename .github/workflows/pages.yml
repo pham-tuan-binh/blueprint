@@ -1,0 +1,61 @@
+# Checks every plan and publishes the plans site to GitHub Pages.
+# Every push and pull request runs the checks and builds the site; pushes to main
+# also deploy it. One-time setup: Settings > Pages > Build and deployment >
+# Source: GitHub Actions.
+#
+# To add a plan, add plans/<id>/design.mjs: it is audited, built and listed on the
+# site's front page automatically.
+name: Plans site
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Frame solver matches textbook beams
+        run: node skills/blueprint/scripts/test-fea.mjs
+
+      - name: Every plan passes its audit at every size its fields allow
+        run: |
+          for f in plans/*/design.mjs skills/blueprint/examples/*/design.mjs; do
+            echo "::group::audit $f"
+            node skills/blueprint/scripts/audit.mjs "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Build the site
+        run: node tools/site.mjs --out _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

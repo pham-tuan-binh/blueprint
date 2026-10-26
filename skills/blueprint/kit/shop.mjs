@@ -12,6 +12,8 @@ export const VIEWS = {
   top: { title: 'Top', pr: q => [q[0], -q[1]], depth: q => q[2] },
   front: { title: 'Front', pr: q => [q[0], -q[2]], depth: q => -q[1] },
   side: { title: 'Side (from the right)', pr: q => [q[1], -q[2]], depth: q => q[0] },
+  // isometric from the front right, for gallery cards (painter's order by centroid)
+  iso: { title: 'Isometric', pr: q => [(q[0] + q[1]) * 0.7071, -(q[1] - q[0] + 2 * q[2]) * 0.4082], depth: q => q[0] - q[1] + q[2] },
 };
 const boxCorners = ([lo, hi]) => [0, 1, 2, 3, 4, 5, 6, 7].map(i => [i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
 const cylCorners = sh => {
@@ -37,23 +39,47 @@ export function solids(d, { upTo = Infinity, only = null } = {}) {
   return out;
 }
 
+// Painter's order for the isometric view: box A is behind box B when they are
+// separated along an axis on the far side (camera at +x, -y, +z). A topological
+// sort over those pairs; centroid depth breaks ties and cycles.
+function isoOrder(polys) {
+  const box = p => [[0, 1, 2].map(i => Math.min(...p.pts.map(q => q[i]))), [0, 1, 2].map(i => Math.max(...p.pts.map(q => q[i])))];
+  const B = polys.map(box), e = 0.5, n = polys.length;
+  const behind = (a, b) => B[a][1][0] <= B[b][0][0] + e || B[a][0][1] >= B[b][1][1] - e || B[a][1][2] <= B[b][0][2] + e;
+  const indeg = new Array(n).fill(0), out = polys.map(() => []);
+  for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) {
+    if (a === b) continue;
+    if (behind(a, b) && !behind(b, a)) { out[a].push(b); indeg[b]++; }
+  }
+  const done = [], used = new Array(n).fill(false);
+  while (done.length < n) {
+    let pick = -1;
+    for (let i = 0; i < n; i++) if (!used[i] && indeg[i] === 0 && (pick < 0 || polys[i].depth < polys[pick].depth)) pick = i;
+    if (pick < 0) for (let i = 0; i < n; i++) if (!used[i] && (pick < 0 || polys[i].depth < polys[pick].depth)) pick = i;
+    used[pick] = true; done.push(polys[pick]);
+    for (const b of out[pick]) indeg[b]--;
+  }
+  return done;
+}
+
 // One orthographic view with overall dimensions. now(id) marks the parts of this step.
-function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null }) {
+function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null, bare = false }) {
   const V = VIEWS[view];
-  const polys = items.map(it => ({ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }))
+  let polys = items.map(it => ({ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }))
     .sort((a, b) => a.depth - b.depth);
+  if (view === 'iso') polys = isoOrder(polys);
   const all = polys.flatMap(p => p.hull);
   const x0 = Math.min(...all.map(p => p[0])), x1 = Math.max(...all.map(p => p[0]));
   const y0 = Math.min(...all.map(p => p[1])), y1 = Math.max(...all.map(p => p[1]));
   const span = Math.max(x1 - x0, y1 - y0, 200);
-  const fs = fsIn || span / 34, pad = fs * 5;
+  const fs = fsIn || span / 34, pad = fs * (bare ? 1.2 : 5);
   // the dimensioned extent is what this step adds (or everything, when it is the GA)
   // jigs dimension centre lines (like the joint table, marked ℄); the GA outside faces
   const nowPts = dimPts ? dimPts.map(V.pr) : polys.filter(p => now(p)).flatMap(p => p.hull);
   const cl = dimPts ? '℄ ' : '';
   const dx0 = Math.min(...nowPts.map(p => p[0])), dx1 = Math.max(...nowPts.map(p => p[0]));
   const dy0 = Math.min(...nowPts.map(p => p[1])), dy1 = Math.max(...nowPts.map(p => p[1]));
-  const vb = [x0 - pad, y0 - pad * 1.2, x1 - x0 + pad * 2.2, y1 - y0 + pad * 2.6];
+  const vb = bare ? [x0 - pad, y0 - pad, x1 - x0 + pad * 2, y1 - y0 + pad * 2] : [x0 - pad, y0 - pad * 1.2, x1 - x0 + pad * 2.2, y1 - y0 + pad * 2.6];
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(f1).join(' ')}" class="${cls}" style="--fs:${f1(fs)}px" data-w="${f1(vb[2])}" role="img" aria-label="${esc(title || V.title)}">`;
   for (const p of polys) s += `<polygon class="${now(p) ? 'jn' : 'jo'} k-${p.kind}" points="${p.hull.map(q => f1(q[0]) + ',' + f1(q[1])).join(' ')}"/>`;
   if (dims && nowPts.length) {
@@ -80,7 +106,7 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
     const [x, y] = V.pr(l.p);
     s += `<circle class="jp" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.28)}"/><text class="jl" x="${f1(x + fs * 0.7)}" y="${f1(y - fs * 0.85)}">${esc(l.name)}</text>`;
   }
-  s += `<text class="jt" x="${f1(vb[0] + fs * 0.6)}" y="${f1(vb[1] + fs * 1.6)}">${esc(title || V.title)}</text>`;
+  if (!bare) s += `<text class="jt" x="${f1(vb[0] + fs * 0.6)}" y="${f1(vb[1] + fs * 1.6)}">${esc(title || V.title)}</text>`;
   return s + '</svg>';
 }
 
@@ -120,6 +146,11 @@ export function jigSheet(d, st, views) {
   const items = solids(d, { upTo: st.n, only: st.alone ? x => x.step === st.n : null });
   const labels = stepNodes(d, st.n);
   return sheet(items, views, { now: it => it.step === st.n, labels, dimPts: labels.map(l => l.p), title: v => `Step ${st.n}: ${VIEWS[v].title}`, u: d.units });
+}
+
+// one undimensioned view for a gallery card
+export function thumbSvg(d, view = 'iso') {
+  return viewSvg(solids(d), view, { u: d.units, dims: false, bare: true, cls: 'jig ga thumb' });
 }
 
 export function gaSheet(d) {
