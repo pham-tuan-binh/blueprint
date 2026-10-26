@@ -40,6 +40,17 @@ On the page the step opens with its number big (64 px), the title and the time, 
 - **hours**: honest time for one competent person, not counting paint drying. The page totals them.
 - **Explanations go to the guide.** These words get a `?` automatically the first time they appear in a step, opening a short explanation that links into the plan's guide: tack, weld out, mitre, diagonals, plumb, deburr, long point, datum, solvent cement, dry fit, load test, cutting plan, piece mark. Use the words; do not explain them in the task.
 
+## Can it get there?
+
+Before a step fits a part, check its path, not just its final position. The model shows where a part ends up; it does not show how it got there. Walk each step in order and ask: what is already built round this spot, and does the part fit past it? The usual traps:
+
+- a full-size deck or panel on top of a welded rack: the rails above shut it out. Make it the size of the opening and sit it on ledges inside the frame, so it drops down from the top.
+- a sheet or panel between posts after the posts are tied together top and bottom.
+- a wheel, bearing or bushing on an axle after both ends are welded in.
+- wood, plastic, paint or bought parts fitted before a weld near them.
+
+If the order alone cannot solve it, change the design, and say in the step how the part goes in ("lower each deck down through the frames, the lowest first").
+
 ## Phrases that fail
 
 - "Assemble the frame." (Which pieces, in what order, held how, checked how?)
@@ -48,6 +59,7 @@ On the page the step opens with its number big (64 px), the title and the time, 
 - "Make sure it is square." (Measure what, to what tolerance?)
 - "Tack each joint, which means a small weld that just holds it, on two faces so that it does not move." (Teaching in the step: say "Tack each joint on two faces."; the `?` explains tack.)
 - "Optionally add bracing if needed." (The checks decide what is needed; the model either has the brace or does not.)
+- "Screw the decks down." on a rack already welded shut round them. (How did the decks get in? See "Can it get there?" above.)
 - A step that fits a part the materials list does not have, or a part on the list that no step fits. (The audit fails a part without a step.)
 
 ## Safety lines

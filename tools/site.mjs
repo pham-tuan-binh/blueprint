@@ -76,9 +76,9 @@ const GALLERY_CSS = `
 .gh svg{width:18px;height:18px;vertical-align:calc(.35em - 9px);margin-right:8px}.gh .ext{width:11px;height:11px;vertical-align:calc(.35em - 5.5px);margin:0 0 0 4px}
 .gh:hover,.gh:focus-visible{color:var(--ink)}.gh:hover span,.gh:focus-visible span{text-decoration-color:var(--ink)}
 .hero{max-width:66ch;margin:40px 0 28px}.links{display:flex;flex-wrap:wrap;gap:8px 24px;margin:0}
-.hero h1{margin:0 0 10px;font-size:48px;letter-spacing:-.02em}
+.hero h1{margin:0 0 10px;font-family:"Schoolbell",cursive;font-size:56px;font-weight:400;letter-spacing:0}
 .hero .tag{font-size:20px;line-height:1.4;color:var(--ink);margin:0 0 20px}
-@media (max-width:600px){.hero{margin-top:16px}.hero h1{font-size:36px}.hero .tag{font-size:18px}}
+@media (max-width:600px){.hero{margin-top:16px}.hero h1{font-size:44px}.hero .tag{font-size:18px}}
 .start{display:grid;gap:14px;max-width:760px;margin:0 0 48px;padding:0;list-style:none}
 .start li{display:grid;grid-template-columns:34px 1fr;gap:4px 12px}
 .start .n{width:28px;height:28px;border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font:600 13px var(--mono);margin-top:1px}
@@ -119,6 +119,9 @@ const index = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <title>Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schoolbell&display=swap" rel="stylesheet">
 <meta name="description" content="Blueprint: an agent skill that generates build plans for your fabrication shop. A 3D model, sizes you can change, checks, cut sheets, 3D prints and numbered steps.">
 <style>${PAGE_CSS}${GALLERY_CSS}</style>
 </head>

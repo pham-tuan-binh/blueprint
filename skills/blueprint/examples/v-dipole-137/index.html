@@ -112,7 +112,7 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:#ffd100;stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
 .jn.f{stroke:#ffd100;stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
-.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}.jn.k-hardware.f,.jo.k-hardware.f{stroke:none}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
 .lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}
@@ -367,6 +367,109 @@ const f1 = v => (Math.round(v * 10) / 10).toString();
 
 return { v3, DEG, G0, INCH, inch, feet, MATERIALS, rectTube, squareTube, roundTube, flatBar, bar, timber, rod, pvcPipe, makeUnits, resolveParams, esc, r0, f1 };
 })();
+const __shapes = (() => {
+// Shapes beyond the primitives. Every generator returns a mesh, { type: 'mesh', pts, tris }:
+// points in plan coordinates (mm) and triangles as index triples, wound so they face
+// outward. The 3D view, the drawings, the bounding boxes and 3D prints (STL, .scad,
+// filament) all take a mesh, so a plan is never limited to boxes and cylinders: when no
+// generator fits, write the points and triangles yourself, or build them from these.
+// In a plan: build(p, k) gets them as k.shapes.
+const { v3 } = __core;
+const { sub, add, mul, cross, norm, dot, len } = v3;
+
+// two unit vectors square to an axis and to each other
+function frame(ax) {
+  const a = norm(ax), u = norm(cross(a, Math.abs(a[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0]));
+  return [u, cross(a, u)];
+}
+const ring = (c, u, w, r, n) => Array.from({ length: n }, (_, k) => { const t = (k / n) * 2 * Math.PI; return add(c, add(mul(u, r * Math.cos(t)), mul(w, r * Math.sin(t)))); });
+
+// rings of n points joined into a tube; capped ends close it (a solid, so it can be printed)
+function loft(rings, { caps = true } = {}) {
+  const n = rings[0].length, pts = rings.flat(), tris = [];
+  for (let i = 0; i + 1 < rings.length; i++) for (let k = 0; k < n; k++) {
+    const a = i * n + k, b = i * n + ((k + 1) % n), c = a + n, d = b + n;
+    tris.push([a, b, d], [a, d, c]);
+  }
+  if (caps) {
+    const s = pts.length, e = s + 1, last = (rings.length - 1) * n;
+    pts.push(rings[0].reduce((p, q) => add(p, mul(q, 1 / n)), [0, 0, 0]), rings[rings.length - 1].reduce((p, q) => add(p, mul(q, 1 / n)), [0, 0, 0]));
+    for (let k = 0; k < n; k++) { tris.push([s, (k + 1) % n, k]); tris.push([e, last + k, last + ((k + 1) % n)]); }
+  }
+  return orient({ type: 'mesh', pts, tris });
+}
+
+// make every triangle face away from the inside (signed volume positive)
+function orient(m) { if (meshVolume(m) < 0) m.tris = m.tris.map(([a, b, c]) => [a, c, b]); return m; }
+
+const shapes = {
+  // a ball
+  sphere(c, r, n = 24) {
+    const rows = Array.from({ length: n / 2 - 1 }, (_, i) => { const t = ((i + 1) / (n / 2)) * Math.PI; return ring(add(c, [0, 0, -r * Math.cos(t)]), [1, 0, 0], [0, 1, 0], r * Math.sin(t), n); });
+    const m = loft(rows, { caps: false }), s = m.pts.length, last = (rows.length - 1) * n;
+    m.pts.push(add(c, [0, 0, -r]), add(c, [0, 0, r]));
+    for (let k = 0; k < n; k++) { m.tris.push([s, (k + 1) % n, k]); m.tris.push([s + 1, last + k, last + ((k + 1) % n)]); }
+    return orient(m);
+  },
+  // a cone or a frustum from a (radius r1) to b (radius r2); r2 = 0 makes a point
+  cone(a, b, r1, r2 = 0, n = 32) {
+    const [u, w] = frame(sub(b, a));
+    return loft([ring(a, u, w, r1, n), ring(b, u, w, Math.max(r2, 1e-3), n)]);
+  },
+  // a tube of radius r along a path of points (a rail, a hose, a bent bar), round in section
+  sweep(path, r, n = 24) {
+    const rings = path.map((p, i) => {
+      const t = norm(sub(path[Math.min(i + 1, path.length - 1)], path[Math.max(i - 1, 0)]));
+      const [u, w] = frame(t);
+      return ring(p, u, w, r, n);
+    });
+    // keep the rings from twisting: turn each to follow the one before
+    for (let i = 1; i < rings.length; i++) {
+      const prev = rings[i - 1], cur = rings[i];
+      let best = 0, bd = Infinity;
+      for (let s = 0; s < n; s++) { const d = len(sub(cur[s], prev[0])); if (d < bd) { bd = d; best = s; } }
+      rings[i] = cur.slice(best).concat(cur.slice(0, best));
+    }
+    return loft(rings);
+  },
+  // points along an arc: centre c, from point `from`, turning `deg` degrees about `axis`
+  arc(c, from, axis, deg, steps = 16) {
+    const a = norm(axis), r0 = sub(from, c);
+    return Array.from({ length: steps + 1 }, (_, i) => {
+      const t = ((deg * i) / steps) * Math.PI / 180, cs = Math.cos(t), sn = Math.sin(t);
+      // Rodrigues rotation of r0 about a
+      return add(c, add(add(mul(r0, cs), mul(cross(a, r0), sn)), mul(a, dot(a, r0) * (1 - cs))));
+    });
+  },
+  // a curved tube: radius r round a bend of centre-line radius R from point `from`, `deg`
+  // degrees about `axis` through the bend centre c (an elbow body, a bent rail)
+  bend(c, from, axis, deg, r, n = 24) { return shapes.sweep(shapes.arc(c, from, axis, deg, Math.max(6, Math.round(Math.abs(deg) / 6))), r, n); },
+  // a profile [[radius, height], ...] spun about the axis from a toward b (a knob, a foot, a bottle)
+  revolve(profile, a, b, n = 32) {
+    const ax = norm(sub(b, a)), [u, w] = frame(ax);
+    return loft(profile.map(([rad, h]) => ring(add(a, mul(ax, h)), u, w, Math.max(rad, 1e-3), n)));
+  },
+  // a flat outline [[u, v], ...] pushed out along an axis ('x', 'y' or 'z') from z0 by h
+  extrude(outline, z0, h, axis = 'z') {
+    const place = (q, z) => (axis === 'x' ? [z, q[0], q[1]] : axis === 'y' ? [q[0], z, q[1]] : [q[0], q[1], z]);
+    const n = outline.length, pts = [...outline.map(q => place(q, z0)), ...outline.map(q => place(q, z0 + h))], tris = [];
+    for (let k = 0; k < n; k++) { const j = (k + 1) % n; tris.push([k, j, n + j], [k, n + j, n + k]); }
+    // the caps as fans: right for convex outlines; split a concave one into convex pieces
+    for (let k = 1; k + 1 < n; k++) { tris.push([0, k + 1, k]); tris.push([n, n + k, n + k + 1]); }
+    return orient({ type: 'mesh', pts, tris });
+  },
+};
+
+// helpers every consumer of a mesh shares
+function meshVolume(m) {
+  let v = 0;
+  for (const [a, b, c] of m.tris) v += dot(m.pts[a], cross(m.pts[b], m.pts[c])) / 6;
+  return v;
+}
+const meshBox = m => [[0, 1, 2].map(i => Math.min(...m.pts.map(p => p[i]))), [0, 1, 2].map(i => Math.max(...m.pts.map(p => p[i])))];
+
+return { shapes, meshVolume, meshBox };
+})();
 const __print = (() => {
 // 3D-printed parts: fixtures, hubs, brackets, clips. A print is a union of simple
 // solids minus cuts, in the plan's own coordinates (mm), so it sits where it goes
@@ -386,6 +489,7 @@ const __print = (() => {
 // again (clips along an arm): turned about a vertical axis through `about`, then
 // moved. One STL; the quantity is the copies plus one.
 const { v3 } = __core;
+const { meshVolume, meshBox } = __shapes;
 // g/cm³, $/kg, and what each is for
 const FILAMENTS = {
   PLA: { rho: 1.24, price: 20, note: 'indoor; softens in a hot car or the sun' },
@@ -411,6 +515,8 @@ const ext = (sh) => {
     lo[iz] = sh.z0; hi[iz] = sh.z0 + sh.h;
     return [lo, hi];
   }
+  if (sh.type === 'sphere') return [sh.c.map(v => v - sh.r), sh.c.map(v => v + sh.r)];
+  if (sh.type === 'mesh') return meshBox(sh);
   throw new Error(`unknown print solid "${sh.type}"`);
 };
 const printQty = pr => pr.qty || (pr.copies?.length || 0) + 1;
@@ -445,6 +551,8 @@ function solidsOf(part) {
       }
       return out;
     }
+    if (sh.type === 'mesh') return sh.pts;
+    if (sh.type === 'sphere') return [0, 1, 2].flatMap(ax => Array.from({ length: 24 }, (_, k) => { const t = (k / 24) * 2 * Math.PI, q = sh.c.slice(), [i, j] = [0, 1, 2].filter(a => a !== ax); q[i] += sh.r * Math.cos(t); q[j] += sh.r * Math.sin(t); return q; }));
     const [lo, hi] = ext(sh);
     return [0, 1, 2, 3, 4, 5, 6, 7].map(i => [i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
   });
@@ -469,6 +577,8 @@ const vol = sh => {
   if (sh.type === 'tube') return Math.PI * (sh.r * sh.r - sh.ri * sh.ri) * L;
   if (sh.type === 'hole') return Math.PI * (sh.d / 2) ** 2 * L;
   if (sh.type === 'prism') return area(sh.pts) * sh.h;
+  if (sh.type === 'sphere') return (4 / 3) * Math.PI * sh.r ** 3;
+  if (sh.type === 'mesh') return Math.abs(meshVolume(sh));
   return 0;
 };
 
@@ -532,6 +642,9 @@ function scadSolid(sh, grow = 0) {
     const rot = sh.axis === 'x' ? 'rotate([90, 0, 90]) ' : sh.axis === 'y' ? 'rotate([90, 0, 0]) mirror([0, 0, 1]) ' : '';
     return `${rot}translate([0, 0, ${(sh.z0 - grow).toFixed(3)}]) linear_extrude(height = ${(sh.h + 2 * grow).toFixed(3)}) polygon(${JSON.stringify(sh.pts.map(p => p.map(x => +x.toFixed(3))))});`;
   }
+  if (sh.type === 'sphere') return `translate(${n3(sh.c)}) sphere(r = ${(sh.r + grow).toFixed(3)});`;
+  // OpenSCAD wants polyhedron faces wound clockwise seen from outside: reverse ours
+  if (sh.type === 'mesh') return `polyhedron(points = ${JSON.stringify(sh.pts.map(p => p.map(x => +x.toFixed(3))))}, faces = ${JSON.stringify(sh.tris.map(([a, b, c]) => [a, c, b]))});`;
   return '';
 }
 function scadOf(part, plan) {
@@ -1037,6 +1150,7 @@ const { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, round
 const { solveJoints, memberCorners, describeEnd } = __joints;
 const { runLoads } = __fea;
 const { printBox, printBoxAll, printEstimate, printQty, FILAMENTS, bedBox } = __print;
+const { shapes, meshBox } = __shapes;
 const { sub, len, dot, add, mul } = v3;
 
 // ---------------------------------------------------------------- normalise
@@ -1180,6 +1294,8 @@ function shapeBox(sh) {
     return bs.length ? [[0, 1, 2].map(i => Math.min(...bs.map(b => b[0][i]))), [0, 1, 2].map(i => Math.max(...bs.map(b => b[1][i])))] : null;
   }
   if (sh.type === 'box') return [sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)];
+  if (sh.type === 'sphere') return [sh.c.map(v => v - sh.r), sh.c.map(v => v + sh.r)];
+  if (sh.type === 'mesh') return meshBox(sh);
   if (sh.type === 'cyl') {
     // a disc of radius r around the axis reaches r * sqrt(1 - axis_i^2) along each world axis
     const ax = v3.norm(sub(sh.b, sh.a)), e = ax.map(c => sh.r * Math.sqrt(Math.max(0, 1 - c * c)));
@@ -1344,7 +1460,7 @@ function derive(plan, given = {}, system) {
   const { p, notes, limits } = resolveParams(plan.params || [], given);
   const units = makeUnits(system || p.units || plan.units || 'metric');
   // the design gets its helpers injected, so a design.mjs needs no import paths
-  const kit = { u: units, p, v3, MATERIALS, FILAMENTS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet };
+  const kit = { u: units, p, v3, MATERIALS, FILAMENTS, shapes, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet };
   const model = normalise(plan.build(p, kit), plan);
   const { joints, sites, report } = solveJoints(model);
   // identical plates share a mark (P1, P2...): same size, thickness, holes and material
@@ -1468,11 +1584,11 @@ const CODE = { yellow: '#ffd100', green: '#14934a', red: '#e1251b' };
 // top: looking down, front at the bottom. front: from -y. side: from +x.
 // depth: larger is nearer the viewer, drawn later.
 const VIEWS = {
-  top: { title: 'Top', pr: q => [q[0], -q[1]], depth: q => q[2] },
-  front: { title: 'Front', pr: q => [q[0], -q[2]], depth: q => -q[1] },
-  side: { title: 'Side (from the right)', pr: q => [q[1], -q[2]], depth: q => q[0] },
+  top: { title: 'Top', pr: q => [q[0], -q[1]], depth: q => q[2], eye: [0, 0, 1] },
+  front: { title: 'Front', pr: q => [q[0], -q[2]], depth: q => -q[1], eye: [0, -1, 0] },
+  side: { title: 'Side (from the right)', pr: q => [q[1], -q[2]], depth: q => q[0], eye: [1, 0, 0] },
   // isometric from the front right, for gallery cards (painter's order by centroid)
-  iso: { title: 'Isometric', pr: q => [(q[0] + q[1]) * 0.7071, -(q[1] - q[0] + 2 * q[2]) * 0.4082], depth: q => q[0] - q[1] + q[2] },
+  iso: { title: 'Isometric', pr: q => [(q[0] + q[1]) * 0.7071, -(q[1] - q[0] + 2 * q[2]) * 0.4082], depth: q => q[0] - q[1] + q[2], eye: [0.577, -0.577, 0.577] },
 };
 const boxCorners = ([lo, hi]) => [0, 1, 2, 3, 4, 5, 6, 7].map(i => [i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
 const cylCorners = sh => {
@@ -1486,6 +1602,12 @@ const cylCorners = sh => {
   return out;
 };
 
+// points round a sphere's three great circles: its outline is a circle in every view
+const sphPoints = sh => [0, 1, 2].flatMap(ax => Array.from({ length: 24 }, (_, k) => {
+  const t = (k / 24) * 2 * Math.PI, u = [Math.cos(t) * sh.r, Math.sin(t) * sh.r], p = sh.c.slice(), [i, j] = [0, 1, 2].filter(a => a !== ax);
+  p[i] += u[0]; p[j] += u[1]; return p;
+}));
+
 // Every solid in the plan as a list of corner sets, tagged.
 function solids(d, { upTo = Infinity, only = null } = {}) {
   const out = [];
@@ -1494,7 +1616,8 @@ function solids(d, { upTo = Infinity, only = null } = {}) {
   for (const pr of d.model.prints || []) if (pr.step <= upTo && (!only || only(pr))) for (const pts of printSolids(pr, { all: true })) out.push({ id: pr.id, kind: 'print', step: pr.step, pts });
   for (const h of d.model.hardware) if (h.shape && h.step <= upTo && (!only || only(h))) {
     const shapes = [h.shape].flat(Infinity);
-    for (const sh of shapes) out.push({ id: h.id, kind: 'hardware', step: h.step, pts: sh.type === 'box' ? boxCorners([sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)]) : cylCorners(sh) });
+    for (const sh of shapes) out.push({ id: h.id, kind: 'hardware', step: h.step, mesh: sh.type === 'mesh' ? sh : null,
+      pts: sh.type === 'box' ? boxCorners([sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)]) : sh.type === 'sphere' ? sphPoints(sh) : sh.type === 'mesh' ? sh.pts : cylCorners(sh) });
   }
   return out;
 }
@@ -1569,18 +1692,37 @@ function memberSlices(it, V) {
   return out;
 }
 
+// A mesh in a flat view: its triangles filled, outlined only where it turns away from the
+// viewer (the silhouette) or ends (an open edge), so a curved or concave shape draws true.
+// Bought parts draw as dashed outlines only, so their triangles are not written.
+function meshPoly(it, V) {
+  const m = it.mesh, P = m.pts.map(V.pr), edges = new Map();
+  let fill = '';
+  for (const [a, b, c] of m.tris) {
+    const n = cross3(sub3(m.pts[b], m.pts[a]), sub3(m.pts[c], m.pts[a])), front = n[0] * V.eye[0] + n[1] * V.eye[1] + n[2] * V.eye[2] > 0;
+    if (front && it.kind !== 'hardware') fill += `M${f1(P[a][0])} ${f1(P[a][1])}L${f1(P[b][0])} ${f1(P[b][1])}L${f1(P[c][0])} ${f1(P[c][1])}Z`;
+    for (const [i, j] of [[a, b], [b, c], [c, a]]) { const k = i < j ? `${i},${j}` : `${j},${i}`; (edges.get(k) || edges.set(k, []).get(k)).push(front); }
+  }
+  let out = '';
+  for (const [k, f] of edges) if (f.length === 1 || f.some(x => x !== f[0])) { const [i, j] = k.split(',').map(Number); out += `M${f1(P[i][0])} ${f1(P[i][1])}L${f1(P[j][0])} ${f1(P[j][1])}`; }
+  return { ...it, hull: hull2(P), depth: m.pts.reduce((s, q) => s + V.depth(q), 0) / m.pts.length, fill, edges: out };
+}
+const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+
 // One orthographic view with overall dimensions. now(id) marks the parts of this step.
 // overlay(V, fs) adds marks of a figure's own; win { c, r } crops to a close-up round c.
 function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null, bare = false, overlay = null, win = null }) {
   const V = VIEWS[view];
   // in the flat views a member is drawn as short slices, each sorted by its own depth, so a
   // sloped member passing over or under another overlaps right (a whole member has no one depth)
-  let polys = items.flatMap(it => (view !== 'iso' && it.kind === 'member' && it.pts.length === 8) ? memberSlices(it, V)
+  let polys = items.flatMap(it => it.mesh ? [meshPoly(it, V)] : (view !== 'iso' && it.kind === 'member' && it.pts.length === 8) ? memberSlices(it, V)
     : [{ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }])
     .sort((a, b) => a.depth - b.depth);
   if (view === 'iso') polys = isoOrder(polys);
   const draw = p => {
     const c = `${now(p) ? 'jn' : 'jo'} k-${p.kind}`, pts = p.hull.map(q => f1(q[0]) + ',' + f1(q[1])).join(' ');
+    if (p.fill != null) return `<path class="${c} f" d="${p.fill}"/>${p.edges ? `<path class="${c} e" d="${p.edges}"/>` : ''}`;
     return p.edges == null ? `<polygon class="${c}" points="${pts}"/>` : `<polygon class="${c} f" points="${pts}"/>${p.edges ? `<path class="${c} e" d="${p.edges}"/>` : ''}`;
   };
   if (win) {
@@ -1920,7 +2062,7 @@ const SHOP_CSS = `
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:${CODE.yellow};stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
 .jn.f{stroke:${CODE.yellow};stroke-width:calc(var(--fs) * .03)}.jo.f{stroke:var(--old);stroke-width:calc(var(--fs) * .03)}.ga .jn.f{stroke:var(--face)}.jn.e,.jo.e{fill:none;stroke-linecap:round}
-.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper);fill-opacity:.6}.jn.k-cut,.jo.k-cut{fill:none;stroke-dasharray:calc(var(--fs) * .35) calc(var(--fs) * .2);stroke-width:calc(var(--fs) * .05)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}.jn.k-hardware.f,.jo.k-hardware.f{stroke:none}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
 .lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}
@@ -2214,6 +2356,7 @@ ${d.prints.length ? '<li>Printing: ventilate for ASA and ABS.</li>' : ''}
 </head>
 <body>
 <main>
+  <a class="btn back" href="${esc(back)}"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>Back to the build plan</a>
   <h1>How to read this plan</h1>
   <p class="lede">${esc(plan.name)}: what the plan leaves out. Read once; after that the <span class="q" style="pointer-events:none">${ICON.q}</span> marks remind you.</p>
   ${contents}
@@ -2507,7 +2650,18 @@ function solidGeo(sh, grow = 0) {
     ng.computeVertexNormals();
     return ng;
   }
+  if (sh.type === 'sphere') { const g = new THREE.SphereGeometry(sh.r + grow, 32, 20); g.translate(...sh.c); return g; }
+  if (sh.type === 'mesh') return meshGeo(sh);
   throw new Error(`unknown print solid "${sh.type}"`);
+}
+// a mesh shape (kit/shapes.mjs) as three geometry, in plan coordinates
+function meshGeo(m) {
+  const out = new Float32Array(m.tris.length * 9);
+  m.tris.forEach(([a, b, c], t) => [a, b, c].forEach((v, k) => out.set(m.pts[v], t * 9 + k * 3)));
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(out, 3));
+  g.computeVertexNormals();
+  return g;
 }
 const clean = g => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal') n.deleteAttribute(k); n.computeVertexNormals(); return n; };
 async function printGeometry(part) {
@@ -2630,6 +2784,7 @@ function createViewer(el, { onPick } = {}) {
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     return g;
   }
+  function sphGeo(c, r) { const g = new THREE.SphereGeometry(r, 28, 18); g.translate(c[0], c[1], c[2]); return g; }
   function boxGeo(c, s) { const g = new THREE.BoxGeometry(s[0], s[1], s[2]); g.translate(c[0], c[1], c[2]); return g; }
   function cylGeo(a, b, r, seg = 28) {
     const va = V(a), vb = V(b), d = new THREE.Vector3().subVectors(vb, va);
@@ -2691,7 +2846,7 @@ function createViewer(el, { onPick } = {}) {
     }
     for (const h of md.hardware) for (const sh of [h.shape || []].flat(Infinity)) {
       const info = { id: h.id, name: h.name, step: h.step, kind: 'hardware', spec: h.spec };
-      add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');
+      add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : sh.type === 'sphere' ? sphGeo(sh.c, sh.r) : sh.type === 'mesh' ? meshGeo(sh) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');
     }
     const [lo, hi] = d.bbox;
     const span = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);

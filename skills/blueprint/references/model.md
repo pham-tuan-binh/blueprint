@@ -117,11 +117,27 @@ An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. P
   shape: [{ type: 'cyl', a: [x, y, 0], b: [x, y, 40], r: 25 }] }
 ```
 
-Anything bought. `shape` (optional, a box `{ type: 'box', c, s }` or cylinder, or a list) draws it in 3D and the drawings and makes it count in the floating check; `kg` adds to the mass and the analysis; `on: 'id'` names what holds it if it does not touch it.
+Anything bought. `shape` (optional, a box `{ type: 'box', c, s }`, a cylinder `{ type: 'cyl', a, b, r }`, a sphere `{ type: 'sphere', c, r }`, or a list) draws it in 3D and the drawings and makes it count in the floating check; `kg` adds to the mass and the analysis; `on: 'id'` names what holds it if it does not touch it.
 
 - **A fitting** (a PVC tee or elbow, a tube clamp, a socket): put each pipe's nodes where the pipe really ends (the bottom of the socket, the laying length from the fitting's centre), so the cut length is right, and give the fitting a `shape` round the joint. With `qty` above 1, give one list per piece (`shape: [[run, branch], [run, branch]]`). Then a member end inside a fitting reads "into the tee" on its cut sheet, two pipes that meet inside one are not a clash, and the analysis joins them where their axes cross (the fitting taken as rigid). `examples/pvc-drying-stand` does exactly this.
 - **The same part in several places** (a tee at each foot, each with its own `shape`): one entry per place is fine. The materials list and each step merge entries with the same `name`, `spec` and `price` into one line with the total quantity.
 - Names and specs of bought parts are trade names and stay as sold ("Tee, 32 mm solvent weld", "M8 × 25"): the units lint leaves them alone. Every size you compute goes through `u`.
+
+### shapes: model what the part really looks like
+
+Bought parts and prints take any shape, never only the nearest primitive. Primitives: `{ type: 'box', c, s }`, `{ type: 'cyl', a, b, r }`, `{ type: 'sphere', c, r }` (and for prints `tube`, `prism`). Anything else is a **mesh**, `{ type: 'mesh', pts, tris }` (points in mm, triangles as index triples facing outward), which the 3D view, the drawings (true silhouettes, so a curve draws as a curve) and prints (STL, .scad `polyhedron`, filament from its volume) all take. `build(p, k)` gets generators in `k.shapes`, each returning a mesh:
+
+| | |
+|---|---|
+| `sphere(c, r)` | a ball, a knob |
+| `cone(a, b, r1, r2)` | a cone or frustum (a foot, a funnel, a chamfered boss) |
+| `sweep(path, r)` | a round tube along any path of points (a hose, a cable, a bent rail) |
+| `arc(c, from, axis, deg)` | points along an arc, for `sweep` |
+| `bend(c, from, axis, deg, r)` | a curved tube round a bend (an elbow body, a bent handle) |
+| `revolve(profile, a, b)` | a profile `[[radius, height], ...]` spun about an axis (a bottle, a wheel, a turned leg) |
+| `extrude(outline, z0, h, axis)` | a flat outline pushed out (convex outlines; split a concave one into pieces) |
+
+When none fits, write the points and triangles yourself (a loop that builds them from the params, like any other number in the plan), or combine several shapes in one part's list. Make the shape look like the real thing: a PVC elbow is two socket hubs and a curved body (`examples/pvc-drying-stand`), not two cylinders meeting at a corner. If a shape keeps coming up, add a generator to `kit/shapes.mjs`.
 
 ### prints
 

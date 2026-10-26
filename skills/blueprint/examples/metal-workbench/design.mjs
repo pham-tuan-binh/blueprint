@@ -201,10 +201,11 @@ export const plan = {
         ['Top', `{mark:top-bar-1} x${top.n}`, 'left to right', u.fine(top.gap), `${u.len(BAR.bu / 2)} from the front`],
         ...(p.shelf ? [['Shelf', `{mark:shelf-bar-1} x${shelfBars.n}`, 'front to back', u.len(shelfBars.gap), `${u.len(shelfXs[0])} from the left end`]] : []),
       ] }, tasks: [
+      // the shelf first: once the top bars are on, the shelf bars cannot get in from above
+      ...(p.shelf ? [`${shelfBars.n} shelf bars ({mark:shelf-bar-1}) down through the open top, across the lower long rails, ends flush, ${u.len(shelfBars.gap, { u: true })} gaps. Tack both ends.`] : []),
       `${top.n} top bars ({mark:top-bar-1}) flat on the frame, lengthwise, ends flush.`,
       `Outer two flush front and back. ${u.fine(top.gap, { u: true })} gaps between: cut a spacer block that wide.`,
       'Tack each bar at both ends, then to every cross rail.',
-      ...(p.shelf ? [`${shelfBars.n} shelf bars ({mark:shelf-bar-1}) across the lower long rails, ends flush, ${u.len(shelfBars.gap, { u: true })} gaps. Tack both ends.`] : []),
       `Stitch-weld every crossing, ${u.len(25, { u: true })} each side, middle bar outward (${crossings} crossings).`,
       'Grind proud welds flush.',
     ], check: `Gaps equal ${u.tol(1)}. A straight edge across the bars rocks nowhere.`,
