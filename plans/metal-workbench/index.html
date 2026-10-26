@@ -19,7 +19,7 @@ a{color:inherit}code{font:13px var(--mono)}.muted{color:var(--muted)}.pad{paddin
 .seg{display:inline-flex;border:1.5px solid var(--ink)}.seg button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;padding:5px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .btn{font:600 14px var(--sans);background:none;color:var(--ink);border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer;white-space:nowrap}
-.btn:hover,.seg button:hover{background:var(--th)}.btn{display:inline-flex;align-items:center;gap:6px}.btn svg{width:15px;height:15px;flex:none}
+.btn:hover,.seg button:hover{background:var(--th)}.btn{display:inline-flex;align-items:center;gap:6px}.btn svg{width:15px;height:15px;flex:none}.btn.sm{font-size:12px;padding:3px 8px;font-family:var(--mono)}.dls{display:inline-flex;gap:6px;flex-wrap:wrap}
 main{max-width:1080px;margin:0 auto;padding:24px 16px 64px}
 .kicker{font:12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
 h1{font-size:34px;line-height:1.1;margin:6px 0 8px;letter-spacing:-.01em}.lede{max-width:70ch;margin:0 0 16px;color:var(--ink2)}
@@ -71,7 +71,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .legend th{text-align:left;white-space:nowrap;width:1%}.legend td{text-align:left}
 .wrap{overflow-x:auto;max-width:100%}
 .sheet{display:grid;gap:0;border:1px solid var(--line);margin:8px 0}.sheet figure{margin:0;min-width:0}.sheet svg{border:0!important}
-.sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr;max-width:620px}
+.sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr;max-width:620px}.sheet.print{max-width:520px}
 figure{margin:0}
 .views svg,.piece-list svg,figure>svg{border:1px solid var(--line);width:100%;height:auto;display:block}
 .piece-list{display:grid;gap:14px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
@@ -93,7 +93,7 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 .pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
-.ga .jn{fill:var(--face)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
 .lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}
@@ -102,7 +102,7 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 
 @media print{
   :root{--paper:#fff;--ink:#000;--ink2:#222;--muted:#555;--line:#bbb;--th:#eee;--face:#e4e4e4;--now:#444;--old:#eee;--oldline:#aaa;--lit:#000;color-scheme:light}
-  .top,.back,#print,.seg,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step],[data-show-wrap]{display:none!important}
+  .dls,.top,.back,#print,.seg,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step],[data-show-wrap]{display:none!important}
   .toc-box{break-after:page}.size>p.muted{display:none}
   .split{display:block}.size{border:1px solid #000}
   .step{break-before:page}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}details.sheets{border:0;padding:0}
@@ -186,6 +186,12 @@ const MATERIALS = {
   stainless: { name: 'Stainless 304', E: 193000, G: 77000, yield: 205, rho: 8.0e-6, join: 'weld' },
   aluminium: { name: 'Aluminium 6061-T6 (welded)', E: 68900, G: 26000, yield: 110, rho: 2.7e-6, join: 'weld' },
   timber: { name: 'Softwood C24', E: 11000, G: 690, yield: 14, rho: 4.2e-7, join: 'screw' },
+  // bolted, clamped or riveted aluminium keeps its full strength
+  'aluminium-bare': { name: 'Aluminium 6063-T6 (not welded)', E: 68900, G: 26000, yield: 170, rho: 2.7e-6, join: 'bolt' },
+  // PVC-U pipe: a long-term design stress, since PVC creeps under a steady load
+  pvc: { name: 'PVC-U pipe', E: 3000, G: 1100, yield: 25, rho: 1.4e-6, join: 'glue' },
+  copper: { name: 'Copper (half hard)', E: 117000, G: 44000, yield: 200, rho: 8.96e-6, join: 'solder' },
+  brass: { name: 'Brass CZ121', E: 100000, G: 37000, yield: 250, rho: 8.5e-6, join: 'solder' },
 };
 
 // ---------------------------------------------------------------- stock sections
@@ -236,6 +242,8 @@ const roundTube = (d, t, o) => makeSection('round-tube', d, d, t, o);
 const flatBar = (b, t, o) => makeSection('flat', b, t, 0, o);      // lies flat: b across, t up
 const bar = (bu, bw, o) => makeSection('bar', bu, bw, 0, o);
 const timber = (bu, bw, o) => makeSection('timber', bu, bw, 0, { material: 'timber', ...o });
+const rod = (d, o) => makeSection('round-tube', d, d, d / 2, o);      // solid round bar or wire
+const pvcPipe = (d, t, o) => makeSection('round-tube', d, d, t, { material: 'pvc', ...o });
 
 // ---------------------------------------------------------------- units
 // Metric is the default. Imperial prints inches to the nearest 1/16 (what a tape
@@ -321,7 +329,145 @@ const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 const r0 = v => Math.round(v);
 const f1 = v => (Math.round(v * 10) / 10).toString();
 
-return { v3, DEG, G0, INCH, inch, feet, MATERIALS, rectTube, squareTube, roundTube, flatBar, bar, timber, makeUnits, resolveParams, esc, r0, f1 };
+return { v3, DEG, G0, INCH, inch, feet, MATERIALS, rectTube, squareTube, roundTube, flatBar, bar, timber, rod, pvcPipe, makeUnits, resolveParams, esc, r0, f1 };
+})();
+const __print = (() => {
+// 3D-printed parts: fixtures, hubs, brackets, clips. A print is a union of simple
+// solids minus cuts, in the plan's own coordinates (mm), so it sits where it goes
+// in the 3D view and the drawings. This module is pure (Node and browser): the
+// bounding boxes, a filament and time estimate, and the OpenSCAD source. The exact
+// mesh (for the 3D view and the STL download) is cut in the browser by viewer.mjs.
+//
+// Solids and cuts:
+//   { type: 'cyl',   a, b, r }             a solid cylinder from point a to point b
+//   { type: 'tube',  a, b, r, ri }         a cylinder with a bore of radius ri through it
+//   { type: 'box',   c, s }                an axis-aligned box, centre c, size s
+//   { type: 'prism', pts, z0, h, axis }    a 2D outline extruded along 'z' (or 'x', 'y'):
+//                                          pts are [u, v] on the other two axes in order
+//   { type: 'hole',  a, b, d }             (cuts) a round hole of diameter d from a to b
+const { v3 } = __core;
+// g/cm³, $/kg, and what each is for
+const FILAMENTS = {
+  PLA: { rho: 1.24, price: 20, note: 'indoor; softens in a hot car or the sun' },
+  PETG: { rho: 1.27, price: 22, note: 'tough, outdoor-capable' },
+  ASA: { rho: 1.07, price: 28, note: 'outdoor and UV stable' },
+  ABS: { rho: 1.04, price: 22, note: 'heat resistant, warps without an enclosure' },
+  TPU: { rho: 1.21, price: 30, note: 'flexible: feet, bumpers, grips' },
+  PA: { rho: 1.14, price: 40, note: 'nylon: strong, wear resistant, dry it first' },
+};
+
+const ext = (sh) => {
+  if (sh.type === 'box') return [sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)];
+  if (sh.type === 'cyl' || sh.type === 'tube' || sh.type === 'hole') {
+    const r = sh.r ?? sh.d / 2, ax = v3.norm(v3.sub(sh.b, sh.a)), e = ax.map(c => r * Math.sqrt(Math.max(0, 1 - c * c)));
+    return [[0, 1, 2].map(i => Math.min(sh.a[i], sh.b[i]) - e[i]), [0, 1, 2].map(i => Math.max(sh.a[i], sh.b[i]) + e[i])];
+  }
+  if (sh.type === 'prism') {
+    const [iu, iv, iz] = prismAxes(sh.axis);
+    const us = sh.pts.map(p => p[0]), vs = sh.pts.map(p => p[1]);
+    const lo = [], hi = [];
+    lo[iu] = Math.min(...us); hi[iu] = Math.max(...us);
+    lo[iv] = Math.min(...vs); hi[iv] = Math.max(...vs);
+    lo[iz] = sh.z0; hi[iz] = sh.z0 + sh.h;
+    return [lo, hi];
+  }
+  throw new Error(`unknown print solid "${sh.type}"`);
+};
+const prismAxes = axis => (axis === 'x' ? [1, 2, 0] : axis === 'y' ? [0, 2, 1] : [0, 1, 2]);
+
+// Corner sets per solid, for the drawings (each solid drawn as its outline).
+function printSolids(part) {
+  return part.shapes.map(sh => {
+    if (sh.type === 'prism') {
+      const [iu, iv, iz] = prismAxes(sh.axis);
+      return sh.pts.flatMap(([u, v]) => [sh.z0, sh.z0 + sh.h].map(z => { const q = []; q[iu] = u; q[iv] = v; q[iz] = z; return q; }));
+    }
+    if (sh.type === 'cyl' || sh.type === 'tube') {
+      const ax = v3.norm(v3.sub(sh.b, sh.a));
+      let u = v3.cross(ax, Math.abs(ax[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0]); u = v3.norm(u);
+      const w = v3.cross(ax, u), out = [];
+      for (const p of [sh.a, sh.b]) for (let k = 0; k < 16; k++) {
+        const t = (k / 16) * Math.PI * 2;
+        out.push(v3.add(p, v3.add(v3.mul(u, sh.r * Math.cos(t)), v3.mul(w, sh.r * Math.sin(t)))));
+      }
+      return out;
+    }
+    const [lo, hi] = ext(sh);
+    return [0, 1, 2, 3, 4, 5, 6, 7].map(i => [i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
+  });
+}
+
+function printBox(part) {
+  const bs = part.shapes.map(ext);
+  return [[0, 1, 2].map(i => Math.min(...bs.map(b => b[0][i]))), [0, 1, 2].map(i => Math.max(...bs.map(b => b[1][i])))];
+}
+
+const area = pts => Math.abs(pts.reduce((s, p, i) => { const q = pts[(i + 1) % pts.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
+const vol = sh => {
+  if (sh.type === 'box') return sh.s[0] * sh.s[1] * sh.s[2];
+  const L = v3.len(v3.sub(sh.b ?? [0, 0, 0], sh.a ?? [0, 0, 0]));
+  if (sh.type === 'cyl') return Math.PI * sh.r * sh.r * L;
+  if (sh.type === 'tube') return Math.PI * (sh.r * sh.r - sh.ri * sh.ri) * L;
+  if (sh.type === 'hole') return Math.PI * (sh.d / 2) ** 2 * L;
+  if (sh.type === 'prism') return area(sh.pts) * sh.h;
+  return 0;
+};
+
+// An honest estimate, not a slicer: solid volume (overlaps and cuts approximated),
+// walls and skins solid, the rest at the infill. About 12 g an hour on a common
+// 0.4 mm nozzle at 0.2 mm layers.
+function printEstimate(part) {
+  const f = FILAMENTS[part.material || 'PETG'];
+  if (!f) throw new Error(`print ${part.id}: unknown filament "${part.material}" (${Object.keys(FILAMENTS).join(', ')})`);
+  const solid = Math.max(0, part.shapes.reduce((s, sh) => s + vol(sh), 0) - (part.cuts || []).reduce((s, c) => s + vol(c), 0)) * (part.overlap ?? 0.85);
+  const [lo, hi] = printBox(part);
+  const size = Math.min(...[0, 1, 2].map(i => hi[i] - lo[i]));
+  const shell = Math.min(1, ((part.walls ?? 3) * 0.45 * 2) / Math.max(size, 1) + 0.15);
+  const fill = shell + (1 - shell) * (part.infill ?? 0.3);
+  const grams = (solid / 1000) * f.rho * fill;
+  return { grams, hours: Math.max(0.2, grams / 12), cost: (grams / 1000) * f.price, filament: f };
+}
+
+// ---------------------------------------------------------------- OpenSCAD
+const n3 = v => `[${v.map(x => +x.toFixed(3)).join(', ')}]`;
+function scadOrient(a, b, body) {
+  const d = v3.sub(b, a), L = v3.len(d);
+  const tilt = Math.acos(Math.max(-1, Math.min(1, d[2] / L))) * 180 / Math.PI, turn = Math.atan2(d[1], d[0]) * 180 / Math.PI;
+  return `translate(${n3(a)}) rotate([0, ${tilt.toFixed(3)}, ${turn.toFixed(3)}]) ${body(L)}`;
+}
+function scadSolid(sh, grow = 0) {
+  if (sh.type === 'box') return `translate(${n3(sh.c.map((v, i) => v - sh.s[i] / 2 - grow))}) cube(${n3(sh.s.map(v => v + 2 * grow))});`;
+  if (sh.type === 'cyl' || sh.type === 'hole') {
+    const r = sh.r ?? sh.d / 2;
+    return scadOrient(sh.a, sh.b, L => `translate([0, 0, ${-grow}]) cylinder(h = ${(L + 2 * grow).toFixed(3)}, r = ${r.toFixed(3)});`);
+  }
+  if (sh.type === 'tube') return scadOrient(sh.a, sh.b, L => `cylinder(h = ${L.toFixed(3)}, r = ${sh.r.toFixed(3)});`);
+  if (sh.type === 'prism') {
+    const rot = sh.axis === 'x' ? 'rotate([90, 0, 90]) ' : sh.axis === 'y' ? 'rotate([90, 0, 0]) mirror([0, 0, 1]) ' : '';
+    return `${rot}translate([0, 0, ${(sh.z0 - grow).toFixed(3)}]) linear_extrude(height = ${(sh.h + 2 * grow).toFixed(3)}) polygon(${JSON.stringify(sh.pts.map(p => p.map(x => +x.toFixed(3))))});`;
+  }
+  return '';
+}
+function scadOf(part, plan) {
+  const bores = part.shapes.filter(s => s.type === 'tube').map(s => ({ type: 'cyl', a: s.a, b: s.b, r: s.ri }));
+  const cuts = [...(part.cuts || []), ...bores];
+  const [lo] = printBox(part);
+  return `// ${part.name} (${part.id}) for ${plan?.name || 'a blueprint plan'}
+// ${part.material || 'PETG'}, ${part.layer ?? 0.2} mm layers, ${part.walls ?? 3} walls, ${Math.round((part.infill ?? 0.3) * 100)}% infill${part.supports ? ', supports' : ', no supports'}
+// Print it: ${part.orient || 'as modelled'}
+// Generated by the blueprint skill from the plan at its current size. Units: mm.
+$fn = 96;
+translate(${n3(lo.map(v => -v))})
+difference() {
+  union() {
+${part.shapes.map(sh => '    ' + scadSolid(sh)).join('\n')}
+  }
+${cuts.map(c => '  ' + scadSolid(c, 0.01)).join('\n')}
+}
+`;
+}
+
+return { FILAMENTS, prismAxes, printSolids, printBox, printEstimate, scadOf };
 })();
 const __joints = (() => {
 // Joint model: how every member end is cut and joined. One source for the 3D
@@ -769,15 +915,16 @@ const __derive = (() => {
 // everything a build pack shows. The page calls it on every input change; the
 // audit calls it at defaults and at every parameter's extremes. Nothing on the
 // page is computed anywhere else.
-const { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet } = __core;
+const { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet } = __core;
 const { solveJoints, memberCorners, describeEnd } = __joints;
 const { runLoads } = __fea;
+const { printBox, printEstimate, FILAMENTS } = __print;
 const { sub, len, dot, add, mul } = v3;
 
 // ---------------------------------------------------------------- normalise
 function normalise(model, plan) {
   model.axes ||= { x: ['right', 'left'], y: ['back', 'front'], z: ['top', 'bottom'] };
-  model.members ||= []; model.plates ||= []; model.hardware ||= []; model.consumables ||= [];
+  model.members ||= []; model.plates ||= []; model.hardware ||= []; model.consumables ||= []; model.prints ||= [];
   model.steps ||= []; model.checks ||= []; model.facts ||= [];
   model.kerf ??= 2; model.trim ??= 10; model.minPiece ??= 32;
   model.steps.sort((a, b) => a.n - b.n);
@@ -921,10 +1068,15 @@ function massItems(model, joints) {
     items.push({ kind: 'member', id: m.id, m: (j.sec.kgPerM * L) / 1000, c: v3.lerp(j.A, j.B, 0.5) });
   }
   for (const pl of model.plates) {
-    const rho = pl.rho ?? { steel: 7.85e-6, aluminium: 2.7e-6, stainless: 8e-6, timber: 4.2e-7, plywood: 6e-7, mdf: 7.5e-7 }[pl.material || 'steel'];
+    const rho = pl.rho ?? { steel: 7.85e-6, aluminium: 2.7e-6, stainless: 8e-6, timber: 4.2e-7, plywood: 6e-7, mdf: 7.5e-7, pvc: 1.4e-6, hdpe: 9.5e-7, acrylic: 1.19e-6, polycarbonate: 1.2e-6, copper: 8.96e-6, brass: 8.5e-6, fr4: 1.85e-6 }[pl.material || 'steel'];
+    if (rho == null) throw new Error(`plate ${pl.id}: unknown material "${pl.material}" (give it rho in kg/mm³)`);
     const cut = (pl.notches || []).reduce((a, n) => a + (n[2] - n[0]) * (n[3] - n[1]), 0);
     const ax = [0, 1, 2].sort((a, b) => pl.s[b] - pl.s[a]);
     items.push({ kind: 'plate', id: pl.id, m: (pl.s[0] * pl.s[1] * pl.s[2] - cut * pl.s[ax[2]]) * rho * (pl.fill ?? 1), c: pl.c });
+  }
+  for (const pr of model.prints) {
+    const [lo, hi] = printBox(pr);
+    items.push({ kind: 'print', id: pr.id, m: (printEstimate(pr).grams * (pr.qty || 1)) / 1000, c: lo.map((v, i) => (v + hi[i]) / 2) });
   }
   for (const h of model.hardware) {
     if (!h.kg) continue;
@@ -1002,7 +1154,8 @@ function geometryChecks(model, joints, sites, ref) {
   for (const id of ids) boxes[id] = memberBox(joints[id]);
   for (const pl of model.plates) boxes[pl.id] = plateBox(pl);
   for (const h of model.hardware) { const b = shapeBox(h.shape); if (b) boxes[h.id] = b; }
-  const others = [...model.plates.map(p => ({ id: p.id, on: p.on })), ...model.hardware.filter(h => boxes[h.id]).map(h => ({ id: h.id, on: h.on }))];
+  for (const pr of model.prints) boxes[pr.id] = printBox(pr);
+  const others = [...model.plates.map(p => ({ id: p.id, on: p.on })), ...model.hardware.filter(h => boxes[h.id]).map(h => ({ id: h.id, on: h.on })), ...model.prints.map(p => ({ id: p.id, on: p.on }))];
   for (const o of others) {
     if (o.on) { for (const t of [].concat(o.on)) if (boxes[t]) link(o.id, t); continue; }
     for (const [id, b] of Object.entries(boxes)) if (id !== o.id && boxGap(boxes[o.id], b) <= 1) link(o.id, id);
@@ -1028,7 +1181,7 @@ function derive(plan, given = {}, system) {
   const { p, notes, limits } = resolveParams(plan.params || [], given);
   const units = makeUnits(system || p.units || plan.units || 'metric');
   // the design gets its helpers injected, so a design.mjs needs no import paths
-  const kit = { u: units, p, v3, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet };
+  const kit = { u: units, p, v3, MATERIALS, FILAMENTS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet };
   const model = normalise(plan.build(p, kit), plan);
   const { joints, sites, report } = solveJoints(model);
   // identical plates share a mark (P1, P2...): same size, thickness, holes and material
@@ -1106,7 +1259,7 @@ function derive(plan, given = {}, system) {
   if (d.tip && model.tip.anchored) add2('Does not tip over', true, `anchored (${model.tip.anchored}); free-standing factor ${d.tip.sf.toFixed(2)}`, `Free-standing it would tip with ${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high, so it is fixed down.`);
   else if (d.tip) add2('Does not tip over', d.tip.sf >= (model.tip.sf ?? 1.5), `factor ${d.tip.sf.toFixed(2)} (need ${model.tip.sf ?? 1.5})`, `${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high against its own weight.`);
   const stepNs = new Set(model.steps.map(s => s.n));
-  const orphan = [...model.members, ...model.plates, ...model.hardware].filter(x => !stepNs.has(x.step));
+  const orphan = [...model.members, ...model.plates, ...model.hardware, ...model.prints].filter(x => !stepNs.has(x.step));
   add2('Every part has a step', !orphan.length, orphan.length ? orphan.map(x => x.id).slice(0, 3).join(', ') : `${model.steps.length} steps`, 'Each piece is cut, fitted or bought in a numbered step.');
   for (const c of model.checks) add2(c.name, c.pass, c.value, c.why);
   d.checks = checks;
@@ -1119,7 +1272,9 @@ function derive(plan, given = {}, system) {
   for (const h of model.hardware) { if (h.price == null) price.known = false; else price.hardware += h.price * (h.qty || 1); }
   for (const c of model.consumables) { if (c.price == null) price.known = false; else price.consumables = (price.consumables || 0) + c.price; }
   price.consumables ||= 0;
-  price.total = price.stock + price.plates + price.hardware + price.consumables;
+  d.prints = model.prints.map(pr => ({ part: pr, est: printEstimate(pr) }));
+  price.prints = d.prints.reduce((t, x) => t + x.est.cost * (x.part.qty || 1), 0);
+  price.total = price.stock + price.plates + price.hardware + price.consumables + price.prints;
   d.price = price;
   d.hours = model.steps.reduce((s, st) => s + (st.hours || 0), 0);
   return d;
@@ -1133,6 +1288,7 @@ const __shop = (() => {
 // and the units in force, so imperial is a re-render, never a second drawing.
 const { esc, f1, r0 } = __core;
 const { memberCorners } = __joints;
+const { printSolids } = __print;
 const { hull2 } = __derive;
 // ---------------------------------------------------------------- views
 // top: looking down, front at the bottom. front: from -y. side: from +x.
@@ -1161,6 +1317,7 @@ function solids(d, { upTo = Infinity, only = null } = {}) {
   const out = [];
   for (const m of d.model.members) if (m.step <= upTo && (!only || only(m))) out.push({ id: m.id, kind: 'member', step: m.step, pts: memberCorners(d.joints[m.id]) });
   for (const pl of d.model.plates) if (pl.step <= upTo && (!only || only(pl))) out.push({ id: pl.id, kind: 'plate', step: pl.step, pts: boxCorners([pl.c.map((v, i) => v - pl.s[i] / 2), pl.c.map((v, i) => v + pl.s[i] / 2)]) });
+  for (const pr of d.model.prints || []) if (pr.step <= upTo && (!only || only(pr))) for (const pts of printSolids(pr)) out.push({ id: pr.id, kind: 'print', step: pr.step, pts });
   for (const h of d.model.hardware) if (h.shape && h.step <= upTo && (!only || only(h))) {
     const shapes = [].concat(h.shape);
     for (const sh of shapes) out.push({ id: h.id, kind: 'hardware', step: h.step, pts: sh.type === 'box' ? boxCorners([sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)]) : cylCorners(sh) });
@@ -1290,6 +1447,12 @@ function jigSheet(d, st, views) {
 // one undimensioned view for a gallery card
 function thumbSvg(d, view = 'iso') {
   return viewSvg(solids(d), view, { u: d.units, dims: false, bare: true, cls: 'jig ga thumb' });
+}
+
+// one print alone, top front and side at one scale, dimensioned
+function printSheet(d, pr) {
+  const items = printSolids(pr).map(pts => ({ id: pr.id, kind: 'print', step: pr.step, pts }));
+  return sheet(items, ['top', 'front', 'side'], { u: d.units, cls: 'jig ga', title: v => `${pr.name}: ${VIEWS[v].title}` }).replace('<div class="sheet"', '<div class="sheet print"');
 }
 
 function gaSheet(d) {
@@ -1452,7 +1615,7 @@ const SHOP_CSS = `
 .pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
-.ga .jn{fill:var(--face)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
 .lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}
@@ -1460,18 +1623,23 @@ const SHOP_CSS = `
 .nb{fill:var(--paper);stroke:var(--oldline)}.nc{fill:var(--face);stroke:var(--ink);stroke-width:1}.nt{font:700 13px var(--mono);fill:var(--ink)}
 `;
 
-return { VIEWS, solids, stepNodes, stepViews, jigSheet, thumbSvg, gaSheet, pieceSvg, plateSvg, plateNotes, nestSvg, SHOP_CSS };
+return { VIEWS, solids, stepNodes, stepViews, jigSheet, thumbSvg, printSheet, gaSheet, pieceSvg, plateSvg, plateNotes, nestSvg, SHOP_CSS };
 })();
 const __pack = (() => {
 // The build pack as HTML strings, from one derived plan (derive.mjs). The same
 // functions feed the live page and its printed form; nothing here computes a
 // number of its own, it only lays out what derive() found.
 const { esc } = __core;
-const { jigSheet, gaSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } = __shop;
+const { jigSheet, gaSheet, printSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } = __shop;
 // a plate: its drawing, then its holes, notches and note as text that wraps
 const plateFigure = (d, pl) => `<figure class="plate-fig">${plateSvg(d, pl)}<figcaption>${plateNotes(d, pl).map(t => `<p>${esc(t)}</p>`).join('')}</figcaption></figure>`;
 
 const money = (d, v) => (d.model.currency ? `${d.model.currency}${Math.round(v).toLocaleString('en-US')}` : '');
+
+const printHours = d => (Math.round(d.prints.reduce((h, x) => h + x.est.hours * (x.part.qty || 1), 0) * 10) / 10);
+const dl = pr => `<span class="dls"><button type="button" class="btn sm" data-stl="${esc(pr.id)}">${ICON_DL}.stl</button><button type="button" class="btn sm" data-scad="${esc(pr.id)}">${ICON_DL}.scad</button></span>`;
+const ICON_DL = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M4.5 7L8 10.5 11.5 7M3 13.5h10"/></svg>';
+const printSettings = pr => `${pr.material || 'PETG'} · ${pr.layer ?? 0.2} mm layers · ${pr.walls ?? 3} walls · ${Math.round((pr.infill ?? 0.3) * 100)}% infill · ${pr.supports ? 'supports' : 'no supports'}`;
 
 function plateLine(d) {
   const metal = d.plateGroups.filter(g => ['steel', 'aluminium', 'stainless'].includes(g.pl.material || 'steel')).reduce((s, g) => s + g.qty, 0);
@@ -1485,8 +1653,9 @@ function factsHtml(d) {
     ['Overall', `${u.len(hi[0] - lo[0])} × ${u.len(hi[1] - lo[1])} × ${u.len(hi[2] - lo[2])}${u.imperial ? '' : ' mm'}`, 'length × depth × height'],
     ['Mass', u.mass(d.totalKg), 'as built, with every part listed'],
     ['Pieces', `${d.model.members.length} cut (${d.pieces.length} different)`, plateLine(d)],
-    [d.model.join === 'screw' || d.model.join === 'bolt' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join === 'screw' || d.model.join === 'bolt' ? '' : `about ${u.run(d.weld.length)} of weld`],
+    ...(d.weld.joins ? [[d.model.join && d.model.join !== 'weld' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join && d.model.join !== 'weld' ? '' : `about ${u.run(d.weld.length)} of weld`]] : []),
     ...d.loads.map(r => [r.name, `factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(1)}`, r.load.defl != null ? `${(r.load.dir && Math.abs(r.load.dir[2]) < 0.5) ? 'moves' : 'sags'} ${u.deflection(r.loadDefl)}` : 'safety factor on yield']),
+    ...(d.prints.length ? [['3D prints', `${d.prints.reduce((n, x) => n + (x.part.qty || 1), 0)} part${d.prints.length > 1 || (d.prints[0].part.qty || 1) > 1 ? 's' : ''}`, `about ${Math.round(d.prints.reduce((g, x) => g + x.est.grams * (x.part.qty || 1), 0))} g of filament, ${printHours(d)} h printing`]] : []),
     ['Build time', d.hours ? `${d.hours} h` : '', `${d.model.steps.length} steps`],
     ...(d.price.total && d.model.currency ? [['Cost', `~${money(d, d.price.total)}`, d.price.known ? 'everything on the materials list' : 'priced lines only; see the materials list']] : []),
     ...d.model.facts,
@@ -1519,6 +1688,11 @@ function bomHtml(d) {
     }
     h += `</table></div>`;
   }
+  if (d.prints.length) {
+    h += `<h3>3D prints</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Settings</th><th class=n>Qty</th><th class=n>Filament</th><th class=n>Print</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}<th>Files</th></tr>`;
+    for (const { part: pr, est } of d.prints) h += `<tr><td>${esc(pr.name)}</td><td><span class="spec">${esc(printSettings(pr))}</span></td><td class=n>${pr.qty || 1}</td><td class=n>${Math.round(est.grams * (pr.qty || 1))} g</td><td class=n>${(Math.round(est.hours * (pr.qty || 1) * 10) / 10)} h</td><td class=n>${pr.step}</td>${md.currency ? `<td class=n>${money(d, est.cost * (pr.qty || 1))}</td>` : ''}<td>${dl(pr)}</td></tr>`;
+    h += `</table></div><p class="muted">Filament and time are estimates from the part's volume; your slicer has the real numbers. The .stl is the part at this size, in millimetres; the .scad is its OpenSCAD source.</p>`;
+  }
   if (md.hardware.length) {
     h += `<h3>Parts to buy</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Spec</th><th class=n>Qty</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
     for (const x of md.hardware) h += `<tr><td>${esc(x.name)}</td><td>${esc(x.spec || '')}</td><td class=n>${x.qty || 1}</td><td class=n>${x.step}</td>${md.currency ? `<td class=n>${x.price != null ? money(d, x.price * (x.qty || 1)) : ''}</td>` : ''}</tr>`;
@@ -1535,7 +1709,7 @@ function drawingsHtml(d) {
 
 function legendHtml(d) {
   const u = d.units, md = d.model;
-  const joinWord = md.join === 'screw' ? 'screw' : md.join === 'bolt' ? 'bolt' : 'weld';
+  const joinWord = { screw: 'screw', bolt: 'bolt', glue: 'solvent-cement or glue', solder: 'solder', clamp: 'clamp' }[md.join] || 'weld';
   const rows = [
     ['Units', u.imperial ? 'inches (to 1/16"), pounds, degrees' : 'millimetres, kilograms, degrees'],
     ['Datum', md.datum || 'x along the length, y front to back, z up from the floor'],
@@ -1571,6 +1745,9 @@ function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
     : `<ol>${st.tasks.map(t => `<li>${esc(t)}</li>`).join('')}</ol>`;
   if (st.check) h += `<p class="gate"><b>Check</b> ${esc(st.check)}</p>`;
   if (st.tip) h += `<p class="note">${esc(st.tip)}</p>`;
+  for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
+    h += `<h4>Print: ${esc(pr.name)}${(pr.qty || 1) > 1 ? ` x${pr.qty}` : ''}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}<p>${dl(pr)}</p>${pr.note ? `<p class="note">${esc(pr.note)}</p>` : ''}`;
+  }
   const hw = d.model.hardware.filter(x => x.step === n);
   if (hw.length) h += `<h4>Parts</h4><ul class="plain">${hw.map(x => `<li>${esc(x.name)} x${x.qty || 1}${x.spec ? ` <span class="muted">${esc(x.spec)}</span>` : ''}</li>`).join('')}</ul>`;
   const ms = d.model.members.filter(m => m.step === n);
@@ -1644,6 +1821,53 @@ const __viewer = (() => {
 
 
 const { memberCorners } = __joints;
+const { prismAxes } = __print;
+// ---------------------------------------------------------------- printed parts
+// The exact mesh of a print: its solids unioned, then its cuts and bores taken out,
+// with three-bvh-csg (loaded only when a plan has prints). World coordinates, mm.
+let csgLib = null;
+const loadCsg = () => (csgLib ||= import('https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.16/+esm'));
+function solidGeo(sh, grow = 0) {
+  if (sh.type === 'box') { const g = new THREE.BoxGeometry(...sh.s.map(v => v + 2 * grow)); g.translate(...sh.c); return g; }
+  if (sh.type === 'cyl' || sh.type === 'tube' || sh.type === 'hole') {
+    const r = sh.type === 'hole' ? sh.d / 2 : sh.r;
+    const a = new THREE.Vector3(...sh.a), b = new THREE.Vector3(...sh.b), d = b.clone().sub(a);
+    const g = new THREE.CylinderGeometry(r, r, d.length() + 2 * grow, Math.max(24, Math.min(96, Math.round(r * 6))));
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()));
+    g.translate(...a.add(b).multiplyScalar(0.5).toArray());
+    return g;
+  }
+  if (sh.type === 'prism') {
+    const shape = new THREE.Shape(sh.pts.map(([u, v]) => new THREE.Vector2(u, v)));
+    let g = new THREE.ExtrudeGeometry(shape, { depth: sh.h + 2 * grow, bevelEnabled: false });
+    if (g.index) g = g.toNonIndexed();
+    g.translate(0, 0, sh.z0 - grow);
+    const [iu, iv, iz] = prismAxes(sh.axis), pos = g.attributes.position, out = new Float32Array(pos.count * 3);
+    for (let i = 0; i < pos.count; i++) { out[i * 3 + iu] = pos.getX(i); out[i * 3 + iv] = pos.getY(i); out[i * 3 + iz] = pos.getZ(i); }
+    // the 'y' mapping is a mirror: swap two corners of every triangle to keep faces outward
+    if (sh.axis === 'y') for (let t = 0; t < out.length; t += 9) for (let c = 0; c < 3; c++) { const k = out[t + 3 + c]; out[t + 3 + c] = out[t + 6 + c]; out[t + 6 + c] = k; }
+    const ng = new THREE.BufferGeometry();
+    ng.setAttribute('position', new THREE.BufferAttribute(out, 3));
+    ng.computeVertexNormals();
+    return ng;
+  }
+  throw new Error(`unknown print solid "${sh.type}"`);
+}
+const clean = g => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal') n.deleteAttribute(k); n.computeVertexNormals(); return n; };
+async function printGeometry(part) {
+  const { Brush, Evaluator, ADDITION, SUBTRACTION } = await loadCsg();
+  const ev = new Evaluator();
+  ev.attributes = ['position', 'normal'];
+  const brush = g => { const b = new Brush(clean(g)); b.updateMatrixWorld(); return b; };
+  let acc = null;
+  for (const sh of part.shapes) { const b = brush(solidGeo(sh)); acc = acc ? ev.evaluate(acc, b, ADDITION) : b; }
+  const cuts = [...(part.cuts || []), ...part.shapes.filter(s => s.type === 'tube').map(s => ({ type: 'cyl', a: s.a, b: s.b, r: s.ri }))];
+  for (const c of cuts) acc = ev.evaluate(acc, brush(solidGeo(c, 0.05)), SUBTRACTION);
+  return acc.geometry;
+}
+// the plain union before the cut arrives, so the part shows at once
+const roughPrint = part => part.shapes.map(sh => solidGeo(sh));
+
 const TONES = {
   light: {
     paper: 0xfbfbfa, ink: 0x232326, grid: [0xd6d6d2, 0xe9e9e5],
@@ -1795,6 +2019,18 @@ function createViewer(el, { onPick } = {}) {
       }
       for (const g of geos) add(g, info, tone);
     }
+    const gen = ++generation;
+    for (const pr of md.prints || []) {
+      const info = { id: pr.id, name: pr.name, step: pr.step, kind: 'print', spec: `3D print, ${pr.material || 'PETG'}` };
+      const tone = pr.tone || 'faint';
+      const rough = roughPrint(pr).map(g => { add(g, info, tone); return meshes[meshes.length - 1]; });
+      printGeometry(pr).then(geo => {
+        if (gen !== generation) return;
+        for (const r of rough) { root.remove(r.mesh); r.mesh.geometry.dispose(); meshes.splice(meshes.indexOf(r), 1); }
+        add(geo, info, tone);
+        refresh();
+      }).catch(e => console.warn('print geometry:', e.message));
+    }
     for (const h of md.hardware) for (const sh of [].concat(h.shape || [])) {
       const info = { id: h.id, name: h.name, step: h.step, kind: 'hardware', spec: h.spec };
       add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');
@@ -1818,7 +2054,7 @@ function createViewer(el, { onPick } = {}) {
     resize();
     refresh();
   }
-  let framed = false;
+  let framed = false, generation = 0;
 
   function refresh() {
     for (const r of meshes) {
@@ -1922,7 +2158,7 @@ function createViewer(el, { onPick } = {}) {
   };
 }
 
-return { createViewer };
+return { printGeometry, createViewer };
 })();
 const __app = (() => {
 // Browser runtime for a build pack page. Reads the params from the URL hash (so a
@@ -1932,7 +2168,8 @@ const __app = (() => {
 const { derive } = __derive;
 const { makeUnits, esc } = __core;
 const { factsHtml, checksHtml, bomHtml, drawingsHtml, legendHtml, orderHtml, stepHtml, cutListHtml, paramsSummary, optLabel, contentsHtml } = __pack;
-const { createViewer } = __viewer;
+const { createViewer, printGeometry } = __viewer;
+const { scadOf, printBox } = __print;
 const $ = s => document.querySelector(s);
 const store = {
   get(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch { return def; } },
@@ -2098,6 +2335,34 @@ function mountPlan(plan) {
     if (!b) return;
     showStep(+b.dataset.showStep);
     $('#model').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
+  // downloads for 3D prints: the STL is cut from the part at the current size, in mm,
+  // moved so it sits on the bed at the origin; the .scad is its OpenSCAD source
+  const save = (name, blob) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
+  function stlOf(geo, lo) {
+    const g = geo.index ? geo.toNonIndexed() : geo, pos = g.attributes.position, n = pos.count / 3;
+    const buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf);
+    dv.setUint32(80, n, true);
+    for (let t = 0; t < n; t++) {
+      const p = [0, 1, 2].map(k => [pos.getX(t * 3 + k) - lo[0], pos.getY(t * 3 + k) - lo[1], pos.getZ(t * 3 + k) - lo[2]]);
+      const u = p[1].map((v, i) => v - p[0][i]), w = p[2].map((v, i) => v - p[0][i]);
+      const nn = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]], L = Math.hypot(...nn) || 1;
+      let o = 84 + t * 50;
+      for (const v of [...nn.map(x => x / L), ...p.flat()]) { dv.setFloat32(o, v, true); o += 4; }
+    }
+    return new Blob([buf], { type: 'model/stl' });
+  }
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('[data-stl],[data-scad]');
+    if (!b) return;
+    const pr = d.model.prints.find(x => x.id === (b.dataset.stl || b.dataset.scad));
+    if (!pr) return;
+    if (b.dataset.scad) return save(`${plan.id}-${pr.id}.scad`, new Blob([scadOf(pr, plan)], { type: 'text/plain' }));
+    const label = b.innerHTML;
+    b.textContent = 'cutting…';
+    try { save(`${plan.id}-${pr.id}.stl`, stlOf(await printGeometry(pr), printBox(pr)[0])); }
+    catch (err) { alert('Could not make the STL: ' + err.message + '. Download the .scad and export it from OpenSCAD.'); }
+    b.innerHTML = label;
   });
   document.addEventListener('change', e => {
     const c = e.target.closest('[data-check]');

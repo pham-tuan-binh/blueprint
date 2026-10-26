@@ -3,6 +3,7 @@
 // and the units in force, so imperial is a re-render, never a second drawing.
 import { esc, f1, r0 } from './core.mjs';
 import { memberCorners } from './joints.mjs';
+import { printSolids } from './print.mjs';
 import { hull2 } from './derive.mjs';
 
 // ---------------------------------------------------------------- views
@@ -32,6 +33,7 @@ export function solids(d, { upTo = Infinity, only = null } = {}) {
   const out = [];
   for (const m of d.model.members) if (m.step <= upTo && (!only || only(m))) out.push({ id: m.id, kind: 'member', step: m.step, pts: memberCorners(d.joints[m.id]) });
   for (const pl of d.model.plates) if (pl.step <= upTo && (!only || only(pl))) out.push({ id: pl.id, kind: 'plate', step: pl.step, pts: boxCorners([pl.c.map((v, i) => v - pl.s[i] / 2), pl.c.map((v, i) => v + pl.s[i] / 2)]) });
+  for (const pr of d.model.prints || []) if (pr.step <= upTo && (!only || only(pr))) for (const pts of printSolids(pr)) out.push({ id: pr.id, kind: 'print', step: pr.step, pts });
   for (const h of d.model.hardware) if (h.shape && h.step <= upTo && (!only || only(h))) {
     const shapes = [].concat(h.shape);
     for (const sh of shapes) out.push({ id: h.id, kind: 'hardware', step: h.step, pts: sh.type === 'box' ? boxCorners([sh.c.map((v, i) => v - sh.s[i] / 2), sh.c.map((v, i) => v + sh.s[i] / 2)]) : cylCorners(sh) });
@@ -161,6 +163,12 @@ export function jigSheet(d, st, views) {
 // one undimensioned view for a gallery card
 export function thumbSvg(d, view = 'iso') {
   return viewSvg(solids(d), view, { u: d.units, dims: false, bare: true, cls: 'jig ga thumb' });
+}
+
+// one print alone, top front and side at one scale, dimensioned
+export function printSheet(d, pr) {
+  const items = printSolids(pr).map(pts => ({ id: pr.id, kind: 'print', step: pr.step, pts }));
+  return sheet(items, ['top', 'front', 'side'], { u: d.units, cls: 'jig ga', title: v => `${pr.name}: ${VIEWS[v].title}` }).replace('<div class="sheet"', '<div class="sheet print"');
 }
 
 export function gaSheet(d) {
@@ -323,7 +331,7 @@ export const SHOP_CSS = `
 .pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
 .ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
-.ga .jn{fill:var(--face)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
+.ga .jn{fill:var(--face)}.jn.k-print,.jo.k-print{fill:var(--paper)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}
 .dt{font:700 var(--fs) var(--mono);fill:var(--ink)}
 .lbox{fill:var(--paper);stroke:var(--oldline);stroke-width:calc(var(--fs) * .04)}

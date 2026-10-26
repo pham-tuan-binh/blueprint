@@ -12,7 +12,7 @@ import { dirname, resolve, join, basename } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const KIT = resolve(dirname(fileURLToPath(import.meta.url)), '../kit');
-const ORDER = ['core', 'joints', 'fea', 'derive', 'shop', 'pack', 'viewer', 'app'];
+const ORDER = ['core', 'print', 'joints', 'fea', 'derive', 'shop', 'pack', 'viewer', 'app'];
 
 // Turn one ES module into a scoped block: imports from sibling kit modules become
 // destructures of earlier blocks, URL imports are hoisted to the top of the bundle.

@@ -30,7 +30,8 @@ Open every PNG in `shots/`. For each, ask:
 8. **metric-*.png / imperial-*.png** (the plan switched to the other units): every length in the other system, sensible values, stock labels unchanged (they are what you buy)?
 9. **phone.png / phone-full.png**: readable at 390 px, fields usable, drawings legible when zoomed?
 10. **pdf-N.png** (the printed pages of plan.pdf): each step starts on a new page, no controls printed, drawings not split across pages?
-11. **every variant** you captured with `--hash`: does each step still read right with the option or the extra member (the steel top's welding step, the middle legs)?
+11. **prints** (if any): does each printed part look right in the 3D view, holes and bores where they should be, and sized for what it holds at this size (clearance per `references/prints.md`)? Did capture download a real STL and .scad for each (it fails if not)? Is the printing in an early step?
+12. **every variant** you captured with `--hash`: does each step still read right with the option or the extra member (the steel top's welding step, the middle legs)?
 
 ## Then change the size
 

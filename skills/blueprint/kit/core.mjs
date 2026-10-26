@@ -30,6 +30,12 @@ export const MATERIALS = {
   stainless: { name: 'Stainless 304', E: 193000, G: 77000, yield: 205, rho: 8.0e-6, join: 'weld' },
   aluminium: { name: 'Aluminium 6061-T6 (welded)', E: 68900, G: 26000, yield: 110, rho: 2.7e-6, join: 'weld' },
   timber: { name: 'Softwood C24', E: 11000, G: 690, yield: 14, rho: 4.2e-7, join: 'screw' },
+  // bolted, clamped or riveted aluminium keeps its full strength
+  'aluminium-bare': { name: 'Aluminium 6063-T6 (not welded)', E: 68900, G: 26000, yield: 170, rho: 2.7e-6, join: 'bolt' },
+  // PVC-U pipe: a long-term design stress, since PVC creeps under a steady load
+  pvc: { name: 'PVC-U pipe', E: 3000, G: 1100, yield: 25, rho: 1.4e-6, join: 'glue' },
+  copper: { name: 'Copper (half hard)', E: 117000, G: 44000, yield: 200, rho: 8.96e-6, join: 'solder' },
+  brass: { name: 'Brass CZ121', E: 100000, G: 37000, yield: 250, rho: 8.5e-6, join: 'solder' },
 };
 
 // ---------------------------------------------------------------- stock sections
@@ -80,6 +86,8 @@ export const roundTube = (d, t, o) => makeSection('round-tube', d, d, t, o);
 export const flatBar = (b, t, o) => makeSection('flat', b, t, 0, o);      // lies flat: b across, t up
 export const bar = (bu, bw, o) => makeSection('bar', bu, bw, 0, o);
 export const timber = (bu, bw, o) => makeSection('timber', bu, bw, 0, { material: 'timber', ...o });
+export const rod = (d, o) => makeSection('round-tube', d, d, d / 2, o);      // solid round bar or wire
+export const pvcPipe = (d, t, o) => makeSection('round-tube', d, d, t, { material: 'pvc', ...o });
 
 // ---------------------------------------------------------------- units
 // Metric is the default. Imperial prints inches to the nearest 1/16 (what a tape

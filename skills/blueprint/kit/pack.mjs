@@ -2,12 +2,17 @@
 // functions feed the live page and its printed form; nothing here computes a
 // number of its own, it only lays out what derive() found.
 import { esc } from './core.mjs';
-import { jigSheet, gaSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
+import { jigSheet, gaSheet, printSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
 
 // a plate: its drawing, then its holes, notches and note as text that wraps
 const plateFigure = (d, pl) => `<figure class="plate-fig">${plateSvg(d, pl)}<figcaption>${plateNotes(d, pl).map(t => `<p>${esc(t)}</p>`).join('')}</figcaption></figure>`;
 
 const money = (d, v) => (d.model.currency ? `${d.model.currency}${Math.round(v).toLocaleString('en-US')}` : '');
+
+const printHours = d => (Math.round(d.prints.reduce((h, x) => h + x.est.hours * (x.part.qty || 1), 0) * 10) / 10);
+const dl = pr => `<span class="dls"><button type="button" class="btn sm" data-stl="${esc(pr.id)}">${ICON_DL}.stl</button><button type="button" class="btn sm" data-scad="${esc(pr.id)}">${ICON_DL}.scad</button></span>`;
+const ICON_DL = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M4.5 7L8 10.5 11.5 7M3 13.5h10"/></svg>';
+const printSettings = pr => `${pr.material || 'PETG'} · ${pr.layer ?? 0.2} mm layers · ${pr.walls ?? 3} walls · ${Math.round((pr.infill ?? 0.3) * 100)}% infill · ${pr.supports ? 'supports' : 'no supports'}`;
 
 function plateLine(d) {
   const metal = d.plateGroups.filter(g => ['steel', 'aluminium', 'stainless'].includes(g.pl.material || 'steel')).reduce((s, g) => s + g.qty, 0);
@@ -21,8 +26,9 @@ export function factsHtml(d) {
     ['Overall', `${u.len(hi[0] - lo[0])} × ${u.len(hi[1] - lo[1])} × ${u.len(hi[2] - lo[2])}${u.imperial ? '' : ' mm'}`, 'length × depth × height'],
     ['Mass', u.mass(d.totalKg), 'as built, with every part listed'],
     ['Pieces', `${d.model.members.length} cut (${d.pieces.length} different)`, plateLine(d)],
-    [d.model.join === 'screw' || d.model.join === 'bolt' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join === 'screw' || d.model.join === 'bolt' ? '' : `about ${u.run(d.weld.length)} of weld`],
+    ...(d.weld.joins ? [[d.model.join && d.model.join !== 'weld' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join && d.model.join !== 'weld' ? '' : `about ${u.run(d.weld.length)} of weld`]] : []),
     ...d.loads.map(r => [r.name, `factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(1)}`, r.load.defl != null ? `${(r.load.dir && Math.abs(r.load.dir[2]) < 0.5) ? 'moves' : 'sags'} ${u.deflection(r.loadDefl)}` : 'safety factor on yield']),
+    ...(d.prints.length ? [['3D prints', `${d.prints.reduce((n, x) => n + (x.part.qty || 1), 0)} part${d.prints.length > 1 || (d.prints[0].part.qty || 1) > 1 ? 's' : ''}`, `about ${Math.round(d.prints.reduce((g, x) => g + x.est.grams * (x.part.qty || 1), 0))} g of filament, ${printHours(d)} h printing`]] : []),
     ['Build time', d.hours ? `${d.hours} h` : '', `${d.model.steps.length} steps`],
     ...(d.price.total && d.model.currency ? [['Cost', `~${money(d, d.price.total)}`, d.price.known ? 'everything on the materials list' : 'priced lines only; see the materials list']] : []),
     ...d.model.facts,
@@ -55,6 +61,11 @@ export function bomHtml(d) {
     }
     h += `</table></div>`;
   }
+  if (d.prints.length) {
+    h += `<h3>3D prints</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Settings</th><th class=n>Qty</th><th class=n>Filament</th><th class=n>Print</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}<th>Files</th></tr>`;
+    for (const { part: pr, est } of d.prints) h += `<tr><td>${esc(pr.name)}</td><td><span class="spec">${esc(printSettings(pr))}</span></td><td class=n>${pr.qty || 1}</td><td class=n>${Math.round(est.grams * (pr.qty || 1))} g</td><td class=n>${(Math.round(est.hours * (pr.qty || 1) * 10) / 10)} h</td><td class=n>${pr.step}</td>${md.currency ? `<td class=n>${money(d, est.cost * (pr.qty || 1))}</td>` : ''}<td>${dl(pr)}</td></tr>`;
+    h += `</table></div><p class="muted">Filament and time are estimates from the part's volume; your slicer has the real numbers. The .stl is the part at this size, in millimetres; the .scad is its OpenSCAD source.</p>`;
+  }
   if (md.hardware.length) {
     h += `<h3>Parts to buy</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Spec</th><th class=n>Qty</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
     for (const x of md.hardware) h += `<tr><td>${esc(x.name)}</td><td>${esc(x.spec || '')}</td><td class=n>${x.qty || 1}</td><td class=n>${x.step}</td>${md.currency ? `<td class=n>${x.price != null ? money(d, x.price * (x.qty || 1)) : ''}</td>` : ''}</tr>`;
@@ -71,7 +82,7 @@ export function drawingsHtml(d) {
 
 export function legendHtml(d) {
   const u = d.units, md = d.model;
-  const joinWord = md.join === 'screw' ? 'screw' : md.join === 'bolt' ? 'bolt' : 'weld';
+  const joinWord = { screw: 'screw', bolt: 'bolt', glue: 'solvent-cement or glue', solder: 'solder', clamp: 'clamp' }[md.join] || 'weld';
   const rows = [
     ['Units', u.imperial ? 'inches (to 1/16"), pounds, degrees' : 'millimetres, kilograms, degrees'],
     ['Datum', md.datum || 'x along the length, y front to back, z up from the floor'],
@@ -107,6 +118,9 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
     : `<ol>${st.tasks.map(t => `<li>${esc(t)}</li>`).join('')}</ol>`;
   if (st.check) h += `<p class="gate"><b>Check</b> ${esc(st.check)}</p>`;
   if (st.tip) h += `<p class="note">${esc(st.tip)}</p>`;
+  for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
+    h += `<h4>Print: ${esc(pr.name)}${(pr.qty || 1) > 1 ? ` x${pr.qty}` : ''}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}<p>${dl(pr)}</p>${pr.note ? `<p class="note">${esc(pr.note)}</p>` : ''}`;
+  }
   const hw = d.model.hardware.filter(x => x.step === n);
   if (hw.length) h += `<h4>Parts</h4><ul class="plain">${hw.map(x => `<li>${esc(x.name)} x${x.qty || 1}${x.spec ? ` <span class="muted">${esc(x.spec)}</span>` : ''}</li>`).join('')}</ul>`;
   const ms = d.model.members.filter(m => m.step === n);
