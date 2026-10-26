@@ -2,6 +2,16 @@
 
 Read this when writing `design.mjs`. `examples/shelf-rack/design.mjs` is the whole shape in about 150 lines: read it top to bottom first.
 
+## Contents
+
+- The plan object
+- Units
+- params: the input fields
+- build(p, k): what `k` holds
+- The model: members, plates, hardware, shapes, supports and loads, steps, checks
+
+## The plan object
+
 A plan is one file that exports `plan` and imports nothing. `derive()` calls `plan.build(p, k)` on every input change, in Node for the audit and in the browser for the page, so `build` must be **pure**: same params, same model; no randomness, dates or network.
 
 ```js
@@ -26,7 +36,7 @@ export const plan = {
 - Bought parts keep their trade names ("Tee, 32 mm solvent weld", "M8 × 25"): the lint leaves hardware names and specs alone.
 - A shared link carries the params in the hash, always in mm and kg, bools `1`/`0`: `#length=1828.8&shelf=0` (the same for `--hash`). Imperial fields show and take fractions (`59 1/16`).
 
-## params
+## params: the input fields
 
 ```js
 { id: 'length', label: 'Length', type: 'len', value: 1500, min: 900, max: 2400, group: 'Size', hint: 'top, end to end' }

@@ -24,6 +24,8 @@ Read this only when you change the kit (`kit/`, `scripts/`). A plan never import
 | `kit/viewer.mjs` | The 3D view (three.js; manifold-3d for prints, loaded only when a plan has them). |
 | `kit/app.mjs` | The page runtime: fields, units switch, URL state, live re-render, saved ticks, downloads. |
 
+After changing `SKILL.md` or a reference, run the scenarios in `evals/evals.json` with a fresh agent (on every model the skill is for) and keep `SKILL.md` under 500 lines, the description in the third person and under 1024 characters; CI validates both skills against the [Agent Skills spec](https://agentskills.io/specification).
+
 After a kit change keep green: `blueprint.mjs test`, the audit of every plan and example, `node tools/site.mjs`, and a capture of each example (its layout audit clean). Existing plans should build to the same output unless the change means to move them.
 
 ## How the page looks: an IKEA guide

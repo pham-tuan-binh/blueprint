@@ -32,6 +32,12 @@ jobs:
         with:
           node-version: 22
 
+      - name: Skills follow the Agent Skills spec
+        run: |
+          pip install --quiet skills-ref
+          python -m skills_ref.cli validate skills/blueprint
+          python -m skills_ref.cli validate skills/blueprint-share
+
       - name: Frame solver matches textbook beams
         run: node skills/blueprint/scripts/blueprint.mjs test
 

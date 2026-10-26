@@ -59,7 +59,7 @@ Common in Europe, Asia and Australia; sold in 6 m lengths (`stockLen: 6000`). Mi
 | Plate | 3, 5, 6, 8, 10 mm | 5-6 mm for feet and tabs; 5-10 mm for a steel bench top |
 | Sheet | 1.5, 2 mm steel; 18 mm plywood; 25-30 mm MDF/hardwood top | |
 
-Approximate prices (2026, USD, check local; `price` is per metre): SHS 40×40×2 about $4/m, 40×40×3 $5.5/m, RHS 60×40×3 $7/m, 5 mm plate about $45/m², 18 mm plywood $18/m².
+Rough prices for a first estimate (USD; prices move, so check local; `price` is per metre): SHS 40×40×2 about $4/m, 40×40×3 $5.5/m, RHS 60×40×3 $7/m, 5 mm plate about $45/m², 18 mm plywood $18/m².
 
 ## Imperial stock (when the user asks)
 

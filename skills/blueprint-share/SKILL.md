@@ -1,6 +1,6 @@
 ---
 name: blueprint-share
-description: Share a finished blueprint build plan with everyone by opening a pull request that adds it to the pham-tuan-binh/blueprint repo, where it gets its own page and a card on the plans site (pham-tuan-binh.github.io/blueprint). Use it when someone wants to publish, share, submit, contribute or upload a plan they made with the blueprint skill, "add my plan to the gallery", "put my workbench on the site", or open a PR with a build plan. Needs a plan that already passes the blueprint skill's check, git, and a GitHub account.
+description: Shares a finished blueprint build plan with everyone by opening a pull request that adds it to the pham-tuan-binh/blueprint repo, where it gets its own page and a card on the plans site (pham-tuan-binh.github.io/blueprint). Use when someone wants to publish, share, submit, contribute or upload a plan they made with the blueprint skill, "add my plan to the gallery", "put my workbench on the site", or open a PR with a build plan. Needs a plan that already passes the blueprint skill's check, git, and a GitHub account.
 license: MIT
 compatibility: Any agent that can run shell commands with Node.js 20+ and git. The GitHub CLI (gh) makes forking and opening the PR one command each; without it the person does those two steps on github.com.
 metadata:
