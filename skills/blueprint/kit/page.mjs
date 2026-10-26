@@ -68,7 +68,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .sheet .v-top{grid-column:1;grid-row:1}.sheet .v-front{grid-column:1;grid-row:2}.sheet .v-side{grid-column:2;grid-row:2}.sheet.one{grid-template-columns:1fr;max-width:620px}
 figure{margin:0}
 .views svg,.piece-list svg,figure>svg{border:1px solid var(--line);width:100%;height:auto;display:block}
-.piece-list{display:grid;gap:14px}
+.piece-list{display:grid;gap:14px}.plate-fig figcaption{font-size:13px;color:var(--ink2);padding:6px 2px 0}.plate-fig figcaption p{margin:2px 0;max-width:none}
 .phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}.phases h4{margin:8px 0 0}.phases ol{margin:4px 0;padding-left:1.6em}
 .step{padding-top:10px}.step-h h3{display:flex;gap:10px;align-items:baseline;margin-bottom:0}.sn{font:400 .9em var(--mono);color:var(--muted)}.step-h p{margin:2px 0 8px}
 .tasks{list-style:none;padding:0}.tasks li{display:flex;gap:8px;align-items:flex-start;margin:4px 0}.tasks input{margin-top:5px;width:16px;height:16px;flex:none}
@@ -82,9 +82,9 @@ ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 ${SHOP_CSS}
 @media print{
   :root{--paper:#fff;--ink:#000;--ink2:#222;--muted:#555;--line:#bbb;--th:#eee;--face:#e4e4e4;--now:#444;--old:#eee;--oldline:#aaa;--lit:#000;color-scheme:light}
-  .top,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step]{display:none!important}
+  .top,.viewer-box,.hint,.viewer-ctl,.pick,.size-act,#size-form,.cams,[data-show-step],[data-show-wrap]{display:none!important}
   .split{display:block}.size{box-shadow:none;border:1px solid #000}
-  .step{break-before:page}.piece-list svg,figure{break-inside:avoid}details.sheets{border:0;padding:0}
+  .step{break-before:page}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}details.sheets{border:0;padding:0}
   details.sheets>summary{list-style:none;font-weight:700}a{text-decoration:none}main{padding-top:0}
 }
 `;

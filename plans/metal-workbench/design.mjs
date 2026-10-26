@@ -14,7 +14,7 @@ export const plan = {
   units: 'metric',
   currency: '$',
   params: [
-    { id: 'length', label: 'Length', type: 'len', value: 1500, min: 900, max: 2400, group: 'Size', hint: 'top, end to end; a middle leg above 1800' },
+    { id: 'length', label: 'Length', type: 'len', value: 1500, min: 900, max: 2400, group: 'Size', hint: u => `top, end to end; middle legs above ${u.len(1800, { u: true })}` },
     { id: 'depth', label: 'Depth', type: 'len', value: 700, min: 500, max: 900, group: 'Size', hint: 'top, front to back' },
     { id: 'height', label: 'Work height', type: 'len', value: 900, min: 750, max: 1050, group: 'Size', hint: 'floor to top surface, feet mid-travel' },
     { id: 'load', label: 'Rated load', type: 'kg', value: 300, min: 100, max: 500, group: 'Load', hint: 'spread over the top' },
@@ -169,9 +169,9 @@ export const plan = {
       'Grind the welds on the top faces of the top frame flush, so the top sits flat.',
       ...(steelTop ? [
         `Two people: lift the ${u.mass(L * D * tt * 7.85e-6)} top plate onto the frame, edges flush with the frame outside on all four sides.`,
-        `Clamp it down and stitch-weld it to the frame from underneath: ${u.len(30)} long welds every ${u.len(300)}, alternating ends.`,
+        `Clamp it down and stitch-weld it to the frame from underneath: ${u.len(30, { u: true })} long welds every ${u.len(300, { u: true })}, alternating ends.`,
       ] : []),
-    ], check: `Top diagonals still equal within ${u.len(3, { u: true })}; a straight edge across the top shows no gap over ${u.tol(1)}.`,
+    ], check: `Top diagonals still equal within ${u.len(3, { u: true })}; a straight edge across the top shows no gap over ${u.len(1, { u: true })}.`,
       tip: 'Ventilate: weld fumes from mill scale and paint are toxic.' });
     steps.push({ n: 6, phase: 'Fabricate', title: 'Foot plates', hours: 1, tasks: [
       `Weld an M12 nut on the top face of each foot plate, centred over the ${u.len(13, { u: true })} hole: thread a bolt through both to hold it straight while you weld.`,

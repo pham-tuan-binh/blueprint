@@ -13,10 +13,11 @@ function normalise(model, plan) {
   model.axes ||= { x: ['right', 'left'], y: ['back', 'front'], z: ['top', 'bottom'] };
   model.members ||= []; model.plates ||= []; model.hardware ||= []; model.consumables ||= [];
   model.steps ||= []; model.checks ||= []; model.facts ||= [];
-  model.kerf ??= 2; model.trim ??= 10;
+  model.kerf ??= 2; model.trim ??= 10; model.minPiece ??= 32;
   model.steps.sort((a, b) => a.n - b.n);
   for (const s of model.steps) {
-    s.tasks ||= [];
+    // a falsy task is dropped, so optional lines can be written inline: p.shelf && '...'
+    s.tasks = (s.tasks || []).filter(Boolean);
     for (const v of s.views || []) if (!['top', 'front', 'side'].includes(v)) throw new Error(`step ${s.n}: unknown view "${v}" (use 'top', 'front' or 'side')`);
   }
   model.currency ||= plan.currency || '';
@@ -54,7 +55,12 @@ function signature(pm, sec) {
 }
 const letter = i => (i < 26 ? String.fromCharCode(65 + i) : letter(Math.floor(i / 26) - 1) + String.fromCharCode(65 + (i % 26)));
 
-function groupPieces(model, joints) {
+// the plate a free member end sits on or against (a leg on its foot plate)
+function plateAt(model) {
+  return p => model.plates.find(pl => [0, 1, 2].every(i => Math.abs(p[i] - pl.c[i]) <= pl.s[i] / 2 + 1.5));
+}
+
+function groupPieces(model, joints, onPlate = () => null) {
   const groups = new Map();
   for (const m of model.members) {
     const j = joints[m.id];
@@ -76,7 +82,12 @@ function groupPieces(model, joints) {
     const ends = [[], []];
     for (const m of g.members) {
       const j = joints[m.id];
-      const da = describeEnd(j.ends.A, ref), db = describeEnd(j.ends.B, ref);
+      const end = (e, X) => {
+        const r = describeEnd(e, ref);
+        const pl = e.kind === 'free' && onPlate(X);
+        return pl ? { ...r, how: `onto ${pl.mark} (${pl.name.toLowerCase()})` } : r;
+      };
+      const da = end(j.ends.A, j.A), db = end(j.ends.B, j.B);
       const key = pm => JSON.stringify(pm.edges.map(e => [Math.round(e.a * 2) / 2, Math.round(e.b * 2) / 2]).sort((x, y) => x[0] - y[0] || x[1] - y[1]));
       const flip = key(pieceMarks(j, model.axes)) !== key(g.pm);
       const [x, y] = flip ? [db, da] : [da, db];
@@ -168,13 +179,20 @@ function notchPlates(model, joints, ref) {
     const ax = [0, 1, 2].sort((a, b) => pl.s[b] - pl.s[a]);
     const pb = plateBox(pl);
     pl.axes = ax;
-    pl.notches = [];
+    pl.notches = []; pl.footprints = [];
     for (const m of model.members) {
       const j = joints[m.id];
       const straight = [0, 1, 2].filter(i => Math.abs(j.axis[i]) > 0.999).length === 1 && [j.u, j.w].every(v => v.some(c => Math.abs(c) > 0.999));
       if (!straight) continue;
       const mb = memberBox(j);
       const pen = [0, 1, 2].map(i => Math.min(pb[1][i], mb[1][i]) - Math.max(pb[0][i], mb[0][i]));
+      // a member standing on a face of the plate (gap under 1 mm on the thin axis): draw where
+      const thin = ax[2], touch = Math.max(pb[0][thin] - mb[1][thin], mb[0][thin] - pb[1][thin]);
+      if (touch > -0.5 && touch <= 1 && pen[ax[0]] > 0.5 && pen[ax[1]] > 0.5) {
+        const lo = i => Math.max(pb[0][i], mb[0][i]) - pb[0][i], hi = i => Math.min(pb[1][i], mb[1][i]) - pb[0][i];
+        (pl.footprints ||= []).push([lo(ax[0]), lo(ax[1]), hi(ax[0]), hi(ax[1])]);
+        continue;
+      }
       if (pen.some(v => v <= 0.5)) continue;
       if (!pl.notch) { clashes.push(`${pl.name} passes through ${ref(m.id)}: give the plate notch: true, or move it`); continue; }
       const lo = i => Math.max(pb[0][i], mb[0][i]) - pb[0][i], hi = i => Math.min(pb[1][i], mb[1][i]) - pb[0][i];
@@ -248,14 +266,6 @@ export function derive(plan, given = {}, system) {
   const kit = { u: units, p, v3, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, inch, feet };
   const model = normalise(plan.build(p, kit), plan);
   const { joints, sites, report } = solveJoints(model);
-  const { pieces, markOf, ref } = groupPieces(model, joints);
-  // step text may name a piece by its mark: {mark:leg-FL} becomes "A"
-  const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { if (!markOf[id]) throw new Error(`{mark:${id}}: no member "${id}"`); return markOf[id]; }) : t);
-  for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); }
-  for (const c of model.checks) { c.value = fill(c.value); c.why = fill(c.why); }
-  for (const pl of model.plates) pl.note = fill(pl.note);
-  const plateClashes = notchPlates(model, joints, ref);
-  const nesting = nest(model, pieces);
   // identical plates share a mark (P1, P2...): same size, thickness, holes and material
   const pg = new Map();
   for (const pl of model.plates) {
@@ -265,6 +275,14 @@ export function derive(plan, given = {}, system) {
   }
   const plateGroups = [...pg.values()].sort((a, b) => a.step - b.step);
   plateGroups.forEach((g, i) => { g.mark = 'P' + (i + 1); for (const pl of model.plates) if (g.ids.includes(pl.id)) pl.mark = g.mark; });
+  const { pieces, markOf, ref } = groupPieces(model, joints, plateAt(model));
+  // step text may name a piece by its mark: {mark:leg-FL} becomes "A"
+  const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { if (!markOf[id]) throw new Error(`{mark:${id}}: no member "${id}"`); return markOf[id]; }) : t);
+  for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); }
+  for (const c of model.checks) { c.value = fill(c.value); c.why = fill(c.why); }
+  for (const pl of model.plates) pl.note = fill(pl.note);
+  const plateClashes = notchPlates(model, joints, ref);
+  const nesting = nest(model, pieces);
   const mass = massItems(model, joints);
   const totalKg = mass.reduce((s, it) => s + it.m, 0);
   const cog = mass.reduce((c, it) => add(c, mul(it.c, it.m / (totalKg || 1))), [0, 0, 0]);
@@ -312,7 +330,7 @@ export function derive(plan, given = {}, system) {
   const tooLong = nesting.flatMap(n => n.tooLong);
   add2('Every piece fits the stock', !tooLong.length, tooLong.length ? `${tooLongRef(tooLong[0])} is ${u.len(tooLong[0].L, { u: true })}` : `longest ${u.len(longest, { u: true })}`, 'Cut from standard lengths with a trim and a kerf per cut.');
   const shortest = pieces.reduce((m, g) => (g.pm.shortPoint < m.v ? { v: g.pm.shortPoint, g } : m), { v: Infinity });
-  const minPiece = model.minPiece ?? 30;
+  const minPiece = model.minPiece;
   add2('Every piece can be clamped and cut', shortest.v >= minPiece, `shortest ${u.len(shortest.v, { u: true })}`, `No piece shorter than ${u.len(minPiece, { u: true })} on its short side.`);
   if (loadErr) add2('Frame analysis', false, loadErr, 'The frame solver could not run.');
   for (const r of d.loads) {

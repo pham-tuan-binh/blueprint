@@ -7,13 +7,13 @@ node scripts/test-fea.mjs                              # once per kit change
 node scripts/build.mjs plans/<id>/design.mjs           # writes index.html, prints the checks
 node scripts/audit.mjs plans/<id>/design.mjs           # must end: audit passed
 node scripts/capture.mjs plans/<id>/index.html --pdf   # must end: capture passed; PNGs, plan.pdf and pdf-N.png pages in shots/
-node scripts/capture.mjs plans/<id>/index.html --hash "top=steel" --out plans/<id>/shots/steel   # every option and every size where the design changes
+node scripts/capture.mjs plans/<id>/index.html --hash "top=steel" --out plans/<id>/shots/steel   # every option and every size where the design changes (hash values in mm / kg, bools 1/0)
 ```
 
 ## The commands must pass
 
 - **audit passed.** Every kit check and plan check at every min, max, all-min, all-max, a 12-step sweep of each field with the others at their max and at their min, and 40 random sizes, in both units. A failing case is a design bug at a size the page allows: fix the design so it adapts, or narrow the range only if the thing stops making sense there.
-- **capture passed.** No console errors, a 3D view that is neither blank nor all ink, a field that changes the cut list and the URL, an imperial pass with no "mm" left in the plan's own numbers, no sideways scroll at 390 px.
+- **capture passed.** No console errors, a 3D view that is neither blank nor all ink, a field that changes the cut list and the URL, a pass in the other units with nothing of the first left in the plan's own numbers, no sideways scroll at 390 px. The PDF prints in the plan's own units.
 
 ## Read the shots like a builder
 
@@ -26,7 +26,7 @@ Open every PNG in `shots/`. For each, ask:
 5. **step-N.png** (every step): could someone do this step with only this? Is every piece named by mark, every position in the joint table or the jig, every check measurable? Is the lit (dark) part in the jig what this step adds?
 6. **cut sheets**: does each piece's long point and end description agree with how it is joined? Are pieces that should be identical one mark (×4, not four marks)?
 7. **cutlist.png**: is the waste reasonable, and is the number of stock lengths on the materials list the number in the cutting plan?
-8. **imperial-*.png**: inch fractions everywhere a length is printed, sensible values?
+8. **metric-*.png / imperial-*.png** (the plan switched to the other units): every length in the other system, sensible values, stock labels unchanged (they are what you buy)?
 9. **phone.png / phone-full.png**: readable at 390 px, fields usable, drawings legible when zoomed?
 10. **pdf-N.png** (the printed pages of plan.pdf): each step starts on a new page, no controls printed, drawings not split across pages?
 11. **every variant** you captured with `--hash`: does each step still read right with the option or the extra member (the steel top's welding step, the middle legs)?

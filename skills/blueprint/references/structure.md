@@ -42,7 +42,7 @@ Write load cases for the job and for abuse:
 
 Safety factor (yield ÷ peak stress, what the checks report): at least 2 for furniture, benches and racks; 3 for anything a person stands on, sits on or hangs from; and never rely on the factor for lifting gear or vehicles (that is a Machine: see SKILL.md). Deflection: a work surface span/300 at its rated load; a shelf span/250.
 
-Tip-over: add `tip: { N, height, sf: 1.5 }` for anything taller than about 1.5 × its depth, and for anything people push at height (a bench being planed or filed on). Use a realistic push: 150 N at the top of a rack; 300 N at work height for a bench used hard. A light steel bench (40-60 kg) rarely passes 300 N free-standing: a heavy top, a wider stance, or anchoring fixes it. If it only passes anchored, fit the anchors in a step (as hardware in that step) and name it: `anchored: 'step 8, four M8 anchors'`. The audit checks that step fits anchors, bolts or screws. Say plainly in that step that it must be anchored.
+Tip-over: add `tip: { N, height, sf: 1.5 }` for anything taller than about 1.5 × its depth, and for anything people push at height (a bench being planed or filed on). Use a realistic push: 150 N at the top of a rack; 150 N at work height for a light bench, 300 N for a bench used hard (vise work, planing). A light steel bench (40-60 kg) rarely passes 300 N free-standing: a heavy top, a wider stance, or anchoring fixes it. If it only passes anchored, fit the anchors in a step (as hardware in that step) and name it: `anchored: 'step 8, four M8 anchors'`. The audit checks that step fits anchors, bolts or screws. Say plainly in that step that it must be anchored.
 
 ## Metric stock (default)
 
@@ -57,7 +57,7 @@ Common in Europe, Asia and Australia; sold in 6 m lengths (`stockLen: 6000`). Mi
 | Plate | 3, 5, 6, 8, 10 mm | 5-6 mm for feet and tabs; 5-10 mm for a steel bench top |
 | Sheet | 1.5, 2 mm steel; 18 mm plywood; 25-30 mm MDF/hardwood top | |
 
-Approximate prices (2026, USD, check local): SHS 40×40×2 about $4/m, 40×40×3 $5.5/m, RHS 60×40×3 $7/m, 5 mm plate about $45/m², 18 mm plywood $18/m².
+Approximate prices (2026, USD, check local; `price` is per metre): SHS 40×40×2 about $4/m, 40×40×3 $5.5/m, RHS 60×40×3 $7/m, 5 mm plate about $45/m², 18 mm plywood $18/m².
 
 ## Imperial stock (when the user asks)
 
@@ -72,7 +72,7 @@ US / Canada; sold in 20 ft (`stockLen: feet(20)`) and 24 ft lengths. A500 / A513
 | Plate | 3/16", 1/4", 3/8" | `inch(0.25)` |
 | Sheet | 3/4" plywood, 1-1/2" butcher block | |
 
-Label imperial stock the way it is sold: `label: '1-1/2" × 1-1/2" × 11 ga square tube'`, `short: '1.5" SQ 11ga'`.
+Price US stock per foot with `pricePerFt: 3.1` (about $3/ft for 1-1/2" 11 ga, $2/ft for 1" 14 ga). Label imperial stock the way it is sold: `label: '1-1/2" × 1-1/2" × 11 ga square tube'`, `short: '1.5" SQ 11ga'`.
 
 ## Timber and bolted builds
 

@@ -91,14 +91,21 @@ for (const c of cases) {
     for (const ch of d.checks) {
       if (!ch.pass) fail(where, `✗ ${ch.name}: ${ch.value}`);
       // remember the tightest margin seen for the report
-      const m = /factor ([\d.]+)/.exec(ch.value);
+      // tightest margins: safety factors, and deflection as limit ÷ movement
+      const m = /anchored/.test(ch.value) ? null : /factor ([\d.]+)/.exec(ch.value);
       if (m && (!worst[ch.name] || +m[1] < worst[ch.name].v)) worst[ch.name] = { v: +m[1], at: c.name };
+      const dm = d.loads.find(r => ch.name === `${r.name}: deflection`);
+      if (dm) { const v = +(dm.load.defl / Math.max(dm.loadDefl, 1e-6)).toFixed(2); if (!worst[ch.name] || v < worst[ch.name].v) worst[ch.name] = { v, at: c.name, unit: '× under the limit' }; }
     }
-    if (system === 'imperial') {
-      const texts = d.model.steps.flatMap(s => [s.title, s.summary, s.check, s.tip, ...s.tasks].filter(Boolean).map(t => [s.n, t]))
-        .concat(d.model.checks.map(ch => ['check', String(ch.value)]));
-      for (const [n, t] of texts) if (metricNum.test(t)) { fail(`step ${n} text`, `hard-coded metric "${t.match(metricNum)[0].trim()}" in "${t.slice(0, 70)}…": format sizes with u.len() so imperial works`); break; }
-    }
+    // every word the plan writes must follow the units: no "mm" in imperial, no inch marks in metric
+    const texts = d.model.steps.flatMap(s => [s.title, s.summary, s.check, s.tip, ...s.tasks].filter(Boolean).map(t => [`step ${s.n}`, t]))
+      .concat(d.model.checks.flatMap(ch => [['check', String(ch.name)], ['check', String(ch.value)], ['check', String(ch.why || '')]]))
+      .concat(d.model.facts.map(f => ['fact', f.join(' ')]))
+      .concat(d.model.plates.flatMap(pl => [['plate ' + pl.id, pl.name], ['plate ' + pl.id, pl.note || '']]))
+      .concat((plan.params || []).flatMap(pd => [['param ' + pd.id, typeof pd.hint === 'function' ? pd.hint(d.units) : pd.hint || ''],
+        ...(pd.options || []).map(o => ['param ' + pd.id, typeof o.label === 'function' ? o.label(d.units) : o.label])]));
+    const bad = system === 'imperial' ? metricNum : /\d(\s\d+\/\d+)?"|\d+(\.\d+)?\s?(in|inch|inches|ft|feet)\b/;
+    for (const [where2, t] of texts) if (bad.test(t)) { fail(`${where2} text`, `hard-coded ${system === 'imperial' ? 'metric' : 'imperial'} "${t.match(bad)[0].trim()}" in "${t.slice(0, 70)}…": format sizes with u.len() (a hint or option label can be a function of u)`); break; }
     if (c.name === 'defaults' && system === 'metric') {
       const md = d.model;
       for (const s of md.steps) {
@@ -143,5 +150,5 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(`${runs} runs over ${cases.length} sizes (sweeps, extremes and random, metric and imperial), every check passing`);
-for (const [k, w] of Object.entries(worst)) console.log(`  tightest ${k}: ${w.v} at ${w.at}`);
+for (const [k, w] of Object.entries(worst)) console.log(`  tightest ${k}: ${w.v}${w.unit ? ' ' + w.unit : ''} at ${w.at}`);
 console.log('audit passed');

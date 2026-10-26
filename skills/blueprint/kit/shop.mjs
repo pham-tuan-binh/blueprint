@@ -78,7 +78,7 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
   const merged = [...spots.values()].map(sp => ({ p: sp.p, name: sp.names.length > 2 ? `${sp.names[0]}…${sp.names[sp.names.length - 1]}` : sp.names.join(', ') }));
   for (const l of merged) {
     const [x, y] = V.pr(l.p);
-    s += `<circle class="jp" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.28)}"/><text class="jl" x="${f1(x + fs * 0.45)}" y="${f1(y - fs * 0.4)}">${esc(l.name)}</text>`;
+    s += `<circle class="jp" cx="${f1(x)}" cy="${f1(y)}" r="${f1(fs * 0.28)}"/><text class="jl" x="${f1(x + fs * 0.7)}" y="${f1(y - fs * 0.85)}">${esc(l.name)}</text>`;
   }
   s += `<text class="jt" x="${f1(vb[0] + fs * 0.6)}" y="${f1(vb[1] + fs * 1.6)}">${esc(title || V.title)}</text>`;
   return s + '</svg>';
@@ -129,12 +129,24 @@ export function gaSheet(d) {
 // ---------------------------------------------------------------- cut sheet
 // One piece mark: the two faces you mark, both ends drawn large with the middle
 // broken out, the edge marks at each end, and how each end is joined.
+// member ids under a mark, cut to the width of the sheet ("…and 6 more")
+function idList(ids, width) {
+  const max = Math.floor((width - 20) / 7.4);
+  let out = '';
+  for (let i = 0; i < ids.length; i++) {
+    const next = (out ? out + ', ' : '') + ids[i];
+    if (next.length > max - 14 && i < ids.length - 1) return `${out}, …and ${ids.length - i} more`;
+    out = next;
+  }
+  return out;
+}
+
 export function pieceSvg(d, g) {
   const u = d.units, pm = g.pm, sec = g.sec;
   const [A, B] = g.endText;
   const head = (total) => `<text class="pt" x="10" y="28">${esc(g.mark)}</text><text class="pq" x="${10 + 18 * g.mark.length + 8}" y="28">x${g.qty}</text>` +
     `<text class="ps" x="10" y="52">${esc(g.name)} · ${esc(sec.short)} · step ${g.step}</text>` +
-    `<text class="ps pm2" x="10" y="72">${esc(g.ids.join(', '))}</text>` +
+    `<text class="ps pm2" x="10" y="72">${esc(idList(g.ids, total))}</text>` +
     `<text class="pk" x="${total - 10}" y="28" text-anchor="end">${esc(u.len(pm.longPoint, { u: true }))}</text>` +
     `<text class="ps" x="${total - 10}" y="52" text-anchor="end">long point</text>`;
   // square both ends: no marks to transfer, one bar and its length is the whole sheet
@@ -188,7 +200,7 @@ export function plateSvg(d, pl) {
   const W = pl.s[ax[0]], H = pl.s[ax[1]], T = pl.s[ax[2]];
   const k = Math.min(520 / W, 260 / H);
   const ox = 70, oy = 60, w = W * k, h = H * k;
-  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f1(Math.max(700, w + 220))} ${f1(h + 172)}" class="piece plate" role="img" aria-label="Plate ${esc(pl.id)}">`;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f1(Math.max(700, w + 220))} ${f1(h + 110)}" class="piece plate" role="img" aria-label="Plate ${esc(pl.id)}">`;
   s += `<text class="pt" x="10" y="28">${esc(pl.mark || pl.id)}</text><text class="pq" x="${10 + 18 * String(pl.mark || pl.id).length + 8}" y="28">x${pl.qty || 1}</text>`;
   s += `<text class="ps" x="10" y="50">${esc(pl.name)} · ${esc(u.len(T, { u: true }))} ${esc(pl.materialLabel || pl.material || 'steel')} · step ${pl.step}</text>`;
   const notches = pl.notches || [];
@@ -220,18 +232,27 @@ export function plateSvg(d, pl) {
   s += `<text class="pm" x="${f1(ox + w / 2)}" y="${f1(oy + h + 44)}" text-anchor="middle">${esc(u.len(W))}</text>`;
   s += `<path class="dl" d="M${f1(ox + w + 22)} ${oy}V${f1(oy + h)}M${f1(ox + w + 6)} ${oy}h24M${f1(ox + w + 6)} ${f1(oy + h)}h24"/>`;
   s += `<text class="pm" x="${f1(ox + w + 34)}" y="${f1(oy + h / 2 + 5)}">${esc(u.len(H))}</text>`;
-  if (pl.holes?.length) {
-    const hs = [...new Map(pl.holes.map(hh => [hh.d, hh])).values()];
-    s += `<text class="ps" x="10" y="${f1(oy + h + 76)}">${pl.holes.length} hole${pl.holes.length > 1 ? 's' : ''}: ${hs.map(hh => `⌀${esc(u.len(hh.d))}`).join(', ')} · centres from the lower-left corner: ${pl.holes.map(hh => `(${u.len(hh.at[0])}, ${u.len(hh.at[1])})`).join(' ')}</text>`;
-  }
-  let ty = oy + h + (pl.holes?.length ? 98 : 76);
-  if (notches.length) {
-    const sizes = [...new Set(notches.map(n => `${u.len(n[2] - n[0])} × ${u.len(n[3] - n[1])}`))];
-    s += `<text class="ps" x="10" y="${f1(ty)}">${notches.length} notch${notches.length > 1 ? 'es' : ''} ${sizes.join(', ')} for the members that pass through, at: ${notches.map(n => `(${u.len(n[0])}, ${u.len(n[1])})`).join(' ')}</text>`;
-    ty += 22;
-  }
-  if (pl.note) s += `<text class="ps" x="10" y="${f1(ty)}">${esc(pl.note)}</text>`;
+  // where the members welded to it stand: their outline on its face, dashed
+  for (const f of pl.footprints || []) s += `<rect class="pfoot" x="${f1(ox + f[0] * k)}" y="${f1(oy + h - f[3] * k)}" width="${f1((f[2] - f[0]) * k)}" height="${f1((f[3] - f[1]) * k)}"/>`;
   return s + '</svg>';
+}
+
+// The words under a plate drawing: holes, notches, what stands on it, the note.
+export function plateNotes(d, pl) {
+  const u = d.units, out = [];
+  if (pl.holes?.length) {
+    const hs = [...new Set(pl.holes.map(hh => hh.d))];
+    out.push(`${pl.holes.length} hole${pl.holes.length > 1 ? 's' : ''} ${hs.map(v => `⌀${u.len(v, { u: true })}`).join(', ')}, centres from the lower-left corner: ${pl.holes.map(hh => `(${u.len(hh.at[0])}, ${u.len(hh.at[1])})`).join(' ')}.`);
+  }
+  const n = pl.notches || [];
+  if (n.length) {
+    const sizes = [...new Set(n.map(q => `${u.len(q[2] - q[0])} × ${u.len(q[3] - q[1])}`))];
+    out.push(`${n.length} notch${n.length > 1 ? 'es' : ''} ${sizes.join(', ')} for the members that pass through, from the lower-left corner: ${n.map(q => `(${u.len(q[0])}, ${u.len(q[1])})`).join(' ')}.`);
+  }
+  const f = pl.footprints || [];
+  if (f.length) out.push(`Dashed: where ${f.length > 1 ? 'members meet' : 'a member meets'} its face (welded on, or under it), from the lower-left corner: ${f.map(q => `(${u.len(q[0])}, ${u.len(q[1])})`).join(' ')}.`);
+  if (pl.note) out.push(pl.note);
+  return out;
 }
 
 // ---------------------------------------------------------------- nesting
@@ -259,7 +280,7 @@ export const SHOP_CSS = `
 .ps{font:14px var(--sans);fill:var(--ink2)}.pm2{font:12px var(--mono);fill:var(--muted)}
 .pk{font:700 20px var(--mono);fill:var(--ink)}.pm{font:700 15px var(--mono);fill:var(--ink)}.pe{font:12px var(--mono);fill:var(--muted)}
 .pf{fill:var(--face);stroke:var(--ink);stroke-width:1.5}.pb{fill:none;stroke:var(--muted);stroke-width:1.2}
-.ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+.ph{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pfoot{fill:none;stroke:var(--ink2);stroke-width:1.2;stroke-dasharray:6 4}
 .jn{fill:var(--now);stroke:var(--ink);stroke-width:calc(var(--fs) * .09)}.jo{fill:var(--old);stroke:var(--oldline);stroke-width:calc(var(--fs) * .07)}
 .ga .jn{fill:var(--face)}.jn.k-hardware,.jo.k-hardware{fill:none;stroke-dasharray:calc(var(--fs) * .4) calc(var(--fs) * .25)}
 .dl{stroke:var(--ink2);stroke-width:calc(var(--fs) * .06);fill:none}.da{fill:var(--ink2)}

@@ -5,9 +5,10 @@
 //
 // --hash opens the page at another size or option (the same as a shared link), so
 // the steps of a variant can be read too: capture each choice option into its own --out.
+// Values in a hash are always mm and kg (whatever the plan's units), bools 1 or 0.
 //
-// Writes PNGs (desktop, phone, the size panel, drawings, the first jig step, cut
-// list, imperial) and, with --pdf, the printed pack. Fails on any console error, a
+// Writes PNGs (desktop, phone, the size panel, materials, drawings, every step, cut
+// list, the other units) and, with --pdf, the printed pack. Fails on any console error, a
 // blank 3D view, sideways scroll on a phone, an input field that does not change
 // the plan, or a units switch that leaves millimetres behind. Read every PNG.
 import { createRequire } from 'node:module';
@@ -53,8 +54,7 @@ const shot = async (p, sel, name) => {
   await el.screenshot({ path: join(out, name) });
 };
 const text = (p, sel) => p.$eval(sel, el => el.innerText).catch(() => '');
-// the same, without the bought-parts lists inside steps
-const ownText = (p, sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
+
 
 // ---------------------------------------------------------------- desktop
 const p = await open({ width: 1280, height: 900 });
@@ -86,17 +86,19 @@ for (const id of stepIds) await shot(p, '#' + id, `${id}.png`);
 const lenField = await p.evaluate(() => {
   const plan = window.__blueprint.d.plan;
   const pd = plan.params.find(q => q.type === 'len') || plan.params.find(q => q.type === 'count');
-  return pd && { id: pd.id, max: window.__blueprint.d.limits[pd.id].max, min: window.__blueprint.d.limits[pd.id].min, value: window.__blueprint.d.p[pd.id] };
+  return pd && { id: pd.id, len: pd.type === 'len', max: window.__blueprint.d.limits[pd.id].max, min: window.__blueprint.d.limits[pd.id].min, value: window.__blueprint.d.p[pd.id] };
 });
 if (lenField) {
   const before = await text(p, '#cutlist-body');
   const target = Math.abs(lenField.value - lenField.max) < 1 ? lenField.min : lenField.max;
-  await p.fill(`#f-${lenField.id}`, String(Math.round(target)));
+  // type it the way the field shows it: mm, or inches in an imperial page
+  const typed = await p.evaluate(([mm, isLen]) => { const u = window.__blueprint.d.units; return isLen ? (u.imperial ? u.toText(mm) : String(Math.round(mm))) : String(Math.round(mm)); }, [target, lenField.len]);
+  await p.fill(`#f-${lenField.id}`, typed);
   await p.press(`#f-${lenField.id}`, 'Tab');
   await p.waitForTimeout(600);
   const after = await text(p, '#cutlist-body');
   const got = await p.evaluate(id => window.__blueprint.d.p[id], lenField.id);
-  if (Math.abs(got - target) > 1) problems.push(`typing ${target} into ${lenField.id} gave ${got}`);
+  if (Math.abs(got - target) > 1) problems.push(`typing ${typed} into ${lenField.id} gave ${Math.round(got)} mm, not ${Math.round(target)}`);
   if (before === after) problems.push(`changing ${lenField.id} did not change the cut list`);
   if (!(await p.evaluate(() => location.hash.length > 1))) problems.push('the size is not in the URL, so it cannot be shared');
   await p.screenshot({ path: join(out, 'desktop-changed.png') });
@@ -106,19 +108,30 @@ if (lenField) {
   await p.waitForTimeout(400);
 }
 
-// ---------------------------------------------------------------- imperial
-await p.click('[data-units="imperial"]');
+// ---------------------------------------------------------------- the other units
+// the page opens in the plan's units; switch to the other system and check nothing
+// of the first is left in the plan's own numbers (bought-part specs are exempt)
+const home = await p.evaluate(() => window.__blueprint.d.units.system);
+const other = home === 'imperial' ? 'metric' : 'imperial';
+const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
+const ownAll = async () => (await Promise.all(['#facts', '#checks-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'].map(ownText))).join('\n');
+await p.click(`[data-units="${other}"]`);
 await p.waitForTimeout(600);
-const cut = await text(p, '#cutlist-body');
-if (!/"/.test(cut)) problems.push('imperial: no inch marks in the cut list');
-// bought-part specs ("0.8 mm wire") are sold by those names; the plan's own numbers are not
-const all = (await Promise.all(['#facts', '#checks-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'].map(s => ownText(p, s)))).join('\n');
-const mm = all.match(/\d\s?mm\b/g);
-if (mm && mm.length) problems.push(`imperial: still shows millimetres (${mm.slice(0, 3).join(', ')})`);
-await shot(p, '#model', 'imperial-model.png');
-await shot(p, '#cutlist', 'imperial-cutlist.png');
+const all = await ownAll();
+if (other === 'imperial') {
+  if (!/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
+  const mm = all.match(/(?<![\d.])\d+(\.\d+)?\s?mm\b/g);
+  if (mm) problems.push(`imperial: still shows millimetres (${mm.slice(0, 3).join(', ')})`);
+} else {
+  const ins = all.match(/\d+(\s\d+\/\d+)?"/g);
+  if (ins) problems.push(`metric: still shows inches (${ins.slice(0, 3).join(', ')})`);
+}
+await shot(p, '#model', `${other}-model.png`);
+await shot(p, '#cutlist', `${other}-cutlist.png`);
+await shot(p, '#steps-body .step:nth-child(2)', `${other}-step-2.png`);
 if (args.includes('--pdf')) {
-  await p.click('[data-units="metric"]');
+  // print in the plan's own units
+  await p.click(`[data-units="${home}"]`);
   await p.waitForTimeout(400);
   await p.emulateMedia({ media: 'print' });
   await p.pdf({ path: join(out, 'plan.pdf'), format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '12mm', left: '10mm', right: '10mm' } });

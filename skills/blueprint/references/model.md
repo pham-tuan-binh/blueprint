@@ -32,9 +32,16 @@ export const plan = {
 | `bool` | true / false | a checkbox |
 
 - `min` / `max` may be functions of the params declared **before** this one: `max: p => Math.floor((p.height - 270) / 250) + 1`.
+- `hint` (and an option `label`) is a string, or a function of the units when it names a size: `hint: u => \`middle legs above ${u.len(1800, { u: true })}\``. The audit fails a hard-coded "mm" in imperial and a hard-coded inch mark in metric.
 - An option `label` is a string, or a function of the units when it names a size (as above): a plain "18 mm plywood" would stay metric in an imperial page and fail the capture check.
 - `group` puts fields under a small heading (Size, Load, Options). Order the params the way a person thinks: overall size first.
-- In imperial plans give round inch values. The params are plain data outside `build`, so define `const inch = v => v * 25.4;` at the top of the file and write `value: inch(60), min: inch(36), max: inch(96)`.
+- In imperial plans give round inch values. The params are plain data outside `build`, so define helpers at the top of the file and use them there (inside `build`, `k.inch` and `k.feet` do the same):
+  ```js
+  const inch = v => v * 25.4, lb = v => v / 2.2046;
+  // { id: 'length', type: 'len', value: inch(60), min: inch(36), max: inch(96) }
+  // { id: 'load', type: 'kg', value: lb(1000), min: lb(200), max: lb(1500) }
+  ```
+- A shared link carries the params in the URL hash, always in mm and kg (bools `1`/`0`), whatever the page shows: `#length=1828.8&shelf=0`. The same goes for `capture.mjs --hash`.
 
 ## build(p, k)
 
@@ -42,8 +49,8 @@ export const plan = {
 
 | name | use |
 |---|---|
-| `k.u` | units, for every number in text: `u.len(mm)`, `u.len(mm, { u: true })`, `u.size(mm)`, `u.mass(kg)`, `u.tol(mm)`, `u.force(N)` |
-| `k.squareTube(b, t, o)`, `k.rectTube(bu, bw, t, o)`, `k.roundTube(d, t, o)`, `k.flatBar(b, t, o)`, `k.bar(bu, bw, o)`, `k.timber(bu, bw, o)` | stock sections. `bu` is the width across the member (horizontal), `bw` its height (up for a level member). `o`: `{ id, label, short, stockLen, price (per metre), material }` |
+| `k.u` | units, for every number in text: `u.len(mm)` (a bare number for drawings and tables), `u.len(mm, { u: true })` (with its unit, for sentences), `u.size(mm)`, `u.mass(kg)`, `u.tol(mm)` (`±1 mm` / `±1/16"`), `u.force(N)` |
+| `k.squareTube(b, t, o)`, `k.rectTube(bu, bw, t, o)`, `k.roundTube(d, t, o)`, `k.flatBar(b, t, o)`, `k.bar(bu, bw, o)`, `k.timber(bu, bw, o)` | stock sections. `bu` is the width across the member (horizontal), `bw` its height (up for a level member). `o`: `{ id, label, short, stockLen, price (per metre) or pricePerFt, material }` |
 | `k.inch(v)`, `k.feet(v)` | imperial stock sizes in mm |
 | `k.MATERIALS` | steel, stainless, aluminium (welded strength), timber |
 | `k.v3` | small vector helpers |
@@ -68,7 +75,7 @@ return {
   steps: [ ... ],
   facts: [['Work height', u.len(900, { u: true }), 'top surface']],   // optional extra facts
   join: 'weld',                // 'weld' (default), 'bolt' or 'screw': changes the legend wording
-  kerf: 2, trim: 10, minPiece: 30, tolerance: '...', orderNote: 'One line above the build order.',
+  kerf: 2, trim: 10, minPiece: 32, tolerance: '...', orderNote: 'One line above the build order.',
 };
 ```
 
@@ -86,7 +93,7 @@ return {
 - `loose: true`: a member bolted on, not welded into the frame (left out of the frame analysis).
 - `tone`: `'hi'` (default), `'mid'`, `'lo'`, `'faint'` in the 3D view.
 
-Member ids: short and meaningful (`rail-F-top`, `leg-BR`). Identical pieces get the same piece mark automatically; you never assign marks.
+Member ids: short and meaningful (`rail-F-top`, `leg-BR`). Identical pieces get the same piece mark automatically; you never assign marks. Plan for it: on a simple frame the end rails and the cross rails often come out the same length, and so do the top and lower long rails, so they share a mark and one cut sheet. Give members that will share a mark one name ("Short rail", "Long rail", "Leg"), or the sheet prints "End rail / Cross rail".
 
 ### plates
 
@@ -95,7 +102,7 @@ Member ids: short and meaningful (`rail-F-top`, `leg-BR`). Identical pieces get 
   material: 'steel', holes: [{ at: [a, b], d: 10 }], note: 'Weld all round.', price: 1.5 }
 ```
 
-An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. A plate that straight members pass through (a lower shelf around the legs) gets `notch: true`: the kit cuts a notch where each member passes, draws it on the plate's drawing with its size, and shows it in 3D; without it, that is a clash. Holes are drawn on the plate's two biggest axes, from its lower-left corner. `material: 'plywood' | 'mdf' | 'timber' | 'steel' | 'aluminium'` (`materialLabel` overrides the printed material word only, printed after the size: "1500 × 700 × 18 plywood", so give `'plywood'`, not `'18 mm plywood'`), `drawing: false` for sheet goods that need no shop drawing (a plywood deck), `price` per piece, `tone`, `on: 'member-id'` when it is held by something it does not touch (rare). Identical plates (same size, holes, material and name) share a mark (P1, P2).
+An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. Plates count in the overall size: a foot plate centred under a leg at the corner of the frame sticks out past the top and makes the "Overall" bigger than the length the person typed. Keep foot plates inside the footprint (the leg's size, or offset inward) or let the top overhang the frame. The drawing shows, dashed, where the members welded to it stand. A plate that straight members pass through (a lower shelf around the legs) gets `notch: true`: the kit cuts a notch where each member passes, draws it on the plate's drawing with its size, and shows it in 3D; without it, that is a clash. Holes are drawn on the plate's two biggest axes, from its lower-left corner. `material: 'plywood' | 'mdf' | 'timber' | 'steel' | 'aluminium'` (`materialLabel` overrides the printed material word only, printed after the size: "1500 × 700 × 18 plywood", so give `'plywood'`, not `'18 mm plywood'`), `drawing: false` for sheet goods that need no shop drawing (a plywood deck), `price` per piece, `tone`, `on: 'member-id'` when it is held by something it does not touch (rare). Identical plates (same size, holes, material and name) share a mark (P1, P2).
 
 ### hardware
 
@@ -128,7 +135,7 @@ loads: [
 ```js
 { n: 2, phase: 'Fabricate', title: 'Top frame (tack)', hours: 2, views: ['top'],
   summary: 'Optional one line.',
-  tasks: ['Short imperative lines with numbers from u.len().'],
+  tasks: ['Short imperative lines with numbers from u.len().', p.shelf && 'An optional line: a falsy task is dropped.'],
   check: `Diagonals equal within ${u.len(2, { u: true })}.`,
   tip: 'Optional note.' }
 ```
@@ -136,6 +143,8 @@ loads: [
 Numbered 1, 2, 3… with no gaps. `phase` groups them in the build order. `hours` is the honest time for one person. `views` overrides which jig views are drawn: a list of `'top'`, `'front'`, `'side'` (default: the top view for a flat step, all three otherwise).
 
 **Name pieces by mark** with `{mark:member-id}` in any step text, check or plate note: `'Clamp the end rails ({mark:end-L1}) between the legs'` prints "Clamp the end rails (B) between the legs". Marks are assigned after `build()` runs, so this placeholder is the only way to write them; an unknown id is an error. `alone: true` draws a sub-assembly built on its own without the rest of the frame. Every member, plate and part has a `step`, and the step that fits members shows its jig, joint positions and cut sheets automatically.
+
+Not modelled (write them as tasks): holes in members (screw holes for a top: "drill a ⌀5 hole every 300 along the top rails"), bends, copes.
 
 ### checks
 

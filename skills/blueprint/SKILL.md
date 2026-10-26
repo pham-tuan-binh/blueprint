@@ -13,7 +13,8 @@ This skill makes build packs: one page a person takes to the shop and builds fro
 
 Open the closest example before you start, and copy its shape.
 
-- `examples/shelf-rack/design.mjs`: four posts, a welded rectangle at every shelf level, plywood decks. The smallest complete plan (about 150 lines). Shows posts that run past corners (`prio`), dynamic limits (the shelf count follows the height), a plan check of its own, and an anchored tip check.
+- `examples/shelf-rack/design.mjs`: four posts, a welded rectangle at every shelf level, plywood decks. The smallest complete plan (about 150 lines). Shows posts that run past corners (`prio`), dynamic limits (the shelf count follows the height), notched decks, a plan check of its own, and an anchored tip check.
+- `examples/metal-workbench/design.mjs`: a welded steel workbench with a lower shelf frame, generated with this skill from "create build plans for a simple metal work bench" and iterated until it passed. Shows a design that adapts (middle legs above 1800 mm, cross rails every 600 mm or less), `choice` and `bool` params, four load cases plus a shelf case, foot plates with welded nuts for levelling feet, and `{mark:id}` in the steps.
 
 Build one with `node scripts/build.mjs examples/<name>/design.mjs --out /tmp/<name>.html` and open it (without `--out` it writes `index.html` next to the design).
 
@@ -31,7 +32,8 @@ Two ways this fails, both easy to fall into:
 - **Metric is the default.** Millimetres, kilograms, newtons, metric stock (SHS 40×40×2, 6 m lengths). Do this unless the user asks otherwise.
 - **Imperial only when the user asks** (says inches, feet, gauge, "US sizes", or gives sizes in inches). Then set `units: 'imperial'` on the plan, choose imperial stock with `k.inch()` (1-1/2" × 14 ga square tube = `squareTube(inch(1.5), inch(0.083))`, 20 ft lengths = `stockLen: feet(20)`), and write the params' defaults and limits as round inch values in mm (`inch(60)`).
 - The model is always in millimetres internally. The page has an mm / in switch either way; it changes only how numbers print, never the design. So the stock you choose must never depend on the display units.
-- In any text, format sizes with `u.len(v)` (a cut length: `1500` or `59 1/16"`), `u.len(v, { u: true })` (with its unit), `u.size(v)` (an overall size: `1.50 m`, `4' 11"`), `u.mass(kg)`, `u.tol(mm)`. The audit fails a plan whose step text says "mm" in imperial.
+- In any text, format sizes with `u.len(v)` (a bare number for tables and drawings: `1500` or `59 1/16"`), `u.len(v, { u: true })` (with its unit, for sentences: `1500 mm`), `u.size(v)` (an overall size: `1.50 m`, `4' 11"`), `u.mass(kg)`, `u.tol(mm)` (`±1 mm`). That covers step text, checks, facts, plate notes, field hints and option labels (pass a function of `u` for the last two). The audit fails "mm" left in imperial and inch marks left in metric.
+- Imperial input fields show and take fractions (`59 1/16`); a shared link always carries mm and kg.
 
 ## Parametric, always
 

@@ -68,7 +68,8 @@ function makeSection(kind, bu, bw, t, o = {}) {
   return {
     id, kind, bu, bw, t: t || 0, material: o.material || 'steel', mat,
     label: o.label || id, short: o.short || o.label || id,
-    stockLen: o.stockLen || 6000, price: o.price ?? null, // price per metre, plan currency
+    // price per metre in the plan's currency; US stock is priced per foot, so pricePerFt converts
+    stockLen: o.stockLen || 6000, price: o.pricePerFt != null ? o.pricePerFt / 0.3048 : o.price ?? null,
     A, Iuu, Iww, J, tau, Su: Iuu / (bu / 2), Sw: Iww / (bw / 2),
     kgPerM: A * mat.rho * 1000, round: kind === 'round-tube',
   };
@@ -109,7 +110,7 @@ export function makeUnits(system = 'metric') {
     },
     // long totals: 14.2 m / 46.6 ft
     run: mm => (imp ? `${(mm / 304.8).toFixed(1)} ft` : `${(mm / 1000).toFixed(1)} m`),
-    tol: mm => (imp ? '±' + fracIn(Math.max(mm, 0.8)) : `±${mm}`),
+    tol: mm => (imp ? '±' + fracIn(Math.max(mm, 0.8)) : `±${mm} mm`),
     mass: kg => (imp ? `${Math.round(kg * 2.2046)} lb` : `${kg < 10 ? kg.toFixed(1) : Math.round(kg)} kg`),
     force: N => (imp ? `${Math.round(N / 4.448)} lbf` : `${Math.round(N)} N`),
     area: mm2 => (imp ? `${(mm2 / 92903).toFixed(1)} ft²` : `${(mm2 / 1e6).toFixed(2)} m²`),
@@ -119,6 +120,15 @@ export function makeUnits(system = 'metric') {
     // input fields
     toInput: mm => (imp ? Math.round((mm / INCH) * 16) / 16 : Math.round(mm)),
     fromInput: v => (imp ? v * INCH : v),
+    // what an inch field shows and accepts: 59 1/16, 59-1/16, 59.0625
+    toText: mm => (imp ? fracIn(mm).replace('"', '') : String(Math.round(mm))),
+    parse: t => {
+      const s = String(t).trim().replace(/["”]|in$/g, '').trim();
+      const m = /^(\d+(?:\.\d+)?)?(?:[\s-]+)?(?:(\d+)\/(\d+))?$/.exec(s);
+      if (!m || (!m[1] && !m[2])) return NaN;
+      const v = (m[1] ? parseFloat(m[1]) : 0) + (m[2] ? +m[2] / +m[3] : 0);
+      return imp ? v * INCH : v;
+    },
     inputStep: mm => (imp ? 0.0625 : mm),
     massToInput: kg => (imp ? Math.round(kg * 2.2046) : kg),
     massFromInput: v => (imp ? v / 2.2046 : v),

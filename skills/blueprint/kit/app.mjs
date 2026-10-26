@@ -16,7 +16,8 @@ const store = {
 function readHash(plan) {
   const q = new URLSearchParams(location.hash.slice(1));
   const given = {};
-  for (const pd of plan.params || []) if (q.has(pd.id)) given[pd.id] = pd.type === 'choice' ? q.get(pd.id) : pd.type === 'bool' ? q.get(pd.id) === '1' : Number(q.get(pd.id));
+  // lengths in mm and masses in kg in a link, whatever the page shows; bools as 1/0 or true/false
+  for (const pd of plan.params || []) if (q.has(pd.id)) given[pd.id] = pd.type === 'choice' ? q.get(pd.id) : pd.type === 'bool' ? ['1', 'true', 'yes'].includes(q.get(pd.id)) : Number(q.get(pd.id));
   const units = q.get('units') === 'imperial' || q.get('units') === 'metric' ? q.get('units') : null;
   return { given, units };
 }
@@ -34,7 +35,8 @@ export function mountPlan(plan) {
   function fieldHtml(pd, u) {
     const v = d ? d.p[pd.id] : pd.value;
     const id = `f-${pd.id}`;
-    const hint = pd.hint ? `<small>${esc(pd.hint)}</small>` : '';
+    const hintText = typeof pd.hint === 'function' ? pd.hint(u) : pd.hint;
+    const hint = hintText ? `<small>${esc(hintText)}</small>` : '';
     if (pd.type === 'choice') return `<label class="field" for="${id}"><span>${esc(pd.label)}</span><select id="${id}" data-param="${pd.id}">${pd.options.map(o => `<option value="${esc(o.value)}" ${o.value === v ? 'selected' : ''}>${esc(optLabel(o, u))}</option>`).join('')}</select>${hint}</label>`;
     if (pd.type === 'bool') return `<label class="field check" for="${id}"><input type="checkbox" id="${id}" data-param="${pd.id}" ${v ? 'checked' : ''}><span>${esc(pd.label)}</span>${hint}</label>`;
     const lim = d?.limits[pd.id] || { min: pd.min, max: pd.max };
@@ -42,7 +44,11 @@ export function mountPlan(plan) {
     if (pd.type === 'len') { val = u.toInput(v); min = u.toInput(lim.min); max = u.toInput(lim.max); step = u.imperial ? 0.0625 : (pd.step ?? 10); unit = u.lenUnit; }
     if (pd.type === 'kg') { val = u.massToInput(v); min = u.massToInput(lim.min); max = u.massToInput(lim.max); step = u.imperial ? 5 : (pd.step ?? 5); unit = u.massUnit; }
     const range = pd.type === 'len' ? `${u.len(lim.min)}–${u.len(lim.max)}` : pd.type === 'kg' ? `${u.mass(lim.min)}–${u.mass(lim.max)}` : `${min}–${max}`;
-    return `<label class="field" for="${id}"><span>${esc(pd.label)}</span><span class="inp"><input type="number" inputmode="decimal" id="${id}" data-param="${pd.id}" value="${val}" min="${min}" max="${max}" step="${step}"><i>${esc(unit)}</i></span><small>${esc(range)}${pd.hint ? ' · ' + esc(pd.hint) : ''}</small></label>`;
+    // inch lengths are text so they can show and take fractions (59 1/16)
+    const input = pd.type === 'len' && u.imperial
+      ? `<input type="text" inputmode="decimal" id="${id}" data-param="${pd.id}" value="${esc(u.toText(v))}" spellcheck="false">`
+      : `<input type="number" inputmode="decimal" id="${id}" data-param="${pd.id}" value="${val}" min="${min}" max="${max}" step="${step}">`;
+    return `<label class="field" for="${id}"><span>${esc(pd.label)}</span><span class="inp">${input}<i>${esc(unit)}</i></span><small>${esc(range)}${hintText ? ' · ' + esc(hintText) : ''}</small></label>`;
   }
   function renderForm() {
     const u = makeUnits(system);
@@ -57,9 +63,10 @@ export function mountPlan(plan) {
       if (pd.type === 'choice') out[pd.id] = el.value;
       else if (pd.type === 'bool') out[pd.id] = el.checked;
       else {
+        if (pd.type === 'len') { const mm = u.parse(el.value); if (Number.isFinite(mm)) out[pd.id] = mm; continue; }
         const n = parseFloat(el.value);
         if (!Number.isFinite(n)) continue;
-        out[pd.id] = pd.type === 'len' ? u.fromInput(n) : pd.type === 'kg' ? u.massFromInput(n) : n;
+        out[pd.id] = pd.type === 'kg' ? u.massFromInput(n) : n;
       }
     }
     return out;
@@ -73,7 +80,7 @@ export function mountPlan(plan) {
       if (pd.type === 'choice') el.value = v;
       else if (pd.type === 'bool') el.checked = v;
       else {
-        el.value = pd.type === 'len' ? u.toInput(v) : pd.type === 'kg' ? u.massToInput(v) : v;
+        el.value = pd.type === 'len' ? (u.imperial ? u.toText(v) : u.toInput(v)) : pd.type === 'kg' ? u.massToInput(v) : v;
         if (typeof pd.min === 'function' || typeof pd.max === 'function') el.closest('.field').outerHTML = fieldHtml(pd, u);
       }
     }

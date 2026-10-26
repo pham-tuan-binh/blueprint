@@ -2,7 +2,10 @@
 // functions feed the live page and its printed form; nothing here computes a
 // number of its own, it only lays out what derive() found.
 import { esc } from './core.mjs';
-import { jigSheet, gaSheet, pieceSvg, plateSvg, nestSvg, stepNodes, stepViews } from './shop.mjs';
+import { jigSheet, gaSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
+
+// a plate: its drawing, then its holes, notches and note as text that wraps
+const plateFigure = (d, pl) => `<figure class="plate-fig">${plateSvg(d, pl)}<figcaption>${plateNotes(d, pl).map(t => `<p>${esc(t)}</p>`).join('')}</figcaption></figure>`;
 
 const money = (d, v) => (d.model.currency ? `${d.model.currency}${Math.round(v).toLocaleString('en-US')}` : '');
 
@@ -19,7 +22,7 @@ export function factsHtml(d) {
     ['Mass', u.mass(d.totalKg), 'as built, with every part listed'],
     ['Pieces', `${d.model.members.length} cut (${d.pieces.length} different)`, plateLine(d)],
     [d.model.join === 'screw' || d.model.join === 'bolt' ? 'Joints' : 'Welds', `${d.weld.joins} joints`, d.model.join === 'screw' || d.model.join === 'bolt' ? '' : `about ${u.run(d.weld.length)} of weld`],
-    ...d.loads.map(r => [r.name, `factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(1)}`, `${(r.load.dir && Math.abs(r.load.dir[2]) < 0.5) ? 'moves' : 'sags'} ${u.deflection(r.loadDefl)}`]),
+    ...d.loads.map(r => [r.name, `factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(1)}`, r.load.defl != null ? `${(r.load.dir && Math.abs(r.load.dir[2]) < 0.5) ? 'moves' : 'sags'} ${u.deflection(r.loadDefl)}` : 'safety factor on yield']),
     ['Build time', d.hours ? `${d.hours} h` : '', `${d.model.steps.length} steps`],
     ...(d.price.total && d.model.currency ? [['Cost', `~${money(d, d.price.total)}`, d.price.known ? 'everything on the materials list' : 'priced lines only; see the materials list']] : []),
     ...d.model.facts,
@@ -72,7 +75,7 @@ export function legendHtml(d) {
   const rows = [
     ['Units', u.imperial ? 'inches (to 1/16"), pounds, degrees' : 'millimetres, kilograms, degrees'],
     ['Datum', md.datum || 'x along the length, y front to back, z up from the floor'],
-    ['Piece marks', 'A, B, C… one letter per different piece. "x4" = cut four the same. Mirror images share a mark.'],
+    ['Piece marks', 'A, B, C… one letter per different piece; x4 after it means cut four the same. Mirror images share a mark.'],
     ['Cut marks', 'From one square end, mark each edge at the two numbers, join the marks around the section, cut on the lines. Angles are for reference.'],
     ['Edges', `named by where they face on the finished build (${md.axes.z[0]}-${md.axes.y[1]}, ${md.axes.z[1]}-${md.axes.x[0]}…)`],
     ['Joints', `mitre = same section, on the bisector · butt onto X = square onto the face of X · flush with X = cut level with X's outer face · then ${joinWord}`],
@@ -97,7 +100,7 @@ function piecesOfStep(d, n) { return d.pieces.filter(g => g.members.some(m => m.
 export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   const u = d.units, n = st.n;
   let h = `<section class="step" id="step-${n}"><div class="step-h"><h3><span class="sn">${String(n).padStart(2, '0')}</span>${esc(st.title)}</h3>` +
-    `<p class="muted">${esc(st.phase || 'Build')}${st.hours ? ` · ${st.hours} h` : ''}${interactive ? ` · <button type="button" class="linkish" data-show-step="${n}">Show in 3D</button>` : ''}</p></div>` +
+    `<p class="muted">${esc(st.phase || 'Build')}${st.hours ? ` · ${st.hours} h` : ''}${interactive ? `<span data-show-wrap> · <button type="button" class="linkish" data-show-step="${n}">Show in 3D</button></span>` : ''}</p></div>` +
     (st.summary ? `<p>${esc(st.summary)}</p>` : '');
   h += interactive
     ? `<ol class="tasks">${st.tasks.map((t, i) => { const id = `t-${n}-${i}`; return `<li><input type="checkbox" id="${id}" data-check="${id}" ${checked[id] ? 'checked' : ''}><label for="${id}">${esc(t)}</label></li>`; }).join('')}</ol>`
@@ -113,13 +116,13 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
       stepNodes(d, n).map(q => `<tr><td>${esc(q.name)}</td><td class=n>${esc(u.len(q.p[0]))}</td><td class=n>${esc(u.len(q.p[1]))}</td><td class=n>${esc(u.len(q.p[2]))}</td></tr>`).join('') + `</table></div>`;
     const pcs = piecesOfStep(d, n);
     const first = pcs.filter(g => g.step === n), earlier = pcs.filter(g => g.step !== n);
-    const label = `Pieces: ${pcs.map(g => `${g.mark} x${g.members.filter(m => m.step === n).length}`).join(', ')}`;
+    const label = `Pieces: ${pcs.map(g => { const k = g.members.filter(m => m.step === n).length; return `${g.mark} x${k}${k < g.qty ? ` (of ${g.qty})` : ''}`; }).join(', ')}`;
     const sheets = (first.length ? `<div class="piece-list">${first.map(g => pieceSvg(d, g)).join('')}</div>` : '') +
       (earlier.length ? `<p class="muted">${earlier.map(g => `${g.mark}: cut sheet in <a href="#step-${g.step}">step ${g.step}</a>`).join(' · ')}</p>` : '');
     h += interactive ? `<details class="sheets" open><summary>${esc(label)}</summary>${sheets}</details>` : `<h4>${esc(label)}</h4>${sheets}`;
   }
   const pls = d.plateGroups.filter(g => g.step === n && g.pl.drawing !== false);
-  if (pls.length) h += `<h4>Plates</h4><div class="piece-list">${pls.map(g => plateSvg(d, { ...g.pl, mark: g.mark, qty: g.qty })).join('')}</div>`;
+  if (pls.length) h += `<h4>Plates</h4><div class="piece-list">${pls.map(g => plateFigure(d, { ...g.pl, mark: g.mark, qty: g.qty })).join('')}</div>`;
   return h + `</section>`;
 }
 
