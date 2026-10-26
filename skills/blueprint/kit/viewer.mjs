@@ -7,7 +7,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/+esm';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm';
 import { memberCorners } from './joints.mjs';
-import { prismAxes } from './print.mjs';
+import { prismAxes, printManifold } from './print.mjs';
 
 // the matrix of each placement of a print (see print.mjs copies)
 const placeMatrices = pr => [new THREE.Matrix4(), ...(pr.copies || []).map(c => {
@@ -18,25 +18,31 @@ const placeMatrices = pr => [new THREE.Matrix4(), ...(pr.copies || []).map(c => 
 })];
 
 // ---------------------------------------------------------------- printed parts
-// The exact mesh of a print: its solids unioned, then its cuts and bores taken out,
-// with three-bvh-csg (loaded only when a plan has prints). World coordinates, mm.
-let csgLib = null;
-const loadCsg = () => (csgLib ||= import('https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.16/+esm'));
-function solidGeo(sh, grow = 0) {
-  if (sh.type === 'box') { const g = new THREE.BoxGeometry(...sh.s.map(v => v + 2 * grow)); g.translate(...sh.c); return g; }
-  if (sh.type === 'cyl' || sh.type === 'tube' || sh.type === 'hole') {
-    const r = sh.type === 'hole' ? sh.d / 2 : sh.r;
+// The exact solid of a print (print.mjs printManifold) with manifold-3d, loaded only
+// when a plan has prints. Until it arrives, the plain union of the solids stands in.
+let manifoldLib = null;
+export const loadManifold = () => (manifoldLib ||= import('https://cdn.jsdelivr.net/npm/manifold-3d@3.4.1/manifold.js').then(async m => { const M = await m.default(); M.setup(); return M; }));
+export async function printSolid(part) { return printManifold(part, await loadManifold()); }
+async function printGeometry(part) {
+  const { pts, tris } = await printSolid(part), g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+  g.setIndex(new THREE.BufferAttribute(tris, 1));
+  return g;
+}
+function solidGeo(sh) {
+  if (sh.type === 'box') { const g = new THREE.BoxGeometry(...sh.s); g.translate(...sh.c); return g; }
+  if (sh.type === 'cyl' || sh.type === 'tube') {
     const a = new THREE.Vector3(...sh.a), b = new THREE.Vector3(...sh.b), d = b.clone().sub(a);
-    const g = new THREE.CylinderGeometry(r, r, d.length() + 2 * grow, Math.max(24, Math.min(96, Math.round(r * 6))));
+    const g = new THREE.CylinderGeometry(sh.r, sh.r, d.length(), 32);
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()));
     g.translate(...a.add(b).multiplyScalar(0.5).toArray());
     return g;
   }
   if (sh.type === 'prism') {
     const shape = new THREE.Shape(sh.pts.map(([u, v]) => new THREE.Vector2(u, v)));
-    let g = new THREE.ExtrudeGeometry(shape, { depth: sh.h + 2 * grow, bevelEnabled: false });
+    let g = new THREE.ExtrudeGeometry(shape, { depth: sh.h, bevelEnabled: false });
     if (g.index) g = g.toNonIndexed();
-    g.translate(0, 0, sh.z0 - grow);
+    g.translate(0, 0, sh.z0);
     const [iu, iv, iz] = prismAxes(sh.axis), pos = g.attributes.position, out = new Float32Array(pos.count * 3);
     for (let i = 0; i < pos.count; i++) { out[i * 3 + iu] = pos.getX(i); out[i * 3 + iv] = pos.getY(i); out[i * 3 + iz] = pos.getZ(i); }
     // the 'y' mapping is a mirror: swap two corners of every triangle to keep faces outward
@@ -46,7 +52,7 @@ function solidGeo(sh, grow = 0) {
     ng.computeVertexNormals();
     return ng;
   }
-  if (sh.type === 'sphere') { const g = new THREE.SphereGeometry(sh.r + grow, 32, 20); g.translate(...sh.c); return g; }
+  if (sh.type === 'sphere') { const g = new THREE.SphereGeometry(sh.r, 32, 20); g.translate(...sh.c); return g; }
   if (sh.type === 'mesh') return meshGeo(sh);
   throw new Error(`unknown print solid "${sh.type}"`);
 }
@@ -58,18 +64,6 @@ function meshGeo(m) {
   g.setAttribute('position', new THREE.BufferAttribute(out, 3));
   g.computeVertexNormals();
   return g;
-}
-const clean = g => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal') n.deleteAttribute(k); n.computeVertexNormals(); return n; };
-export async function printGeometry(part) {
-  const { Brush, Evaluator, ADDITION, SUBTRACTION } = await loadCsg();
-  const ev = new Evaluator();
-  ev.attributes = ['position', 'normal'];
-  const brush = g => { const b = new Brush(clean(g)); b.updateMatrixWorld(); return b; };
-  let acc = null;
-  for (const sh of part.shapes) { const b = brush(solidGeo(sh)); acc = acc ? ev.evaluate(acc, b, ADDITION) : b; }
-  const cuts = [...(part.cuts || []), ...part.shapes.filter(s => s.type === 'tube').map(s => ({ type: 'cyl', a: s.a, b: s.b, r: s.ri }))];
-  for (const c of cuts) acc = ev.evaluate(acc, brush(solidGeo(c, 0.05)), SUBTRACTION);
-  return acc.geometry;
 }
 // the plain union before the cut arrives, so the part shows at once
 const roughPrint = part => part.shapes.map(sh => solidGeo(sh));

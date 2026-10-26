@@ -1,18 +1,10 @@
 # 3D-printed parts
 
-A print is a part like any other: it has a step, it shows in the 3D view and the drawings, it is on the materials list, and the person gets the files to print it. The page cuts the exact part at the current size, so a print that holds a pipe follows the pipe size the person picks.
+Read this when the plan has a printed part. A print is a part like any other: a step, the 3D view, the drawings, the materials list, and its files. The page builds the exact part at the current size, so a clamp follows the pipe size the person picks.
 
 ## When to print
 
-Print it when a fabricated part would be fiddly or a bought one does not exist:
-
-- a hub where members meet at odd angles (the feed point of a V antenna, a node of a PVC dome)
-- a saddle, clamp or clip onto a pipe or tube
-- a holder for a connector, a switch, a sensor or a cable gland
-- a drilling or cutting jig that makes repeated parts identical
-- feet, caps, bumpers and spacers (TPU for anything that should give)
-
-Do not print the main load path of anything heavy, anything a person stands on, or anything hot. Prints are strongest in compression and clamping and weakest when the layers are pulled apart.
+Where a fabricated part would be fiddly or a bought one does not exist: a hub where members meet at odd angles, a saddle, clamp or clip on a pipe, a holder for a connector, switch or gland, a drilling or cutting jig, feet, caps and spacers (TPU where it should give). Never the main load path of anything heavy, stood on or hot. Prints are strong in compression and clamping, weak when layers are pulled apart.
 
 ## In the model
 
@@ -29,45 +21,41 @@ prints: [{
   ],
   cuts: [
     { type: 'hole', a: armStart, b: armEnd, d: rodD + 0.4 },                      // a bore for a rod
-    { type: 'hole', a: [x, y, zTop - 10], b: [x, y, zTop + 10], d: 6.4 },          // a connector hole
+    { type: 'box', c: [0, 0, zTop + 2], s: [20, 12, 6] },                         // a pocket
   ],
+  copies: [{ rotZ: 120, about: [0, 0, 0] }],                                       // optional: the same part again
   note: 'Push the rods in until they bottom out; one M3 grub screw each.',
 }]
 ```
 
-- Everything is in the plan's coordinates (mm), so the print sits where it goes in the 3D view and the drawings.
-- `bed` is the face, in plan axes, that goes down on the printer bed: `'-z'` (as modelled, the default), `'+z'` (upside down), `'-x'`, `'+x'`, `'-y'`, `'+y'`. The STL and .scad come out turned that way and moved onto the bed at the origin, so the person never rotates it in the slicer. Say the same in `orient`.
-- `shapes` are unioned; `cuts`, and the bore of every `tube`, are taken out. Overlap solids by a millimetre where they join. A `tube`'s bore cuts through everything it overlaps, so where a bore must stop against a plate, use a `cyl` and a `hole` cut of the length you want instead.
-- Any other solid is a `sphere` or a `mesh` from `k.shapes` (`cone`, `sweep`, `bend`, `revolve`, `extrude`) or your own points and triangles (`references/model.md`, shapes): the STL is cut from it and the .scad writes it as a `polyhedron`.
-- Cuts can be `hole` (round, from a to b), `cyl` or `box` (a pocket or a slot) or `prism` (a shaped pocket). Run a cut 1 mm past any face it opens onto: a cut face lying exactly on a solid's face can leave a skin behind.
-- `prism` extrudes a 2D outline: `axis: 'z'` takes `pts` as [x, y]; `'x'` as [y, z]; `'y'` as [x, z].
-- `material`: PLA, PETG, ASA, ABS, TPU or PA. `infill` is 0 to 1. `orient` is the sentence the step prints after "print it".
-- A print touches what it holds, like a plate (the floating check sees it); `on: 'member-id'` names a holder it does not touch.
-- `copies: [{ move: [dx, dy, dz], rotZ: deg, about: [x, y, z] }]` places the same part again: clips along an arm, feet under a frame. Each copy is turned about a vertical axis through `about` (default the origin), then moved. They all show in the 3D view and the drawings; there is one STL, and the quantity is the copies plus one (or `qty`).
+- Plan coordinates (mm), so it sits where it goes.
+- `shapes` are unioned; `cuts` and every `tube` bore are taken out. Solids: `box`, `cyl`, `tube`, `prism`, `sphere`, `mesh` (`k.shapes` or your own closed mesh). Cuts: `hole` (round, a to b, diameter `d`), `cyl`, `box`, `prism`.
+- `prism` extrudes an outline: `axis: 'z'` takes `pts` as [x, y]; `'x'` as [y, z]; `'y'` as [x, z].
+- Overlap solids that join by a millimetre, and run a cut 1 mm past any face it opens. A `tube` bore cuts through everything it overlaps; to stop a bore against a plate, use a `cyl` and a `hole` of the length you want.
+- `bed`: the face that goes down on the bed, `'-z'` (default), `'+z'`, `'-x'`, `'+x'`, `'-y'`, `'+y'`. The STL and .scad come out turned that way, at the origin. Say the same in `orient` (the step prints it after "print it").
+- `material`: PLA, PETG, ASA, ABS, TPU, PA. `infill` 0 to 1.
+- A print touches what it holds (the floating check sees it); `on: 'member-id'` names a holder it does not touch.
+- `copies: [{ move, rotZ, about }]`: each copy turned about a vertical axis through `about`, then moved. One STL; quantity is copies plus one (or `qty`).
 
 ## Design rules
 
-| | |
+| Rule | Value |
 |---|---|
-| Walls | at least 3 perimeters (1.2 mm with a 0.4 mm nozzle); 2.5-4 mm around a bore that is clamped or pushed into |
-| Clearance for a pipe or rod | bore = diameter + 0.3 to 0.5 mm (a push fit); + 0.8 mm for a sliding fit |
-| Bolt holes | + 0.3 mm (M3: 3.3, M4: 4.3, M5: 5.3). For threads in plastic use heat-set inserts or a nut trap, not tapped plastic |
-| Connector holes | SMA bulkhead 6.4 mm; BNC 9.6 mm; a 6 mm panel jack 6.3 mm |
-| Overhangs | 45° or less, or design a chamfer, so it prints without supports; say `supports: true` only when there is no way round it |
-| Orientation | the layers are weakest pulled apart: keep a pulling or bending load across the layers, not along the stack (a hook printed standing up snaps at a layer; printed lying down, it holds). A socket clamped round a pipe is fine either way, since its hoop load runs in the layers; pick the side that prints without supports |
+| Walls | 3 perimeters at least (1.2 mm on a 0.4 nozzle); 2.5-4 mm round a clamped or pushed-in bore |
+| Pipe or rod bore | diameter + 0.3 to 0.5 (push fit); + 0.8 (sliding); a split clamp: diameter + 0.2, with a 2-3 mm slot and a bolt across it to close it |
+| Bolt holes | + 0.3 (M3 3.3, M4 4.3, M5 5.3). Threads: heat-set inserts or a nut trap, not tapped plastic |
+| Connector holes | SMA bulkhead 6.4; BNC 9.6; 6 mm panel jack 6.3 |
+| Overhangs | 45° or less, or a chamfer; `supports: true` only when there is no way round it |
+| Orientation | keep pulling or bending loads across the layers, not along the stack. A clamped socket is fine either way; pick the side without supports |
 | Outdoors | ASA or PETG, 4 walls, 40% infill or more. PLA creeps and softens in the sun |
 
-## In the pack
+Fits and walls are yours to prove: a plan check for each bore against what it takes and the thinnest clamped wall, sizes in `u.fine()`.
 
-The kit does this for every print:
+The frame solver does not analyse prints. When a print carries load (an arm, a bracket, a hook), prove it with a plan check by hand: bending stress M / Z at its root at most a quarter of the filament's strength (PLA 50, PETG 45, ASA 40, PA 60 MPa along the layers; halve it across them). If it cannot pass, it is not a print's job.
 
-- the 3D view shows the exact part, holes and all
-- a check that every print fits the printer (`printer: { bed: [x, y, z] }` on the model, default 220 × 220 × 250 mm), turned the way the files come
-- its drawing shows every cut dashed, with a table of the holes, bores and pockets (size, axis, position) and its size on the bed
-- the materials list has a **3D prints** table with the settings, an estimate of filament (g) and print time (h), and **.stl** and **.scad** download buttons
-- the step it is in shows a dimensioned drawing, the settings, the orientation and the download buttons
-- the facts show the number of prints and the filament
+## What the kit does with it
 
-Fits and walls are yours to check: put them in a plan check (the bore against the rod or pipe it takes, the thinnest wall round a clamped bore). Format the sizes with `u.fine()`, which keeps a tenth of a millimetre (4.3, 0.4), since `u.len()` rounds to whole millimetres.
-
-Put the printing in the first step, or the first step that needs the part: it takes hours, and the person can cut and drill while the printer runs. The estimates come from the volume, so call them estimates; the slicer has the real numbers.
+- The 3D view, a drawing with every cut dashed and a hole table, its size on the bed, and a check that it fits the printer (`printer: { bed }`, default 220 × 220 × 250).
+- The materials list's **3D prints** table: settings, filament (g) and time (h) estimates from the volume, and **.stl** / **.scad** downloads.
+- The STL is built with manifold-3d: one closed, watertight solid every time. The .scad is its OpenSCAD source with the same facets. Capture proves every STL watertight at every end of every field.
+- Print in the first step that needs the part: it takes hours, and the person can cut while it runs.

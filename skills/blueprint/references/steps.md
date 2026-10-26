@@ -1,6 +1,6 @@
 # Writing the build order and the steps
 
-The steps are what a person reads with gloves on. Write them like an IKEA guide: short imperative lines, every number from the model, every step ends with a check you can pass or fail before you move on. Leave out anything an experienced builder can infer; teaching belongs in the guide, not the step.
+Read this when writing the steps. The steps are what a person reads with gloves on. Write them like an IKEA guide: short imperative lines, every number from the model, every step ends with a check you can pass or fail before you move on. Leave out anything an experienced builder can infer; teaching belongs in the guide, not the step.
 
 ## The order
 

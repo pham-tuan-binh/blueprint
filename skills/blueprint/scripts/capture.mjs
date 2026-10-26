@@ -17,6 +17,7 @@ import { mkdirSync, existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { findPlaywright, launchChromium, hasPdftoppm, PLAYWRIGHT_FIX } from './env.mjs';
 import { layoutAudit, summarise } from './layout.mjs';
+import { meshFaults, stlMesh } from '../kit/print.mjs';
 
 const args = process.argv.slice(2);
 const page0 = args.find(a => !a.startsWith('--'));
@@ -118,12 +119,27 @@ if (await p.$('[data-stl]')) {
     await dlS.saveAs(path);
     const buf = fs.readFileSync(path), tris = buf.length > 84 ? buf.readUInt32LE(80) : 0;
     if (tris < 12 || buf.length !== 84 + tris * 50) problems.push(`print ${id}: the STL is empty or malformed (${buf.length} bytes)`);
+    else { const f = meshFaults(stlMesh(buf)); if (f.open || f.shared || f.flipped || !(f.volume > 0)) problems.push(`print ${id}: the STL is not watertight (${f.open} open edges, ${f.shared} shared by 3+ faces, ${f.flipped} flipped)`); }
     const [dlC] = await Promise.all([p.waitForEvent('download'), p.click(`#bom [data-scad="${id}"]`)]);
     const scadPath = join(out, await dlC.suggestedFilename());
     await dlC.saveAs(scadPath);
     if (!/difference\(\)/.test(fs.readFileSync(scadPath, 'utf8'))) problems.push(`print ${id}: the .scad has no geometry`);
   }
   await shot(p, '#bom', 'materials.png');
+  // and every print stays one watertight solid at every end of every field
+  const sizes = await p.evaluate(() => {
+    const ps = window.__blueprint.d.plan.params || [], num = ps.filter(q => !['choice', 'bool'].includes(q.type)), out = [];
+    for (const q of ps) {
+      if (q.type === 'choice') for (const o of q.options) out.push({ [q.id]: o.value });
+      else if (q.type === 'bool') out.push({ [q.id]: !q.value });
+      else out.push({ [q.id]: -1e9 }, { [q.id]: 1e9 });
+    }
+    if (num.length > 1) for (const v of [-1e9, 1e9]) out.push(Object.fromEntries(num.map(q => [q.id, v])));
+    return out;
+  });
+  for (const g of sizes) for (const f of await p.evaluate(g => window.__blueprint.printFaults(g), g).catch(e => [{ id: '?', error: e.message }])) {
+    if (f.error || f.open || f.shared || f.flipped || !(f.volume > 0)) problems.push(`print ${f.id} at ${JSON.stringify(g)}: ${f.error || `not watertight (${f.open} open edges, ${f.shared} shared by 3+ faces, ${f.flipped} flipped)`}`);
+  }
 }
 
 // ---------------------------------------------------------------- the other units

@@ -1,8 +1,10 @@
 // 3D-printed parts: fixtures, hubs, brackets, clips. A print is a union of simple
 // solids minus cuts, in the plan's own coordinates (mm), so it sits where it goes
 // in the 3D view and the drawings. This module is pure (Node and browser): the
-// bounding boxes, a filament and time estimate, and the OpenSCAD source. The exact
-// mesh (for the 3D view and the STL download) is cut in the browser by viewer.mjs.
+// bounding boxes, a filament and time estimate, the OpenSCAD source, and the exact
+// solid (printManifold) for the 3D view and the STL. The solid is built with
+// manifold-3d, which always returns a closed, watertight mesh; the browser loads it
+// from jsDelivr (viewer.mjs), a test can pass the npm package.
 //
 // Solids and cuts:
 //   { type: 'cyl',   a, b, r }             a solid cylinder from point a to point b
@@ -152,25 +154,128 @@ export function bedBox(part) {
   return { lo: a, size: b.map((v, i) => v - a[i]), turn: t };
 }
 
+// ---------------------------------------------------------------- the exact solid
+// facets round a circle of radius r: about 0.6 mm each, 24 to 128 (the .scad matches)
+export const segs = r => Math.max(24, Math.min(128, Math.round((2 * Math.PI * r) / 0.6)));
+const lift = 0.01;   // cuts run this far past every face they open, so none is left as a skin
+// a column-major 4x4 that takes local x, y, z to the columns u, w, ax and moves to o
+const frameMat = (u, w, ax, o) => [...u, 0, ...w, 0, ...ax, 0, ...o, 1];
+// a cylinder's axis as OpenSCAD's rotate([0, tilt, turn]) sets it, so the STL and the
+// .scad agree facet for facet; its facets start half a facet round, so a cylinder that
+// just touches a flat face (a socket flush with a body) meets it on a face, never on
+// one edge (that would leave a pinch a slicer reads as a fault)
+const tiltTurn = d => [Math.acos(Math.max(-1, Math.min(1, d[2] / v3.len(d)))), Math.atan2(d[1], d[0])];
+function axisFrame(d) {
+  const [t, p] = tiltTurn(d), ct = Math.cos(t), st = Math.sin(t), cp = Math.cos(p), sp = Math.sin(p);
+  return [[ct * cp, ct * sp, -st], [-sp, cp, 0], [st * cp, st * sp, ct]];
+}
+const ccw = pts => (pts.reduce((s, p, i) => { const q = pts[(i + 1) % pts.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0) < 0 ? pts.slice().reverse() : pts);
+function manifoldOf(M, sh, grow = 0) {
+  const { Manifold, Mesh } = M;
+  if (sh.type === 'box') return Manifold.cube(sh.s.map(v => v + 2 * grow), true).translate(sh.c);
+  if (sh.type === 'cyl' || sh.type === 'tube' || sh.type === 'hole') {
+    const r = sh.r ?? sh.d / 2, d = v3.sub(sh.b, sh.a), L = v3.len(d), [u, w, ax] = axisFrame(d);
+    return Manifold.cylinder(L + 2 * grow, r, r, segs(r)).rotate([0, 0, 180 / segs(r)]).translate([0, 0, -grow]).transform(frameMat(u, w, ax, sh.a));
+  }
+  if (sh.type === 'prism') {
+    // local x, y = the outline's u, v; local z = the extrusion. For 'y' the outline goes in
+    // as (v, u) so the map stays a turn, not a mirror
+    const swap = sh.axis === 'y', pts = ccw(sh.pts.map(([a, b]) => (swap ? [b, a] : [a, b])));
+    const m = { z: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], x: [[0, 1, 0], [0, 0, 1], [1, 0, 0]], y: [[0, 0, 1], [1, 0, 0], [0, 1, 0]] }[sh.axis || 'z'];
+    return Manifold.extrude([pts], sh.h + 2 * grow).translate([0, 0, sh.z0 - grow]).transform(frameMat(...m, [0, 0, 0]));
+  }
+  if (sh.type === 'sphere') return Manifold.sphere(sh.r + grow, segs(sh.r)).translate(sh.c);
+  if (sh.type === 'mesh') {
+    const mesh = new Mesh({ numProp: 3, vertProperties: Float32Array.from(sh.pts.flat()), triVerts: Uint32Array.from(sh.tris.flat()) });
+    mesh.merge();
+    const s = new Manifold(mesh);
+    if (s.status() !== 'NoError') throw new Error(`a mesh solid is not closed (${s.status()})`);
+    return s;
+  }
+  throw new Error(`unknown print solid "${sh.type}"`);
+}
+// the part as one watertight solid, in plan coordinates (mm): its solids unioned, then
+// its cuts and bores taken out. M is the set-up manifold-3d module. Returns
+// { pts: Float32Array xyz, tris: Uint32Array }.
+export function printManifold(part, M) {
+  const bores = part.shapes.filter(s => s.type === 'tube').map(s => ({ type: 'cyl', a: s.a, b: s.b, r: s.ri }));
+  const made = [];
+  const keep = m => (made.push(m), m);
+  try {
+    const body = keep(M.Manifold.union(part.shapes.map(sh => keep(manifoldOf(M, sh)))));
+    const cuts = [...(part.cuts || []), ...bores].map(c => keep(manifoldOf(M, c, lift)));
+    // simplified to a micron: drops the slivers a cut can leave where faces nearly meet
+    const solid = keep((cuts.length ? keep(M.Manifold.difference([body, ...cuts])) : body).simplify(0.001));
+    if (solid.status() !== 'NoError' || solid.isEmpty()) throw new Error(`print ${part.id}: the cut left nothing (${solid.status()})`);
+    const mesh = solid.getMesh();
+    const np = mesh.numProp, pts = new Float32Array((mesh.vertProperties.length / np) * 3);
+    for (let i = 0; i < pts.length / 3; i++) for (let k = 0; k < 3; k++) pts[i * 3 + k] = mesh.vertProperties[i * np + k];
+    return { pts, tris: Uint32Array.from(mesh.triVerts) };
+  } finally { for (const m of made) m.delete(); }
+}
+// what a slicer would complain about, with the points welded where they meet (to a
+// tenth of a micron): edges open or shared by more than two faces, faces turned inside
+// out, and the volume (mm³). A printable solid has none of the first three.
+export function meshFaults({ pts, tris }) {
+  const ids = new Map(), at = i => { const k = `${Math.round(pts[i * 3] * 1e4)},${Math.round(pts[i * 3 + 1] * 1e4)},${Math.round(pts[i * 3 + 2] * 1e4)}`; if (!ids.has(k)) ids.set(k, ids.size); return ids.get(k); };
+  const edges = new Map();
+  let volume = 0;
+  for (let t = 0; t < tris.length; t += 3) {
+    const [a, b, c] = [0, 1, 2].map(k => tris[t + k]), P = [a, b, c].map(i => [pts[i * 3], pts[i * 3 + 1], pts[i * 3 + 2]]);
+    volume += v3.dot(P[0], v3.cross(P[1], P[2])) / 6;
+    const w = [a, b, c].map(at);
+    if (new Set(w).size < 3) continue;
+    for (const [u, v] of [[w[0], w[1]], [w[1], w[2]], [w[2], w[0]]]) {
+      const k = u < v ? `${u},${v}` : `${v},${u}`, e = edges.get(k) || [0, 0];
+      e[u < v ? 0 : 1]++; edges.set(k, e);
+    }
+  }
+  let open = 0, shared = 0, flipped = 0;
+  for (const [f, r] of edges.values()) { if (f + r === 1) open++; else if (f + r > 2) shared++; else if (f !== 1) flipped++; }
+  return { open, shared, flipped, volume };
+}
+// a binary STL back to { pts, tris } (one point per corner), for meshFaults
+export function stlMesh(buf) {
+  const dv = new DataView(buf.buffer || buf, buf.byteOffset || 0), n = dv.getUint32(80, true), pts = new Float32Array(n * 9);
+  for (let t = 0; t < n; t++) for (let k = 0; k < 9; k++) pts[t * 9 + k] = dv.getFloat32(84 + t * 50 + 12 + k * 4, true);
+  return { pts, tris: Uint32Array.from({ length: n * 3 }, (_, i) => i) };
+}
+
+// the solid as a binary STL, turned onto the bed and moved to the origin, in mm
+export function stlOf(solid, part) {
+  const { turn } = bedBox(part), { pts, tris } = solid;
+  const P = Array.from({ length: pts.length / 3 }, (_, i) => turn([pts[i * 3], pts[i * 3 + 1], pts[i * 3 + 2]]));
+  const lo = P.reduce((a, p) => a.map((v, k) => Math.min(v, p[k])), [Infinity, Infinity, Infinity]);
+  const n = tris.length / 3, buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf);
+  dv.setUint32(80, n, true);
+  for (let t = 0; t < n; t++) {
+    const p = [0, 1, 2].map(k => P[tris[t * 3 + k]].map((v, i) => v - lo[i]));
+    const u = v3.sub(p[1], p[0]), w = v3.sub(p[2], p[0]), nn = v3.cross(u, w), L = v3.len(nn) || 1;
+    let o = 84 + t * 50;
+    for (const v of [...nn.map(x => x / L), ...p.flat()]) { dv.setFloat32(o, v, true); o += 4; }
+  }
+  return buf;
+}
+
 // ---------------------------------------------------------------- OpenSCAD
 const n3 = v => `[${v.map(x => +x.toFixed(3)).join(', ')}]`;
 function scadOrient(a, b, body) {
-  const d = v3.sub(b, a), L = v3.len(d);
-  const tilt = Math.acos(Math.max(-1, Math.min(1, d[2] / L))) * 180 / Math.PI, turn = Math.atan2(d[1], d[0]) * 180 / Math.PI;
-  return `translate(${n3(a)}) rotate([0, ${tilt.toFixed(3)}, ${turn.toFixed(3)}]) ${body(L)}`;
+  const d = v3.sub(b, a), [t, p] = tiltTurn(d).map(x => (x * 180) / Math.PI);
+  return `translate(${n3(a)}) rotate([0, ${t.toFixed(3)}, ${p.toFixed(3)}]) ${body(v3.len(d))}`;
 }
+const scadCyl = (L, r, z0 = 0) => `translate([0, 0, ${z0}]) rotate([0, 0, ${+(180 / segs(r)).toFixed(4)}]) cylinder(h = ${L.toFixed(3)}, r = ${r.toFixed(3)}, $fn = ${segs(r)});`;
 function scadSolid(sh, grow = 0) {
   if (sh.type === 'box') return `translate(${n3(sh.c.map((v, i) => v - sh.s[i] / 2 - grow))}) cube(${n3(sh.s.map(v => v + 2 * grow))});`;
   if (sh.type === 'cyl' || sh.type === 'hole') {
     const r = sh.r ?? sh.d / 2;
-    return scadOrient(sh.a, sh.b, L => `translate([0, 0, ${-grow}]) cylinder(h = ${(L + 2 * grow).toFixed(3)}, r = ${r.toFixed(3)});`);
+    return scadOrient(sh.a, sh.b, L => scadCyl(L + 2 * grow, r, -grow));
   }
-  if (sh.type === 'tube') return scadOrient(sh.a, sh.b, L => `cylinder(h = ${L.toFixed(3)}, r = ${sh.r.toFixed(3)});`);
+  if (sh.type === 'tube') return scadOrient(sh.a, sh.b, L => scadCyl(L, sh.r));
   if (sh.type === 'prism') {
     const rot = sh.axis === 'x' ? 'rotate([90, 0, 90]) ' : sh.axis === 'y' ? 'rotate([90, 0, 0]) mirror([0, 0, 1]) ' : '';
     return `${rot}translate([0, 0, ${(sh.z0 - grow).toFixed(3)}]) linear_extrude(height = ${(sh.h + 2 * grow).toFixed(3)}) polygon(${JSON.stringify(sh.pts.map(p => p.map(x => +x.toFixed(3))))});`;
   }
-  if (sh.type === 'sphere') return `translate(${n3(sh.c)}) sphere(r = ${(sh.r + grow).toFixed(3)});`;
+  if (sh.type === 'sphere') return `translate(${n3(sh.c)}) sphere(r = ${(sh.r + grow).toFixed(3)}, $fn = ${segs(sh.r)});`;
   // OpenSCAD wants polyhedron faces wound clockwise seen from outside: reverse ours
   if (sh.type === 'mesh') return `polyhedron(points = ${JSON.stringify(sh.pts.map(p => p.map(x => +x.toFixed(3))))}, faces = ${JSON.stringify(sh.tris.map(([a, b, c]) => [a, c, b]))});`;
   return '';
@@ -189,7 +294,7 @@ difference() {
   union() {
 ${part.shapes.map(sh => '    ' + scadSolid(sh)).join('\n')}
   }
-${cuts.map(c => '  ' + scadSolid(c, 0.01)).join('\n')}
+${cuts.map(c => '  ' + scadSolid(c, lift)).join('\n')}
 }
 `;
 }

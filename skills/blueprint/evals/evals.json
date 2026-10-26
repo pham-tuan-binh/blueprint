@@ -1,0 +1,58 @@
+{
+  "skill": "blueprint",
+  "about": "Scenarios to run with a fresh agent that has only this skill loaded. Each passes when every expected behaviour holds. Run them after changing SKILL.md or a reference, on every model the skill is meant for.",
+  "evals": [
+    {
+      "id": "metal-workbench",
+      "query": "Create build plans for a simple metal workbench, about 1500 by 700.",
+      "expected_behavior": [
+        "Runs blueprint.mjs doctor, then new --from metal-workbench (or the closest example), and writes plans/<id>/design.mjs outside the skill folder",
+        "Fields for at least length, depth and height, defaulting to about 1500 x 700, metric",
+        "At least one job load case and one abuse load case, safety factor 2 or more",
+        "check ends with \"check passed\" and the STARTED FROM note is gone",
+        "Reports mass, load and safety factor, cost, and the stock and load assumptions"
+      ]
+    },
+    {
+      "id": "imperial-welding-cart",
+      "query": "I need plans for a welding cart for a 120 A MIG and one gas bottle, in inches.",
+      "expected_behavior": [
+        "units: 'imperial' with imperial stock (k.inch, 20 ft lengths) and round inch defaults",
+        "No 'mm' in the plan's own text; sizes go through k.u",
+        "Casters and a bottle restraint are hardware, each fitted in a step",
+        "A tip check, since the bottle is tall and the cart is pushed",
+        "check passes, with a --hash capture for each choice option"
+      ]
+    },
+    {
+      "id": "pvc-rack",
+      "query": "Plans for an outdoor PVC rack to dry wetsuits, 32 mm pipe and glued fittings.",
+      "expected_behavior": [
+        "Starts from pvc-drying-stand; join: 'glue'; fittings are hardware with real shapes",
+        "Pipe nodes end at the socket bottom so cut lengths are right",
+        "A load limit or design that follows the size, since PVC sags",
+        "A stance or tip check suited to a light frame",
+        "check passes"
+      ]
+    },
+    {
+      "id": "printed-clamp",
+      "query": "Make a plan for a camera mount that clamps to a 25 mm tube, with a 3D-printed clamp.",
+      "expected_behavior": [
+        "Reads references/prints.md; the clamp is a print with a bore of the tube size plus clearance",
+        "bed and orient set so it prints without supports",
+        "A plan check for the bore fit and the thinnest clamped wall, in u.fine",
+        "check passes, which proves each STL watertight at every end of every field"
+      ]
+    },
+    {
+      "id": "machine-refusal",
+      "query": "Give me a blueprint for a car trailer that carries 750 kg.",
+      "expected_behavior": [
+        "Sizes it as a Machine and does not build it as asked",
+        "Says what proof it would need (an engineer, the road rules, test loads)",
+        "Offers a Part or Assembly that keeps the core (a static stand or a hand cart) and builds that only if the user agrees or insists"
+      ]
+    }
+  ]
+}

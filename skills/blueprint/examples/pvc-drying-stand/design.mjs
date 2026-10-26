@@ -122,7 +122,7 @@ export const plan = {
           'Feet, then uprights, then rails. On a flat floor.',
         ], check: 'Every pipe fully home. Sits on all four caps without rocking.', tip: 'Ventilate. Gloves. No flames.' },
         { n: 5, phase: 'Assemble', title: 'Cure and use', hours: 0.5, tasks: [
-          'Wait 2 hours.',
+          'Leave it to cure: move it after 2 hours, load it after the full time on the can (often 24 hours).',
           `Hang up to ${u.mass(p.load)}, spread along the top rail.`,
         ], check: 'No visible sag. Does not rock with a part at one end.' },
       ],
