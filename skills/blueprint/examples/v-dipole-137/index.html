@@ -2210,6 +2210,9 @@ const TIPS = {
   weldout: ['Welding every joint all the way round, in short runs spread around the frame so the heat does not pull it out of shape.', 'weld'],
   cement: ['Solvent cement melts the pipe and fitting together. Primer first, then cement, push home with a quarter turn. It sets in seconds.', 'glue'],
   dryfit: ['Put everything together without glue first, so a mistake costs nothing.', 'glue'],
+  primer: ['Primer cleans and softens the pipe and the socket so the cement bites. Brush it on both, then cement while it is still wet.', 'glue'],
+  cure: ['Cement sets in seconds but takes hours to reach full strength. Handle the frame gently after about 2 hours; load it only after the full cure time on the can.', 'glue'],
+  chamfer: ['A small bevel on the outside edge of the cut end, so it slides into the socket without scraping off the cement.', 'glue'],
   print: ['Print the part with the settings shown, the way it says to lay it on the bed. The .stl is the part at this size.', 'prints'],
   stock: ['Bought lengths. The cutting plan shows which pieces come out of which length.', 'stock'],
   sf: ['Safety factor: how many times the load it could take before the metal starts to bend for good. 2 or more for furniture, 3 for anything a person stands on.', 'checks'],
@@ -2241,7 +2244,7 @@ function q(key) {
 const TERMS = [
   [/\btack(s|ed|ing)?\b/i, 'tack'], [/\bweld (it )?out\b|\bweld-out\b/i, 'weldout'], [/\bmitre(s|d)?\b/i, 'mitre'],
   [/\bdiagonals?\b/i, 'diag'], [/\bplumb\b/i, 'plumb'], [/\bdeburr\b/i, 'deburr'], [/\blong point\b/i, 'lp'],
-  [/\bdatum\b/i, 'datum'], [/\bsolvent cement\b|\bcement\b/i, 'cement'], [/\bdry fit\b/i, 'dryfit'], [/\bload[- ]test\b/i, 'loadtest'],
+  [/\bdatum\b/i, 'datum'], [/\bsolvent cement\b|\bcement\b/i, 'cement'], [/\bdry fit\b/i, 'dryfit'], [/\bprimer\b/i, 'primer'], [/(?<![-\w])cur(e|ed|ing)\b/i, 'cure'], [/\bchamfer(s|ed)?\b/i, 'chamfer'], [/\bload[- ]test\b/i, 'loadtest'],
   [/\bcutting plan\b/i, 'stock'], [/\bpiece marks?\b/i, 'mark'],
 ];
 function annotate(text, seen = new Set()) {
@@ -2427,7 +2430,7 @@ ${piece.endText[0].square && piece.endText[1].square ? `<ol><li>Measure the long
   if (welded) add('weld', 'Tacking and welding', 'tack, then weld out', `
 <ol><li>Weld two offcuts and break them in a vise first: the metal should tear, not the weld.</li><li>Tack each joint on two faces. Measure. Wrong: break the tack and redo.</li><li>Weld out in short runs, alternating sides, clamped until cold.</li><li>Measure again.</li></ol>`);
   if (glued) add('glue', 'Dry fit and cement', 'dry fit first', `
-<ol><li>Dry fit everything. Check it.</li><li>Draw a line across each joint so it goes back the same way.</li><li>One joint at a time: primer, cement on both parts, push home with a quarter turn to the line, hold 30 seconds.</li></ol>`);
+<ol><li>Dry fit everything. Check it.</li><li>Draw a line across each joint so it goes back the same way.</li><li>One joint at a time: primer, cement on both parts, push home with a quarter turn to the line, hold 30 seconds.</li><li>Handle it gently after about 2 hours. Load it only after the full cure time on the can (often 24 hours).</li></ol>`);
   if (d.prints.length) add('prints', '3D prints', 'settings, files', `
 <p>Each print lists its filament, layer height, walls, infill and how to lay it on the bed. Download the <code>.stl</code> (the part at this size) or the <code>.scad</code> (its source). Print them first: they take hours, and you can cut while the printer runs.</p>`);
   add('checks', 'The checks', 'what they prove', `
