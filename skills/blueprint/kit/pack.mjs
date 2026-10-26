@@ -77,7 +77,7 @@ export function bomHtml(d) {
   }
   if (d.prints.length) {
     h += `<h3>3D prints</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Settings</th><th class=n>Qty</th><th class=n>Filament</th><th class=n>Print</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}<th>Files</th></tr>`;
-    for (const { part: pr, est } of d.prints) h += `<tr><td>${esc(pr.name)}</td><td><span class="spec">${esc(printSettings(pr))}</span></td><td class=n>${pr.qty || 1}</td><td class=n>${Math.round(est.grams * printQty(pr))} g</td><td class=n>${(Math.round(est.hours * printQty(pr) * 10) / 10)} h</td><td class=n>${pr.step}</td>${md.currency ? `<td class=n>${money(d, est.cost * printQty(pr))}</td>` : ''}<td>${dl(pr)}</td></tr>`;
+    for (const { part: pr, est } of d.prints) h += `<tr><td>${esc(pr.name)}</td><td><span class="spec">${esc(printSettings(pr))}</span></td><td class=n>${printQty(pr)}</td><td class=n>${Math.round(est.grams * printQty(pr))} g</td><td class=n>${(Math.round(est.hours * printQty(pr) * 10) / 10)} h</td><td class=n>${pr.step}</td>${md.currency ? `<td class=n>${money(d, est.cost * printQty(pr))}</td>` : ''}<td>${dl(pr)}</td></tr>`;
     h += `</table></div><p class="muted">Filament and time are estimates from the part's volume; your slicer has the real numbers. The .stl is the part at this size, in millimetres; the .scad is its OpenSCAD source.</p>`;
   }
   if (md.hardware.length) {
