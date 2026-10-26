@@ -52,7 +52,7 @@ In `skills/blueprint/examples/`, inside the skill so they install with it, and o
 - [`metal-workbench`](skills/blueprint/examples/metal-workbench/): an all-steel welded workbench with a bar top
 - [`v-dipole-137`](skills/blueprint/examples/v-dipole-137/): a 137 MHz V-dipole antenna with a 3D-printed feed hub and an SMA jack on a PVC mast
 - [`shelf-rack`](skills/blueprint/examples/shelf-rack/): a welded shelf rack, the smallest complete plan
-- [`pvc-drying-stand`](skills/blueprint/examples/pvc-drying-stand/): a PVC pipe stand in solvent-weld fittings, started by a fresh agent from the quickstart
+- [`pvc-drying-stand`](skills/blueprint/examples/pvc-drying-stand/): a PVC pipe stand in solvent-weld fittings
 
 Plans other people share go in [`plans/`](plans/).
 
