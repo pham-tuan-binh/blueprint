@@ -147,17 +147,21 @@ function sheet(items, views, opts) {
   for (const v of views) svg[v] = viewSvg(items, v, { ...opts, fs, title: opts.title ? opts.title(v) : VIEWS[v].title });
   const w = v => +svg[v].match(/data-w="([\d.]+)"/)[1];
   if (views.length === 1) return `<div class="sheet one"><figure>${svg[views[0]]}</figure></div>`;
-  const cols = views.includes('side') ? `${f1(w('front'))}fr ${f1(w('side'))}fr` : '1fr';
+  // the side view stands beside the front view; with no front view, beside the top view
+  const left = views.includes('front') ? 'front' : 'top';
+  const cols = views.includes('side') ? `${f1(w(left))}fr ${f1(w('side'))}fr` : '1fr';
+  const sideRow = views.includes('front') ? 2 : 1;
   return `<div class="sheet" style="grid-template-columns:${cols}">` +
     (views.includes('top') ? `<figure class="v-top">${svg.top}</figure>` : '') +
-    (views.includes('front') ? `<figure class="v-front">${svg.front}</figure>` : '') +
-    (views.includes('side') ? `<figure class="v-side">${svg.side}</figure>` : '') + `</div>`;
+    (views.includes('front') ? `<figure class="v-front"${views.includes('top') ? '' : ' style="grid-row:1"'}>${svg.front}</figure>` : '') +
+    (views.includes('side') ? `<figure class="v-side" style="grid-row:${sideRow}">${svg.side}</figure>` : '') + `</div>`;
 }
 
 export function jigSheet(d, st, views) {
   const items = solids(d, { upTo: st.n, only: st.alone ? x => x.step === st.n : null });
-  const labels = stepNodes(d, st.n);
-  return sheet(items, views, { now: it => it.step === st.n, labels, dimPts: labels.map(l => l.p), title: v => `Step ${st.n}: ${VIEWS[v].title}`, u: d.units });
+  const pts = stepNodes(d, st.n);
+  // points: false draws no point labels (bars laid with a spacer, not by coordinates)
+  return sheet(items, views, { now: it => it.step === st.n, labels: st.points === false ? [] : pts, dimPts: pts.map(l => l.p), title: v => `Step ${st.n}: ${VIEWS[v].title}`, u: d.units });
 }
 
 // one undimensioned view for a gallery card

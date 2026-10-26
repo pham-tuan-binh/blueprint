@@ -98,7 +98,7 @@ for (const c of cases) {
       if (dm) { const v = +(dm.load.defl / Math.max(dm.loadDefl, 1e-6)).toFixed(2); if (!worst[ch.name] || v < worst[ch.name].v) worst[ch.name] = { v, at: c.name, unit: '× under the limit' }; }
     }
     // every word the plan writes must follow the units: no "mm" in imperial, no inch marks in metric
-    const texts = d.model.steps.flatMap(s => [s.title, s.summary, s.check, s.tip, ...s.tasks].filter(Boolean).map(t => [`step ${s.n}`, t]))
+    const texts = d.model.steps.flatMap(s => [s.title, s.summary, s.check, s.tip, ...s.tasks, ...(s.table ? s.table.rows.flat().map(String) : [])].filter(Boolean).map(t => [`step ${s.n}`, t]))
       .concat(d.model.checks.flatMap(ch => [['check', String(ch.name)], ['check', String(ch.value)], ['check', String(ch.why || '')]]))
       .concat(d.model.facts.map(f => ['fact', f.join(' ')]))
       .concat(d.model.plates.flatMap(pl => [['plate ' + pl.id, pl.name], ['plate ' + pl.id, pl.note || '']]))

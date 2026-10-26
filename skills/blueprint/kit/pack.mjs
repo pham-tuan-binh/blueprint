@@ -106,6 +106,9 @@ export function orderHtml(d) {
     }).join('') + `</div>`;
 }
 
+// a column is numeric (right-aligned) when every cell in it is a number or a length
+const numCol = (t, i) => i > 0 && t.rows.every(r => /^[\d\s.,/"'×x±-]+(mm|in|kg|lb|h)?$/.test(String(r[i]).trim()));
+
 function piecesOfStep(d, n) { return d.pieces.filter(g => g.members.some(m => m.step === n)); }
 
 export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
@@ -116,6 +119,8 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   h += interactive
     ? `<ol class="tasks">${st.tasks.map((t, i) => { const id = `t-${n}-${i}`; return `<li><input type="checkbox" id="${id}" data-check="${id}" ${checked[id] ? 'checked' : ''}><label for="${id}">${esc(t)}</label></li>`; }).join('')}</ol>`
     : `<ol>${st.tasks.map(t => `<li>${esc(t)}</li>`).join('')}</ol>`;
+  // a plan's own table for the step: { title, head: [...], rows: [[...]] }, numbers right-aligned
+  if (st.table) h += `<h4>${esc(st.table.title || 'Table')}</h4><div class="wrap"><table class="doc"><tr>${st.table.head.map((c, i) => `<th${numCol(st.table, i) ? ' class=n' : ''}>${esc(c)}</th>`).join('')}</tr>${st.table.rows.map(r => `<tr>${r.map((c, i) => `<td${numCol(st.table, i) ? ' class=n' : ''}>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
   if (st.check) h += `<p class="gate"><b>Check</b> ${esc(st.check)}</p>`;
   if (st.tip) h += `<p class="note">${esc(st.tip)}</p>`;
   for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
@@ -126,7 +131,7 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   const ms = d.model.members.filter(m => m.step === n);
   if (ms.length) {
     h += `<h4>Jig</h4>${jigSheet(d, st, stepViews(d, st))}`;
-    h += `<h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr>` +
+    if (st.points !== false) h += `<h4>Joint positions</h4><div class="wrap"><table class="doc"><tr><th>Point</th><th class=n>x</th><th class=n>y</th><th class=n>z</th></tr>` +
       stepNodes(d, n).map(q => `<tr><td>${esc(q.name)}</td><td class=n>${esc(u.len(q.p[0]))}</td><td class=n>${esc(u.len(q.p[1]))}</td><td class=n>${esc(u.len(q.p[2]))}</td></tr>`).join('') + `</table></div>`;
     const pcs = piecesOfStep(d, n);
     const first = pcs.filter(g => g.step === n), earlier = pcs.filter(g => g.step !== n);

@@ -148,7 +148,7 @@ loads: [
 
 Numbered 1, 2, 3… with no gaps. `phase` groups them in the build order. `hours` is the honest time for one person. `views` overrides which jig views are drawn: a list of `'top'`, `'front'`, `'side'` (default: the top view for a flat step, all three otherwise).
 
-**Name pieces by mark** with `{mark:member-id}` in any step text, check or plate note: `'Clamp the end rails ({mark:end-L1}) between the legs'` prints "Clamp the end rails (B) between the legs". Marks are assigned after `build()` runs, so this placeholder is the only way to write them; an unknown id is an error. `alone: true` draws a sub-assembly built on its own without the rest of the frame. Every member, plate and part has a `step`, and the step that fits members shows its jig, joint positions and cut sheets automatically.
+**Name pieces by mark** with `{mark:member-id}` in any step text, check or plate note: `'Clamp the end rails ({mark:end-L1}) between the legs'` prints "Clamp the end rails (B) between the legs". Marks are assigned after `build()` runs, so this placeholder is the only way to write them; an unknown id is an error. `alone: true` draws a sub-assembly built on its own without the rest of the frame. `points: false` leaves out the point labels and the joint table, for parts placed by a rule rather than by coordinates (bars laid with a spacer block); `table: { title, head, rows }` adds the step's own small table instead (the rule, the counts, the gaps). Every member, plate and part has a `step`, and the step that fits members shows its jig, joint positions and cut sheets automatically.
 
 Not modelled (write them as tasks): holes in members (screw holes for a top: "drill a ⌀5 hole every 300 along the top rails"), bends, copes.
 

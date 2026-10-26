@@ -285,7 +285,7 @@ export function derive(plan, given = {}, system) {
   const { pieces, markOf, ref } = groupPieces(model, joints, plateAt(model));
   // step text may name a piece by its mark: {mark:leg-FL} becomes "A"
   const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { if (!markOf[id]) throw new Error(`{mark:${id}}: no member "${id}"`); return markOf[id]; }) : t);
-  for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); }
+  for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); if (st.table) st.table.rows = st.table.rows.map(r => r.map(c => fill(String(c)))); }
   for (const c of model.checks) { c.value = fill(c.value); c.why = fill(c.why); }
   for (const pl of model.plates) pl.note = fill(pl.note);
   const plateClashes = notchPlates(model, joints, ref);
