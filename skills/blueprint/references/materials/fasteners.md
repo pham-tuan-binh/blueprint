@@ -12,7 +12,7 @@ Read this when a plan bolts, screws or rivets parts together, or fits bought fee
 | M10 | 11.0 | 10.5 | 8.5 |
 | M12 | 13.5 | 13.0 | 10.2 |
 
-- **Grade 8.8** bolts (US: grade 5) with matching nuts for anything structural; plain zinc-plated 4.6 only for light, non-structural parts.
+- **Grade 8.8** bolts (US: grade 5) with matching nuts for anything structural; plain zinc-plated 4.6 only for light, non-structural parts. Stainless is sold as A2 (304) and A4 (316), class 70: about as strong as 8.8 in the sizes here.
 - **Edge distance** from a hole centre to any edge: at least 1.5 × the bolt diameter, 2 × in thin or soft material (plastic, aluminium sheet, wood). Holes at least 3 × the diameter apart.
 - **Washers** under the head and the nut on soft material, slotted holes and paint; a penny (large) washer on wood and plastic.
 - **Locking**: nyloc nuts where it vibrates (single use is safest; not above about 120 °C), or thread-lock. A spring washer adds little.

@@ -19,9 +19,10 @@ Read this when a plan has PVC pipe or plastic sheet. Pipe: `pvcPipe(OD, wall)` (
 ## Design
 
 - **Sag decides the size.** PVC is about 70 times less stiff than steel. Let the load limit follow the length and height (`max: p => ...`) or step up a pipe size; do not narrow the fields.
-- **Creep**: never a sustained heavy bending load, and never anything a person stands on, sits on or hangs from.
-- **Heat**: rated at about 23 °C, much weaker by 40 °C, and soft at 60 °C. Keep it away from heaters, engines and a hot car's interior.
-- **Sun**: plain PVC goes brittle outdoors within a year or two. Paint it (an acrylic or plastic-rated paint) or buy UV-stabilised pipe, and say so in the finish step.
+- **Creep**: never a sustained heavy bending load, and never anything a person stands on, sits on or hangs from. Things hung on it (clothes, parts, a light antenna) are ordinary loads at safety factor 2, applied to the 25 MPa design stress.
+- **Heat**: rated at about 23 °C, much weaker by 40 °C, and soft at 60 °C. Keep it away from heaters, engines and a hot car's interior; in full sun on dark paving or a deck, paint it white or light.
+- **Sun**: plain PVC goes brittle outdoors within a year or two. Paint it (an acrylic or plastic-rated paint) or buy UV-stabilised pipe, and say so in the last step.
+- **Fixing it down**: a bolt through the pipe with a sleeve inside it (fasteners.md), or a bought or printed pipe clamp screwed to the floor or deck; then it is anchored for the tip check.
 - **Never pressurised air or gas**: PVC shatters when it fails with stored gas. A frame only.
 - **Light frames tip**: size the push to what really happens, and tie the foot spread to the height with a plan check (references/structure.md, tip-over).
 - **Plastic sheet**: polycarbonate for anything that gets knocked (it bends, acrylic cracks); drill acrylic slowly with a sharp bit, holes at least 2 × the thickness from an edge, and oversize them so it can move with heat. HDPE for wet and wear, but nothing glues to it: screw or bolt it.
@@ -30,5 +31,5 @@ Read this when a plan has PVC pipe or plastic sheet. Pipe: `pvcPipe(OD, wall)` (
 
 - Cut square (a pipe cutter or a mitre box), deburr inside and out, chamfer the outside edge slightly.
 - Dry-fit the whole frame and mark each joint across pipe and fitting so it goes back the same way.
-- Solvent weld one joint at a time: primer on pipe and socket, then cement, push fully home with a quarter turn, hold about 30 s. Load it only after the cure time on the can (often 24 h). Ventilate; no flames.
+- Solvent weld one joint at a time: primer on pipe and socket, then cement, push fully home with a quarter turn, hold about 30 s. Handle the frame after about 2 h; load it only after the full cure time on the can (often 24 h). Ventilate; no flames.
 - Joints that must come apart (storage, transport) are dry-fit with a screw or pin through, not glued.
