@@ -19,11 +19,12 @@ node scripts/capture.mjs plans/<id>/index.html --hash "top=steel" --out plans/<i
 
 Open every PNG in `shots/`. For each, ask:
 
-1. **desktop.png**: is it instantly the thing? Does the 3D model look like a real, well-made object (legs on the floor, top flat, nothing floating or poking through)? Do the facts make sense (mass, load, safety factor, cost)?
+1. **desktop.png**: is it instantly the thing? Does the 3D model look like a real, well-made object (legs on the floor, top flat, nothing floating or poking through)? Do the facts make sense (mass, load, safety factor, cost)? No drop or offset shadows anywhere; buttons and links show they are clickable with an icon?
 2. **size.png**: are the fields the ones a person would change, in the order they think, with ranges that make sense? Are the defaults a sensible, common size?
 3. **checks.png** and **materials.png**: all pass, and does each result read as a real number with a reason? Is the tightest margin where you expected it?
 4. **drawings.png**: does the general arrangement show the whole thing in three views at one scale, with the overall dimensions matching the fields?
-5. **step-N.png** (every step): could someone do this step with only this? Is every piece named by mark, every position in the joint table or the jig, every check measurable? Is the lit (dark) part in the jig what this step adds?
+5. **step-N.png** (every step): can every joint id and dimension on the jig be read without zooming, each in its own box, none hidden behind a member or another label?
+   Could someone do this step with only this? Is every piece named by mark, every position in the joint table or the jig, every check measurable? Is the lit (dark) part in the jig what this step adds?
 6. **cut sheets**: does each piece's long point and end description agree with how it is joined? Are pieces that should be identical one mark (×4, not four marks)?
 7. **cutlist.png**: is the waste reasonable, and is the number of stock lengths on the materials list the number in the cutting plan?
 8. **metric-*.png / imperial-*.png** (the plan switched to the other units): every length in the other system, sensible values, stock labels unchanged (they are what you buy)?
@@ -48,4 +49,5 @@ Read the audit's "tightest" lines: the sweeps hold every other field at its max 
 - Imperial plans with metric stock labels, or metric plans with imperial stock.
 - Steps that said "the short rails" where the mark covered three kinds of rail: name pieces with `{mark:id}`, and give members that share a mark one name.
 - A lower shelf modelled as a plain board that passed through the legs: `notch: true` cuts and draws the notches.
+- Joint ids drawn in plain black text over dark members, unreadable: labels sit in their own box (the kit does it; keep it if you change the kit).
 - A worst case the random samples never hit (1800 long × deepest × heaviest, just before the middle leg appears): the sweeps exist for this; still check the sizes either side of every threshold in your design.
