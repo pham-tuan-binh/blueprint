@@ -40,9 +40,11 @@ Write load cases for the job and for abuse:
 | Stand / cart | its payload where it sits | payload at the worst corner; tip with a push at the top |
 | Anything stood on | the person + 50% | 2 × the person at the worst point |
 
-Safety factor (yield ÷ peak stress, what the checks report): at least 2 for furniture, benches and racks; 3 for anything a person stands on, sits on or hangs from; and never rely on the factor for lifting gear or vehicles (that is a Machine: see SKILL.md). Deflection: a work surface span/300 at its rated load; a shelf span/250.
+Safety factor (yield ÷ peak stress, what the checks report): at least 2 for furniture, benches and racks; 3 for anything a person stands on, sits on or hangs from; and never rely on the factor for lifting gear or vehicles (that is a Machine: see SKILL.md). Deflection: a work surface span/300 at its rated load; a shelf span/250; a rail or rack where sag only has to stay out of sight (a drying or hanging rail) span/80, with a floor of about 10 mm. The deflection the kit reports is how far the loaded member moves, frame and all (posts bending, joints turning), not only its own span sagging, so a tall, light frame can fail it with a short span.
 
 Tip-over: add `tip: { N, height, sf: 1.5 }` for anything taller than about 1.5 × its depth, and for anything people push at height (a bench being planed or filed on). Use a realistic push: 150 N at the top of a rack; 150 N at work height for a light bench, 300 N for a bench used hard (vise work, planing). A light steel bench (40-60 kg) rarely passes 300 N free-standing: a heavy top, a wider stance, or anchoring fixes it. If it only passes anchored, fit the anchors in a step (as hardware in that step) and name it: `anchored: 'step 8, four M8 anchors'`. The audit checks that step fits anchors, bolts or screws. Say plainly in that step that it must be anchored.
+
+The tip check counts the frame's own weight only: a load it carries can be taken off, so the empty frame is the case that tips. A light frame (PVC, aluminium, a few kg) fails any real push, so for those size the push to what really happens (a bump, 20 N at the top; wind on what hangs from it), and when it still fails, widen the stance with a plan check that ties the foot spread to the height (the drying stand: feet at least 0.75 × height), or weigh it down and say so in a step.
 
 ## Metric stock (default)
 
@@ -85,7 +87,8 @@ Not every build is steel. Use these when they fit the job:
 | Copper and brass | conductors, ground rods, solder joints | wire 1.5 to 4 mm, pipe 15 × 0.7, 22 × 0.9 | `rod(2.5, { material: 'copper' })` |
 | Sheet and board | plates, decks, panels, mounts | HDPE, acrylic, polycarbonate, FR4 (`material: 'hdpe'` etc. on a plate) | |
 
-- PVC joins with solvent cement and standard fittings (`join: 'glue'`), or with printed hubs. List fittings as hardware; put a member's nodes where the pipe really ends (at the bottom of the fitting's socket), so the cut length is right.
+- PVC joins with solvent cement and standard fittings (`join: 'glue'`), or with printed hubs. Each fitting is hardware with a `shape` round its joint, and each pipe's nodes sit where the pipe really ends, at the bottom of the socket, so the cut length is right. Laying length (centre to socket bottom) for equal tees and elbows is roughly: 20 mm pipe 11 mm, 25 mm 13 mm, 32 mm 17 mm, 40 mm 21 mm, 50 mm 26 mm; socket depth about 0.6 × OD + 6 mm. Say in the step that the person checks their own fittings and adjusts. `examples/pvc-drying-stand` is the pattern; `references/model.md` (hardware) has the fields.
+- PVC is about 70 times less stiff than steel: a PVC frame fails on sag long before strength. Let the load's limit follow the size (`max: p => ...` of length and height), or step up a pipe size, rather than narrowing the fields.
 - PVC creeps: the checks use a long-term design stress (25 MPa), not its short-term strength. Keep it out of sustained heavy bending; a PVC mast carries wind and a light antenna, not a person.
 - Bolted or clamped aluminium (`aluminium-bare`) keeps its full strength; welded aluminium (`aluminium`) is checked at its weakened heat-affected strength.
 - For anything electrical or RF, the structure is only half of it: put the electrical numbers (element length from frequency, conductor size from current, clearances) in plan checks.

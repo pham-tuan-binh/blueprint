@@ -16,6 +16,18 @@ const ICON_DL = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke=
 const printSettings = pr => `${pr.material || 'PETG'} · ${pr.layer ?? 0.2} mm layers · ${pr.walls ?? 3} walls · ${Math.round((pr.infill ?? 0.3) * 100)}% infill · ${pr.supports ? 'supports' : 'no supports'}`;
 
 // the holes, bores and pockets of a print, so the part can be checked against its drawing
+// the same bought part placed twice (a tee at each foot, each with its own shape) is one line to buy
+function mergeParts(list) {
+  const by = new Map();
+  for (const x of list) {
+    const k = [x.name, x.spec || '', x.price ?? ''].join('|');
+    const g = by.get(k);
+    if (!g) by.set(k, { ...x, qty: x.qty || 1, steps: [x.step] });
+    else { g.qty += x.qty || 1; if (!g.steps.includes(x.step)) g.steps.push(x.step); }
+  }
+  return [...by.values()].map(g => ({ ...g, step: g.steps.sort((a, b) => a - b).join(', ') }));
+}
+
 function printCuts(d, pr) {
   const u = d.units, [lo] = printBox(pr), rel = p => p.map((v, i) => u.fine(v - lo[i])).join(', ');
   const axis = (a, b) => { const v = b.map((x, i) => x - a[i]), k = [0, 1, 2].filter(i => Math.abs(v[i]) > 1e-6); return k.length === 1 ? 'xyz'[k[0]] : 'angled'; };
@@ -82,7 +94,7 @@ export function bomHtml(d) {
   }
   if (md.hardware.length) {
     h += `<h3>Parts to buy</h3><div class="wrap"><table class="doc"><tr><th>Part</th><th>Spec</th><th class=n>Qty</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
-    for (const x of md.hardware) h += `<tr><td>${esc(x.name)}</td><td>${esc(x.spec || '')}</td><td class=n>${x.qty || 1}</td><td class=n>${x.step}</td>${md.currency ? `<td class=n>${x.price != null ? money(d, x.price * (x.qty || 1)) : ''}</td>` : ''}</tr>`;
+    for (const x of mergeParts(md.hardware)) h += `<tr><td>${esc(x.name)}</td><td>${esc(x.spec || '')}</td><td class=n>${x.qty || 1}</td><td class=n>${x.step}</td>${md.currency ? `<td class=n>${x.price != null ? money(d, x.price * (x.qty || 1)) : ''}</td>` : ''}</tr>`;
     h += `</table></div>`;
   }
   if (md.consumables.length) h += `<h3>Consumables</h3><ul class="plain">${md.consumables.map(c => `<li>${esc(c.name)}${c.qty ? ` · ${esc(c.qty)}` : ''}${c.note ? ` <span class="muted">${esc(c.note)}</span>` : ''}</li>`).join('')}</ul>`;
@@ -141,7 +153,7 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
   for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
     h += `<h4>Print: ${esc(pr.name)}${printQty(pr) > 1 ? ` x${printQty(pr)}` : ''}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}${printCuts(d, pr)}<p>${dl(pr)}</p>${pr.note ? `<p class="note">${esc(pr.note)}</p>` : ''}`;
   }
-  const hw = d.model.hardware.filter(x => x.step === n);
+  const hw = mergeParts(d.model.hardware.filter(x => x.step === n));
   if (hw.length) h += `<h4>Parts</h4><ul class="plain">${hw.map(x => `<li>${esc(x.name)} x${x.qty || 1}${x.spec ? ` <span class="muted">${esc(x.spec)}</span>` : ''}</li>`).join('')}</ul>`;
   const ms = d.model.members.filter(m => m.step === n);
   if (ms.length) {

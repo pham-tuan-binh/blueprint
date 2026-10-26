@@ -128,18 +128,17 @@ if (await p.$('[data-stl]')) {
 const home = await p.evaluate(() => window.__blueprint.d.units.system);
 const other = home === 'imperial' ? 'metric' : 'imperial';
 const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain, .spec').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
-const ownAll = async () => (await Promise.all(['#facts', '#checks-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'].map(ownText))).join('\n');
+const SECTIONS = ['#facts', '#checks-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'];
 await p.click(`[data-units="${other}"]`);
 await p.waitForTimeout(600);
-const all = await ownAll();
-if (other === 'imperial') {
-  if (!/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
-  const mm = all.match(/(?<![\d.])\d+(\.\d+)?\s?mm\b(?![²2])/g);
-  if (mm) problems.push(`imperial: still shows millimetres (${mm.slice(0, 3).join(', ')})`);
-} else {
-  const ins = all.match(/\d+(\s\d+\/\d+)?"/g);
-  if (ins) problems.push(`metric: still shows inches (${ins.slice(0, 3).join(', ')})`);
+const left = other === 'imperial' ? /(?<![\d.])\d+(\.\d+)?\s?mm\b(?![²2])/g : /\d+(\s\d+\/\d+)?"/g;
+for (const sel of SECTIONS) {
+  const t = await ownText(sel), hits = t.match(left);
+  if (!hits) continue;
+  const at = t.indexOf(hits[0]), ctx = t.slice(Math.max(0, at - 40), at + 20).replace(/\s+/g, ' ').trim();
+  problems.push(`${other}: ${sel.replace(/^#|-body$/g, '')} still shows ${other === 'imperial' ? 'millimetres' : 'inches'} (${hits.slice(0, 3).join(', ')}) in "…${ctx}…": format it with u.len() / u.tol() in design.mjs`);
 }
+if (other === 'imperial' && !/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
 await shot(p, '#model', `${other}-model.png`);
 await shot(p, '#cutlist', `${other}-cutlist.png`);
 await shot(p, '#steps-body .step:nth-child(2)', `${other}-step-2.png`);

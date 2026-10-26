@@ -227,7 +227,7 @@ export function createViewer(el, { onPick } = {}) {
         refresh();
       }).catch(e => console.warn('print geometry:', e.message));
     }
-    for (const h of md.hardware) for (const sh of [].concat(h.shape || [])) {
+    for (const h of md.hardware) for (const sh of [h.shape || []].flat(Infinity)) {
       const info = { id: h.id, name: h.name, step: h.step, kind: 'hardware', spec: h.spec };
       add(sh.type === 'box' ? boxGeo(sh.c, sh.s) : cylGeo(sh.a, sh.b, sh.r), info, sh.tone || h.tone || 'lo');
     }

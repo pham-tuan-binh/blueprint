@@ -116,6 +116,8 @@ for (const c of cases) {
       .concat(d.model.checks.flatMap(ch => [['check', String(ch.name)], ['check', String(ch.value)], ['check', String(ch.why || '')]]))
       .concat(d.model.facts.map(f => ['fact', f.join(' ')]))
       .concat(d.model.plates.flatMap(pl => [['plate ' + pl.id, pl.name], ['plate ' + pl.id, pl.note || '']]))
+      .concat((d.model.prints || []).flatMap(pr => [['print ' + pr.id, pr.orient || ''], ['print ' + pr.id, pr.note || '']]))
+      .concat([['model tolerance', d.model.tolerance || '']])
       .concat((plan.params || []).flatMap(pd => [['param ' + pd.id, typeof pd.hint === 'function' ? pd.hint(d.units) : pd.hint || ''],
         ...(pd.options || []).map(o => ['param ' + pd.id, typeof o.label === 'function' ? o.label(d.units) : o.label])]));
     const bad = system === 'imperial' ? metricNum : /\d(\s\d+\/\d+)?"|\d+(\.\d+)?\s?(in|inch|inches|ft|feet)\b/;
@@ -140,6 +142,8 @@ for (const c of cases) {
       const nsteps = md.steps.map(s => s.n);
       nsteps.forEach((n, i) => { if (n !== i + 1) fail('steps', `numbered ${nsteps.join(',')}: number them 1, 2, 3…`); });
       for (const m of md.members) if (!m.name) fail(`member ${m.id}`, 'has no name');
+      // one mark is one stack of identical pieces, so it gets one name on the cut sheet
+      for (const g of d.pieces) if (g.name.includes(' / ')) fail(`mark ${g.mark}`, `identical pieces with different names ("${g.name}"): give them one name, or make them differ`);
     }
   }
   if (problems.length > 60) break;

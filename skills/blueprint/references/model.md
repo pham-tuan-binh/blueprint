@@ -78,7 +78,7 @@ return {
   facts: [['Work height', u.len(900, { u: true }), 'top surface']],   // optional extra facts
   join: 'weld',                // 'weld' (default), 'bolt', 'screw', 'glue', 'solder' or 'clamp': the legend wording
   kerf: 2, trim: 10, minPiece: 32,
-  tolerance: 'cut ±1 mm; feed gap ±0.5 mm',   // the legend's tolerance line, when the frame default does not fit
+  tolerance: `cut ${u.tol(1)}; feed gap ${u.tol(0.5)}`,   // the legend's tolerance line, when the frame default does not fit (sizes through u, like all text)
   printer: { bed: [220, 220, 250] },          // the bed the print check uses
   orderNote: 'One line above the build order.',
 };
@@ -117,6 +117,10 @@ An axis-aligned box: centre `c`, size `s`. The thinnest axis is the thickness. P
 ```
 
 Anything bought. `shape` (optional, a box `{ type: 'box', c, s }` or cylinder, or a list) draws it in 3D and the drawings and makes it count in the floating check; `kg` adds to the mass and the analysis; `on: 'id'` names what holds it if it does not touch it.
+
+- **A fitting** (a PVC tee or elbow, a tube clamp, a socket): put each pipe's nodes where the pipe really ends (the bottom of the socket, the laying length from the fitting's centre), so the cut length is right, and give the fitting a `shape` round the joint. With `qty` above 1, give one list per piece (`shape: [[run, branch], [run, branch]]`). Then a member end inside a fitting reads "into the tee" on its cut sheet, two pipes that meet inside one are not a clash, and the analysis joins them where their axes cross (the fitting taken as rigid). `examples/pvc-drying-stand` does exactly this.
+- **The same part in several places** (a tee at each foot, each with its own `shape`): one entry per place is fine. The materials list and each step merge entries with the same `name`, `spec` and `price` into one line with the total quantity.
+- Names and specs of bought parts are trade names and stay as sold ("Tee, 32 mm solvent weld", "M8 × 25"): the units lint leaves them alone. Every size you compute goes through `u`.
 
 ### prints
 

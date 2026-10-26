@@ -104,11 +104,12 @@ async function scaffold() {
   const dir = resolve(opt('dir', 'plans'), id), file = join(dir, 'design.mjs');
   if (existsSync(file)) die(`${rel(file)} already exists; edit it instead`);
   const name = opt('name', id.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase()));
+  const short = name.split(' ').slice(-2).join(' ').replace(/^./, c => c.toUpperCase());
   let src = readFileSync(join(EXAMPLES, from, 'design.mjs'), 'utf8');
   const q = s => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   src = src.replace(/^(\s*id:\s*)'[^']*'/m, `$1${q(id)}`)
     .replace(/^(\s*name:\s*)'[^']*'/m, `$1${q(name)}`)
-    .replace(/^(\s*short:\s*)'[^']*'/m, `$1${q(name.split(' ').slice(-2).join(' '))}`)
+    .replace(/^(\s*short:\s*)'[^']*'/m, `$1${q(short)}`)
     .replace(/^(\s*version:\s*)'[^']*'/m, `$1'1'`);
   const head = `// ${name}.\n// STARTED FROM examples/${from}: everything below is that plan. Rewrite the header,\n// summary, params, model and steps for this one; keep only the shape. Delete this note.\n//\n`;
   mkdirSync(dir, { recursive: true });

@@ -50,6 +50,7 @@ node $B check plans/welding-cart/design.mjs         # build + audit + capture: "
 - [`plans/metal-workbench/`](plans/metal-workbench/): an all-steel welded workbench with a bar top, generated with the skill
 - [`plans/v-dipole-137/`](plans/v-dipole-137/): a 137 MHz V-dipole antenna with a 3D-printed feed hub and an SMA jack on a PVC mast, generated with the skill
 - [`skills/blueprint/examples/shelf-rack/`](skills/blueprint/examples/shelf-rack/): a welded shelf rack, the skill's reference example
+- [`skills/blueprint/examples/pvc-drying-stand/`](skills/blueprint/examples/pvc-drying-stand/): a PVC pipe stand in solvent-weld fittings, started by a fresh agent from the quickstart
 
 ## The plans site
 
