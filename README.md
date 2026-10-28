@@ -106,6 +106,15 @@ npx http-server _site
 
 GitHub Actions publishes the examples and shared plans to GitHub Pages. The pictures in this README come from the examples too: `node tools/readme.mjs` redraws them into `.github/readme/` (it needs Playwright with Chromium).
 
+## Star history
+
+<a href="https://www.star-history.com/#pham-tuan-binh/blueprint&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=pham-tuan-binh/blueprint&type=Date&theme=dark">
+    <img src="https://api.star-history.com/svg?repos=pham-tuan-binh/blueprint&type=Date" alt="Star history of pham-tuan-binh/blueprint" width="100%">
+  </picture>
+</a>
+
 ## License
 
 [MIT](LICENSE).
