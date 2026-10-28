@@ -15,7 +15,16 @@ Blueprint is an agent skill that makes one HTML page per build plan with a 3D mo
 
 <br>
 
-<p align="center"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src=".github/readme/model.png" alt="A workbench plan: its 3D model and dimensioned drawings" width="100%"></a></p>
+<table>
+<tr>
+<td align="center" width="25%"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src=".github/readme/example-metal-workbench.png" alt="Welded steel workbench" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><b>Welded steel workbench</b></a><br><sub>Steel frame, bar top and shelf.</sub></td>
+<td align="center" width="25%"><a href="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/"><img src=".github/readme/example-pvc-drying-stand.png" alt="PVC drying stand" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/"><b>PVC drying stand</b></a><br><sub>Pipe and solvent-weld fittings.</sub></td>
+<td align="center" width="25%"><a href="https://pham-tuan-binh.github.io/blueprint/shelf-rack/"><img src=".github/readme/example-shelf-rack.png" alt="Steel shelf rack" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/shelf-rack/"><b>Steel shelf rack</b></a><br><sub>The smallest complete plan.</sub></td>
+<td align="center" width="25%"><a href="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/"><img src=".github/readme/example-v-dipole-137.png" alt="137 MHz V-dipole" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/"><b>137 MHz V-dipole</b></a><br><sub>Copper wire, PVC arms and a printed feed hub.</sub></td>
+</tr>
+</table>
+
+<p align="center"><sub>Click one to open its build plan. Sources are in <a href="skills/blueprint/examples/"><code>skills/blueprint/examples/</code></a>.</sub></p>
 
 <br>
 
@@ -49,6 +58,10 @@ The agent builds and audits the design, then checks the page in a browser before
 
 <br>
 
+<p align="center"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src=".github/readme/model.png" alt="A workbench plan: its 3D model and dimensioned drawings" width="100%"></a></p>
+
+<br>
+
 <p align="center"><img src=".github/readme/step.png" alt="A workbench step: tasks, a check, a warning and the jig with this step's parts in yellow" width="100%"></p>
 
 <br>
@@ -64,21 +77,6 @@ Ask your agent:
 > Share my plan in plans/metal-workbench with the blueprint gallery.
 
 The included `blueprint-share` skill checks the plan and prepares a pull request. It shows you what it will send before submitting. Each shared plan adds just one file: `plans/<id>/design.mjs`.
-
-## Examples
-
-Click one to open its build plan. Their sources are in [`skills/blueprint/examples/`](skills/blueprint/examples/).
-
-<table>
-<tr>
-<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src=".github/readme/example-metal-workbench.png" alt="Welded steel workbench" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><b>Welded steel workbench</b></a><br><sub>Steel frame, bar top and shelf.</sub></td>
-<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/"><img src=".github/readme/example-pvc-drying-stand.png" alt="PVC drying stand" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/"><b>PVC drying stand</b></a><br><sub>Pipe and solvent-weld fittings.</sub></td>
-</tr>
-<tr>
-<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/shelf-rack/"><img src=".github/readme/example-shelf-rack.png" alt="Steel shelf rack" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/shelf-rack/"><b>Steel shelf rack</b></a><br><sub>The smallest complete plan.</sub></td>
-<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/"><img src=".github/readme/example-v-dipole-137.png" alt="137 MHz V-dipole" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/"><b>137 MHz V-dipole</b></a><br><sub>Copper wire, PVC arms and a printed feed hub.</sub></td>
-</tr>
-</table>
 
 ## Work with the source
 
