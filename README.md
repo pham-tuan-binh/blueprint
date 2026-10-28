@@ -1,12 +1,23 @@
-# Blueprint
+<p align="center"><img src=".github/readme/banner.png" alt="Blueprint: build plans for your fabrication shop" width="100%"></p>
 
-An agent skill that generates build plans for your fabrication shop.
+<p align="center">
+  <a href="https://github.com/pham-tuan-binh/blueprint/actions/workflows/pages.yml"><img src="https://github.com/pham-tuan-binh/blueprint/actions/workflows/pages.yml/badge.svg" alt="Plans site build"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-black" alt="MIT license"></a>
+  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent%20Skills-spec%20valid-black" alt="Agent Skills spec"></a>
+  <img src="https://img.shields.io/badge/node-%E2%89%A520-black" alt="Node.js 20+">
+  <img src="https://img.shields.io/badge/npm%20install-none-black" alt="No npm install">
+  <a href="https://pham-tuan-binh.github.io/blueprint/"><img src="https://img.shields.io/badge/plans-live%20site-black" alt="Plans site"></a>
+</p>
 
-One HTML page with a 3D model, drawings, cut sheets and numbered steps. Change a size and everything follows. For metal, timber, PVC and 3D-printed parts.
+Blueprint is an agent skill that makes one HTML page per build plan with a 3D model, drawings, cut sheets and numbered steps. Change a size and everything follows. For metal, timber, PVC and 3D-printed parts.
 
 [Browse the plans →](https://pham-tuan-binh.github.io/blueprint/)
 
-<p align="center"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src="https://pham-tuan-binh.github.io/blueprint/readme/model.png" alt="A workbench plan with a 3D model and adjustable sizes" width="820"></a></p>
+<br>
+
+<p align="center"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src=".github/readme/model.png" alt="A workbench plan: its 3D model and dimensioned drawings" width="100%"></a></p>
+
+<br>
 
 ## 1. Install the skill
 
@@ -36,7 +47,15 @@ Each plan includes:
 
 The agent builds and audits the design, then checks the page in a browser before handing it over.
 
-<p align="center"><img src="https://pham-tuan-binh.github.io/blueprint/readme/step.png" alt="A workbench assembly step with tasks, a check and a jig drawing" width="560"></p>
+<br>
+
+<p align="center"><img src=".github/readme/step.png" alt="A workbench step: tasks, a check, a warning and the jig with this step's parts in yellow" width="100%"></p>
+
+<br>
+
+<p align="center"><img src=".github/readme/checks.png" alt="The checks a plan must pass, and a 3D-printed part drawn at its size" width="100%"></p>
+
+<br>
 
 ## 4. Share your plan
 
@@ -48,10 +67,18 @@ The included `blueprint-share` skill checks the plan and prepares a pull request
 
 ## Examples
 
-- [Welded steel workbench](https://pham-tuan-binh.github.io/blueprint/metal-workbench/): steel frame, bar top and shelf.
-- [PVC drying stand](https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/): pipe and solvent-weld fittings.
-- [Steel shelf rack](https://pham-tuan-binh.github.io/blueprint/shelf-rack/): the smallest complete plan.
-- [137 MHz V-dipole](https://pham-tuan-binh.github.io/blueprint/v-dipole-137/): copper wire, PVC arms and a printed feed hub.
+Click one to open its build plan. Their sources are in [`skills/blueprint/examples/`](skills/blueprint/examples/).
+
+<table>
+<tr>
+<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src=".github/readme/example-metal-workbench.png" alt="Welded steel workbench" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><b>Welded steel workbench</b></a><br><sub>Steel frame, bar top and shelf.</sub></td>
+<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/"><img src=".github/readme/example-pvc-drying-stand.png" alt="PVC drying stand" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/"><b>PVC drying stand</b></a><br><sub>Pipe and solvent-weld fittings.</sub></td>
+</tr>
+<tr>
+<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/shelf-rack/"><img src=".github/readme/example-shelf-rack.png" alt="Steel shelf rack" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/shelf-rack/"><b>Steel shelf rack</b></a><br><sub>The smallest complete plan.</sub></td>
+<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/"><img src=".github/readme/example-v-dipole-137.png" alt="137 MHz V-dipole" width="100%"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/"><b>137 MHz V-dipole</b></a><br><sub>Copper wire, PVC arms and a printed feed hub.</sub></td>
+</tr>
+</table>
 
 ## Work with the source
 
@@ -79,7 +106,7 @@ node tools/site.mjs
 npx http-server _site
 ```
 
-GitHub Actions publishes the examples and shared plans to GitHub Pages.
+GitHub Actions publishes the examples and shared plans to GitHub Pages. The pictures in this README come from the examples too: `node tools/readme.mjs` redraws them into `.github/readme/` (it needs Playwright with Chromium).
 
 ## License
 

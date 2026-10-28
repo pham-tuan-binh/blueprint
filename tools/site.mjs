@@ -50,68 +50,17 @@ for (const { id, file } of designs) {
   console.log(`built ${id}: ${d.model.members.length} members, ${d.checks.length} checks pass`);
 }
 
-// Each card shows its plan's 3D model: the built page opened in Chromium, the 3/4
-// view taken as <id>/model.png and cropped to the model. Without a browser the card
-// keeps the line drawing.
-const { findPlaywright, launchChromium } = await imp('scripts/env.mjs');
-const pw = findPlaywright();
-let browser = null;
-if (pw) try { browser = await launchChromium(pw); } catch (e) { console.warn(`cards keep the line drawing: ${e.message.split('\n')[0]}`); }
-else console.warn('cards keep the line drawing: playwright not found');
+// Each card shows its plan's 3D model, taken from the built page as <id>/model.png.
+// Without a browser the card keeps the line drawing.
+const { browserOrNull, modelPng } = await import(pathToFileURL(join(ROOT, 'tools/render.mjs')).href);
+const browser = await browserOrNull('cards keep the line drawing');
 if (browser) {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 2 });
   for (const c of cards) {
-    await page.goto(pathToFileURL(join(OUT, c.id, 'index.html')).href, { waitUntil: 'networkidle' });
-    await page.waitForFunction(() => window.__blueprint?.d, null, { timeout: 15000 });
-    await page.evaluate(() => { const v = document.querySelector('#viewer'); v.style.width = '900px'; v.style.height = '900px'; });
-    await page.waitForTimeout(800);
-    const png = await page.evaluate(async () => {
-      const img = new Image();
-      img.src = window.__blueprint.picture();
-      await img.decode();
-      const cv = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height });
-      const g = cv.getContext('2d');
-      g.drawImage(img, 0, 0);
-      const px = g.getImageData(0, 0, cv.width, cv.height).data;
-      let x0 = cv.width, y0 = cv.height, x1 = -1, y1 = -1;
-      for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (px[(y * cv.width + x) * 4 + 3] > 8) {
-        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
-      }
-      if (x1 < 0) return null;
-      const m = 24, w = x1 - x0 + 1 + 2 * m, h = y1 - y0 + 1 + 2 * m;
-      const out = Object.assign(document.createElement('canvas'), { width: w, height: h });
-      out.getContext('2d').drawImage(cv, x0, y0, x1 - x0 + 1, y1 - y0 + 1, m, m, x1 - x0 + 1, y1 - y0 + 1);
-      return out.toDataURL('image/png');
-    });
+    const png = await modelPng(page, join(OUT, c.id, 'index.html'));
     if (!png) { console.warn(`${c.id}: the 3D view drew nothing, the card keeps the line drawing`); continue; }
-    writeFileSync(join(OUT, c.id, 'model.png'), Buffer.from(png.split(',')[1], 'base64'));
+    writeFileSync(join(OUT, c.id, 'model.png'), png);
     c.thumb = `<img src="${esc(c.id)}/model.png" alt="${esc(c.plan.name)}, the 3D model">`;
-  }
-  // what a plan looks like, for the README: parts of two built pages as readme/<name>.png
-  mkdirSync(join(OUT, 'readme'), { recursive: true });
-  const VIEWS = [
-    { id: 'metal-workbench', name: 'model', sel: '#model' },
-    { id: 'metal-workbench', name: 'step', sel: '#step-3', to: '#step-3 .sheet' },
-    { id: 'metal-workbench', name: 'drawings', sel: '#drawings' },
-    { id: 'metal-workbench', name: 'checks', sel: '#checks' },
-    { id: 'v-dipole-137', name: 'print', sel: '.sheet.print' },
-  ].filter(v => cards.some(c => c.id === v.id));
-  const shots = await browser.newPage({ viewport: { width: 1100, height: 900 }, deviceScaleFactor: 2 });
-  let open = null;
-  for (const v of VIEWS) {
-    if (open !== v.id) {
-      await shots.goto(pathToFileURL(join(OUT, v.id, 'index.html')).href, { waitUntil: 'networkidle' });
-      await shots.waitForFunction(() => window.__blueprint?.d, null, { timeout: 15000 });
-      await shots.waitForTimeout(1500);
-      open = v.id;
-    }
-    const el = shots.locator(v.sel).first();
-    await el.scrollIntoViewIfNeeded();
-    await shots.waitForTimeout(300);
-    const a = await el.boundingBox(), z = v.to ? await shots.locator(v.to).first().boundingBox() : a;
-    const sy = await shots.evaluate(() => scrollY);
-    await shots.screenshot({ path: join(OUT, 'readme', `${v.name}.png`), fullPage: true,
-      clip: { x: a.x - 16, y: a.y + sy - 16, width: a.width + 32, height: z.y + z.height - a.y + 32 } });
   }
   await browser.close();
 }
