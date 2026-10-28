@@ -2,8 +2,9 @@
 // `blueprint doctor` and `blueprint capture` never disagree.
 //
 // The kit itself needs only Node.js 20+. The browser check needs Playwright and a
-// Chromium it can launch; pdftoppm (poppler) is optional and only turns the
-// printed pack into PNGs.
+// Chromium it can launch, or a host app's browser (BLUEPRINT_BROWSER_HOST, see
+// host-browser.mjs); pdftoppm (poppler) is optional and only turns the printed
+// pack into PNGs.
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -14,8 +15,10 @@ export const nodeMajor = () => +process.versions.node.split('.')[0];
 
 const sh = cmd => { try { return execSync(cmd, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { return ''; } };
 
-// Playwright from this folder, the project, NODE_PATH or the global npm root
+// Playwright from this folder, the project, NODE_PATH or the global npm root;
+// or, inside an app that offers its own browser (BLUEPRINT_BROWSER_HOST), that one.
 export function findPlaywright() {
+  if (process.env.BLUEPRINT_BROWSER_HOST) return { host: process.env.BLUEPRINT_BROWSER_HOST };
   const require = createRequire(import.meta.url);
   const roots = [null, process.cwd(), ...(process.env.NODE_PATH || '').split(':').filter(Boolean), sh('npm root -g')].filter(r => r !== '');
   for (const r of roots) {
@@ -31,6 +34,10 @@ const CANDIDATES = () => [process.env.CHROMIUM_PATH, '/opt/pw-browsers/chromium'
 const GL = ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
 
 export async function launchChromium(pw) {
+  if (pw.host) {
+    const { connectHost } = await import('./host-browser.mjs');
+    return connectHost(pw.host);
+  }
   const errors = [];
   for (const executablePath of [undefined, ...CANDIDATES()]) {
     try { return await pw.chromium.launch({ args: GL, ...(executablePath ? { executablePath } : {}) }); }

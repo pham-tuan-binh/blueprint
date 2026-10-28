@@ -34,7 +34,7 @@ Blueprint is an agent skill that makes one HTML page per build plan with a 3D mo
 npx skills add pham-tuan-binh/blueprint
 ```
 
-Works with Claude Code, Codex, Cursor, Gemini CLI and any agent that can run shell commands. Requires Node.js 20+ and Playwright with Chromium for browser checks.
+Works with Claude Code, Codex, Cursor, Gemini CLI and any agent that can run shell commands. Requires Node.js 20+ and Playwright with Chromium for browser checks (an app that embeds the kit can lend its own browser instead: `BLUEPRINT_BROWSER_HOST`, see `scripts/host-browser.mjs`).
 
 ## 2. Ask for a plan
 

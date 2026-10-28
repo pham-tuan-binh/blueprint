@@ -2,7 +2,7 @@
 name: blueprint
 description: Generates a parametric build plan as one standalone HTML page for anything a workshop builds (welded steel or aluminium frames, timber and plywood, PVC pipe, plate, 3D-printed parts, bought hardware). The page has a 3D model, size fields that redo the whole plan live, checks that must pass, a materials list, STL and OpenSCAD files for prints, drawings, numbered steps with jigs and a cut list. Use when someone wants plans, a blueprint, a build guide, a cut list or "how do I build" for a physical thing (workbench, cart, shelf, gate, stand, jig, mount, antenna, PVC rack, furniture), even if they never say "plan". Metric by default, imperial when asked.
 license: MIT
-compatibility: Node.js 20+, no npm install. The browser check needs Playwright with Chromium; `scripts/blueprint.mjs doctor` checks the machine and prints the fix.
+compatibility: Node.js 20+, no npm install. The browser check needs Playwright with Chromium, or a host app's browser via BLUEPRINT_BROWSER_HOST; `scripts/blueprint.mjs doctor` checks the machine and prints the fix.
 metadata:
   version: "1.2"
 ---
