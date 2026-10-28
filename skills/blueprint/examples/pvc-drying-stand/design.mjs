@@ -61,9 +61,8 @@ export const plan = {
       const cF = [x, yc, z0], cM = [x, yc, zm], cT = [x, yc, zt];
       tees.push([...sock(cF, [0, -1, 0]), ...sock(cF, [0, 1, 0]), ...sock(cF, [0, 0, 1])]);
       tees.push([...sock(cM, [0, 0, -1]), ...sock(cM, [0, 0, 1]), ...sock(cM, [dx, 0, 0])]);
-      // an elbow: a socket hub at each end, a curved body between them (centre-line radius Z)
-      elbows.push([cyl(at(cT, [0, 0, -1], Z), at(cT, [0, 0, -1], Z + SOCK), FR), cyl(at(cT, [dx, 0, 0], Z), at(cT, [dx, 0, 0], Z + SOCK), FR),
-        shapes.bend([x + dx * Z, yc, zt - Z], [x, yc, zt - Z], [0, dx, 0], 90, FB)]);
+      // an elbow: a socket hub down the upright and one along the rail, a curved body between
+      elbows.push(shapes.elbow(cT, [0, 0, -1], [dx, 0, 0], Z, SOCK, FR, FB));
       caps.push([cyl([x, 0, z0], [x, SOCK, z0], FR)], [cyl([x, W - SOCK, z0], [x, W, z0], FR)]);
     }
     nodes.T0 = [Z, yc, zt]; nodes.T1 = [L - Z, yc, zt];

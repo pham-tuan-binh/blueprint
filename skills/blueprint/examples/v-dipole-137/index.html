@@ -444,6 +444,17 @@ const shapes = {
   // a curved tube: radius r round a bend of centre-line radius R from point `from`, `deg`
   // degrees about `axis` through the bend centre c (an elbow body, a bent rail)
   bend(c, from, axis, deg, r, n = 24) { return shapes.sweep(shapes.arc(c, from, axis, deg, Math.max(6, Math.round(Math.abs(deg) / 6))), r, n); },
+  // a pipe elbow round centre c, its openings along d1 and d2: a socket hub of radius rHub
+  // and depth sock on each, from z (centre to socket bottom) out, and a curved body of
+  // radius rBody between them, tangent to both pipes. A list [hub, hub, body], not one mesh.
+  elbow(c, d1, d2, z, sock, rHub, rBody, n = 24) {
+    const a = norm(d1), b = norm(d2), cosA = dot(a, b);
+    if (cosA < -0.999 || cosA > 0.999) throw new Error('elbow: d1 and d2 must not be parallel');
+    const half = Math.acos(cosA) / 2, at = (d, t) => add(c, mul(d, t));
+    const p1 = at(a, z), p2 = at(b, z), o = at(norm(add(a, b)), z / Math.cos(half));
+    const hub = d => ({ type: 'cyl', a: at(d, z), b: at(d, z + sock), r: rHub });
+    return [hub(a), hub(b), shapes.bend(o, p1, cross(sub(p1, o), sub(p2, o)), 180 - (2 * half * 180) / Math.PI, rBody, n)];
+  },
   // a profile [[radius, height], ...] spun about the axis from a toward b (a knob, a foot, a bottle)
   revolve(profile, a, b, n = 32) {
     const ax = norm(sub(b, a)), [u, w] = frame(ax);

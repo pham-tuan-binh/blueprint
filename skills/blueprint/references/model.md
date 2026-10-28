@@ -142,10 +142,11 @@ Bought parts and prints take their real shape. Beyond `box`, `cyl`, `sphere` (an
 | `sweep(path, r)` | a round tube along points (a hose, a cable, a bent rail) |
 | `arc(c, from, axis, deg)` | points along an arc, for `sweep` |
 | `bend(c, from, axis, deg, r)` | a curved tube (an elbow body, a bent handle) |
+| `elbow(c, d1, d2, z, sock, rHub, rBody)` | a pipe elbow at centre `c`, openings along `d1`, `d2` (any angle): two socket hubs and a curved body, as a list |
 | `revolve(profile, a, b)` | `[[radius, height], ...]` spun about an axis (a bottle, a wheel) |
 | `extrude(outline, z0, h, axis)` | a convex outline pushed out (split a concave one) |
 
-When none fits, compute the points and triangles yourself. A PVC elbow is two socket hubs and a curved body, not two cylinders. A shape that keeps coming up belongs in `kit/shapes.mjs`.
+When none fits, compute the points and triangles yourself. A PVC elbow is `elbow(...)`, never two cylinders meeting at the centre. A shape that keeps coming up belongs in `kit/shapes.mjs`.
 
 ### supports and loads
 

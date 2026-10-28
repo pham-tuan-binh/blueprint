@@ -12,7 +12,7 @@ Read this when a plan has PVC pipe or plastic sheet. Pipe: `pvcPipe(OD, wall)` (
 
 ## Fittings
 
-- Each fitting is hardware with a `shape` round its joint, and each pipe's nodes sit at the bottom of its socket, so the cut length is right.
+- Each fitting is hardware with a `shape` round its joint, and each pipe's nodes sit at the bottom of its socket, so the cut length is right. Draw an elbow with `k.shapes.elbow`, so its body curves.
 - Laying length (centre to socket bottom) of equal tees and elbows, roughly: 20 mm pipe 11, 25 mm 13, 32 mm 17, 40 mm 21, 50 mm 26; socket depth about 0.6 × OD + 6. Tell the builder to measure their own fittings and adjust in the first step.
 - Furniture-grade fittings (no print, smooth) look better; pressure fittings are cheaper and everywhere. Do not mix metric and US sizes.
 
