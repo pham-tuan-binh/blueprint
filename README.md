@@ -1,6 +1,10 @@
 # blueprint
 
-An agent skill that creates the build plan for anything a workshop makes: welded steel or aluminium frames, timber and plywood, PVC pipe, plate and sheet, 3D-printed parts, and the parts you buy. Ask your coding agent for "plans for a welding cart" and you get one standalone HTML build pack:
+An agent skill that creates the build plan for anything a workshop makes: welded steel or aluminium frames, timber and plywood, PVC pipe, plate and sheet, 3D-printed parts, and the parts you buy. Ask your coding agent for "plans for a welding cart" and you get one standalone HTML build pack. See every example on the [plans site](https://pham-tuan-binh.github.io/blueprint/).
+
+<p align="center"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src="https://pham-tuan-binh.github.io/blueprint/readme/model.png" alt="A plan's 3D model beside its size fields" width="820"></a></p>
+
+What is in it:
 
 - a 3D model (orbit, front/side/top, click a part to identify it, a stress view)
 - **input fields for the sizes**: change the length and every cut, drawing, check and step follows, live in the page; the size goes into the URL so it can be shared
@@ -12,6 +16,26 @@ An agent skill that creates the build plan for anything a workshop makes: welded
 - a cut sheet for every piece with edge marks you can follow with a hacksaw, and a cut list
 - 3D-printed parts with .stl and .scad downloads cut at the current size
 - a print layout (each step on its own page)
+
+## What to expect
+
+All of these come from one file, `design.mjs`, and redraw when you change a size. The pictures are from the [workbench plan](https://pham-tuan-binh.github.io/blueprint/metal-workbench/) and the [antenna plan](https://pham-tuan-binh.github.io/blueprint/v-dipole-137/), taken when the site is built.
+
+**Steps** read like an IKEA guide: short tasks to tick off, a check to pass before you move on, and a jig drawing with the parts of this step in yellow.
+
+<p align="center"><img src="https://pham-tuan-binh.github.io/blueprint/readme/step.png" alt="Step 3 of the workbench: tasks, a check, a warning and the jig drawing" width="560"></p>
+
+**Drawings** in third angle with the overall dimensions.
+
+<p align="center"><img src="https://pham-tuan-binh.github.io/blueprint/readme/drawings.png" alt="Top, front and side drawings of the workbench" width="820"></p>
+
+**Checks** that must all pass before the plan is handed over: joints, clashes, stock, strength and sag under each load case, tip-over.
+
+<p align="center"><img src="https://pham-tuan-binh.github.io/blueprint/readme/checks.png" alt="The workbench's checks, all passing" width="820"></p>
+
+**3D-printed parts** drawn at the current size, with .stl and .scad downloads.
+
+<p align="center"><img src="https://pham-tuan-binh.github.io/blueprint/readme/print.png" alt="The antenna's printed feed hub in three views" width="560"></p>
 
 ## Install
 
@@ -47,14 +71,20 @@ node $B check plans/welding-cart/design.mjs         # build + audit + capture: "
 
 ## Examples
 
-In `skills/blueprint/examples/`, inside the skill so they install with it, and on the site:
+In `skills/blueprint/examples/`, inside the skill so they install with it. Click one to open its build plan on the site.
 
-- [`metal-workbench`](skills/blueprint/examples/metal-workbench/): an all-steel welded workbench with a bar top
-- [`v-dipole-137`](skills/blueprint/examples/v-dipole-137/): a 137 MHz V-dipole antenna with a 3D-printed feed hub and an SMA jack on a PVC mast
-- [`shelf-rack`](skills/blueprint/examples/shelf-rack/): a welded shelf rack, the smallest complete plan
-- [`pvc-drying-stand`](skills/blueprint/examples/pvc-drying-stand/): a PVC pipe stand in solvent-weld fittings
+<table>
+<tr>
+<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><img src="https://pham-tuan-binh.github.io/blueprint/metal-workbench/model.png" alt="Welded steel workbench" height="220"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/metal-workbench/"><b>Welded steel workbench</b></a><br>All steel, with a bar top and a bar shelf<br><a href="skills/blueprint/examples/metal-workbench/"><code>metal-workbench</code></a></td>
+<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/"><img src="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/model.png" alt="PVC drying stand" height="220"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/pvc-drying-stand/"><b>PVC drying stand</b></a><br>PVC pipe in solvent-weld fittings<br><a href="skills/blueprint/examples/pvc-drying-stand/"><code>pvc-drying-stand</code></a></td>
+</tr>
+<tr>
+<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/shelf-rack/"><img src="https://pham-tuan-binh.github.io/blueprint/shelf-rack/model.png" alt="Welded steel shelf rack" height="220"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/shelf-rack/"><b>Welded steel shelf rack</b></a><br>The smallest complete plan<br><a href="skills/blueprint/examples/shelf-rack/"><code>shelf-rack</code></a></td>
+<td align="center" width="50%"><a href="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/"><img src="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/model.png" alt="137 MHz V-dipole" height="220"></a><br><a href="https://pham-tuan-binh.github.io/blueprint/v-dipole-137/"><b>137 MHz V-dipole for weather satellites</b></a><br>Copper wire on PVC arms, a 3D-printed feed hub and an SMA jack<br><a href="skills/blueprint/examples/v-dipole-137/"><code>v-dipole-137</code></a></td>
+</tr>
+</table>
 
-Plans other people share go in [`plans/`](plans/).
+Plans other people share go in [`plans/`](plans/) and show up on the site next to these.
 
 ## Share your plan
 
@@ -74,7 +104,7 @@ A plan needs an `author: { github: 'your-handle', name: 'Your Name' }` line, a n
 
 ## The plans site
 
-The skill's examples and every shared plan in `plans/` are published to GitHub Pages by `.github/workflows/pages.yml`: it runs the solver test and every plan's audit, builds each into its own page (with its guide) with `tools/site.mjs`, and puts them on a landing page that shows how to install and use the skill. To add a plan, add `plans/<id>/design.mjs` (made with the skill, passing its audit, or through `blueprint-share`); nothing else changes. Build the site locally with `node tools/site.mjs` and open `_site/index.html` through a local server (`npx http-server _site`).
+The skill's examples and every shared plan in `plans/` are published to GitHub Pages by `.github/workflows/pages.yml`: it runs the solver test and every plan's audit, builds each into its own page (with its guide) with `tools/site.mjs`, and puts them on a landing page that shows how to install and use the skill. With Playwright it also opens each built plan in Chromium and saves its 3D model as `<id>/model.png` for the card, plus the pictures in this README under `readme/`; without a browser the cards fall back to a line drawing. To add a plan, add `plans/<id>/design.mjs` (made with the skill, passing its audit, or through `blueprint-share`); nothing else changes. Build the site locally with `node tools/site.mjs` and open `_site/index.html` through a local server (`npx http-server _site`).
 
 One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions.
 

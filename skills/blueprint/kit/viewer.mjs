@@ -333,11 +333,9 @@ export function createViewer(el, { onPick } = {}) {
 
   let visible = true;
   new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(el);
-  renderer.setAnimationLoop(now => {
-    if (anim) anim(now);
-    if (controls.update()) dirty = true;
-    if (!dirty || !visible) return;
-    dirty = false;
+  // paper is 0 for a clear background (a picture), 1 for the page
+  function draw(paper = 1) {
+    renderer.setClearColor(T.paper, paper);
     renderer.render(scene, camera);
     camera.layers.set(0);
     scene.overrideMaterial = ndMat;
@@ -352,10 +350,29 @@ export function createViewer(el, { onPick } = {}) {
     renderer.autoClear = false;
     renderer.render(edgeScene, edgeCam);
     renderer.autoClear = true;
+  }
+  renderer.setAnimationLoop(now => {
+    if (anim) anim(now);
+    if (controls.update()) dirty = true;
+    if (!dirty || !visible) return;
+    dirty = false;
+    draw();
   });
 
+  // the model in the 3/4 view as a PNG on a clear background, no grid: the picture
+  // on a plan's card and in the README
+  function picture() {
+    view('iso', true);
+    if (grid) grid.visible = false;
+    draw(0);
+    const url = renderer.domElement.toDataURL('image/png');
+    if (grid) grid.visible = true;
+    dirty = true;
+    return url;
+  }
+
   return {
-    setModel, view, resize,
+    setModel, view, resize, picture,
     setStep(limit, hi) { stepLimit = limit; stepHi = hi; refresh(); },
     setStress(map) { stress = map; refresh(); },
     select(id) { selected = id; refresh(); },

@@ -50,6 +50,72 @@ for (const { id, file } of designs) {
   console.log(`built ${id}: ${d.model.members.length} members, ${d.checks.length} checks pass`);
 }
 
+// Each card shows its plan's 3D model: the built page opened in Chromium, the 3/4
+// view taken as <id>/model.png and cropped to the model. Without a browser the card
+// keeps the line drawing.
+const { findPlaywright, launchChromium } = await imp('scripts/env.mjs');
+const pw = findPlaywright();
+let browser = null;
+if (pw) try { browser = await launchChromium(pw); } catch (e) { console.warn(`cards keep the line drawing: ${e.message.split('\n')[0]}`); }
+else console.warn('cards keep the line drawing: playwright not found');
+if (browser) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 2 });
+  for (const c of cards) {
+    await page.goto(pathToFileURL(join(OUT, c.id, 'index.html')).href, { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => window.__blueprint?.d, null, { timeout: 15000 });
+    await page.evaluate(() => { const v = document.querySelector('#viewer'); v.style.width = '900px'; v.style.height = '900px'; });
+    await page.waitForTimeout(800);
+    const png = await page.evaluate(async () => {
+      const img = new Image();
+      img.src = window.__blueprint.picture();
+      await img.decode();
+      const cv = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height });
+      const g = cv.getContext('2d');
+      g.drawImage(img, 0, 0);
+      const px = g.getImageData(0, 0, cv.width, cv.height).data;
+      let x0 = cv.width, y0 = cv.height, x1 = -1, y1 = -1;
+      for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (px[(y * cv.width + x) * 4 + 3] > 8) {
+        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      }
+      if (x1 < 0) return null;
+      const m = 24, w = x1 - x0 + 1 + 2 * m, h = y1 - y0 + 1 + 2 * m;
+      const out = Object.assign(document.createElement('canvas'), { width: w, height: h });
+      out.getContext('2d').drawImage(cv, x0, y0, x1 - x0 + 1, y1 - y0 + 1, m, m, x1 - x0 + 1, y1 - y0 + 1);
+      return out.toDataURL('image/png');
+    });
+    if (!png) { console.warn(`${c.id}: the 3D view drew nothing, the card keeps the line drawing`); continue; }
+    writeFileSync(join(OUT, c.id, 'model.png'), Buffer.from(png.split(',')[1], 'base64'));
+    c.thumb = `<img src="${esc(c.id)}/model.png" alt="${esc(c.plan.name)}, the 3D model">`;
+  }
+  // what a plan looks like, for the README: parts of two built pages as readme/<name>.png
+  mkdirSync(join(OUT, 'readme'), { recursive: true });
+  const VIEWS = [
+    { id: 'metal-workbench', name: 'model', sel: '#model' },
+    { id: 'metal-workbench', name: 'step', sel: '#step-3', to: '#step-3 .sheet' },
+    { id: 'metal-workbench', name: 'drawings', sel: '#drawings' },
+    { id: 'metal-workbench', name: 'checks', sel: '#checks' },
+    { id: 'v-dipole-137', name: 'print', sel: '.sheet.print' },
+  ].filter(v => cards.some(c => c.id === v.id));
+  const shots = await browser.newPage({ viewport: { width: 1100, height: 900 }, deviceScaleFactor: 2 });
+  let open = null;
+  for (const v of VIEWS) {
+    if (open !== v.id) {
+      await shots.goto(pathToFileURL(join(OUT, v.id, 'index.html')).href, { waitUntil: 'networkidle' });
+      await shots.waitForFunction(() => window.__blueprint?.d, null, { timeout: 15000 });
+      await shots.waitForTimeout(1500);
+      open = v.id;
+    }
+    const el = shots.locator(v.sel).first();
+    await el.scrollIntoViewIfNeeded();
+    await shots.waitForTimeout(300);
+    const a = await el.boundingBox(), z = v.to ? await shots.locator(v.to).first().boundingBox() : a;
+    const sy = await shots.evaluate(() => scrollY);
+    await shots.screenshot({ path: join(OUT, 'readme', `${v.name}.png`), fullPage: true,
+      clip: { x: a.x - 16, y: a.y + sy - 16, width: a.width + 32, height: z.y + z.height - a.y + 32 } });
+  }
+  await browser.close();
+}
+
 const REPO = 'https://github.com/pham-tuan-binh/blueprint';
 const GH_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
 const COPY_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1"/><path d="M10.5 3.5v-1h-8v8h1"/></svg>';
@@ -98,7 +164,7 @@ p.sec{margin:0 0 18px;color:var(--ink2);max-width:70ch}
 .card .arrow svg{width:16px;height:16px}
 .card:hover .arrow,.card:focus-visible .arrow{background:var(--ink);color:var(--paper)}
 .card .pic{border-bottom:1px solid var(--line);padding:14px;height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.card .pic svg{width:100%;height:100%;border:0;background:transparent}
+.card .pic svg{width:100%;height:100%;border:0;background:transparent}.card .pic img{max-width:100%;max-height:100%;object-fit:contain}
 .card .txt{padding:12px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
 .card h2{font-size:19px;margin:0;padding:0;border:0;display:block}.card p{margin:0;color:var(--ink2);font-size:14px}
 .card p.by{font:12px var(--mono);color:var(--muted)}

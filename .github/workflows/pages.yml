@@ -50,6 +50,11 @@ jobs:
             echo "::endgroup::"
           done
 
+      - name: Chromium for the card and README pictures
+        run: |
+          npm i --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+
       - name: Build the site
         run: node tools/site.mjs --out _site
 

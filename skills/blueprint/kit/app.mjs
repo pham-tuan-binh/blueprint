@@ -228,5 +228,5 @@ export function mountPlan(plan) {
   }, 50));
   // for capture: every print at a size, cut, with what a slicer would find in it
   const printFaults = async given => Promise.all(derive(plan, given, system).model.prints.map(async pr => ({ id: pr.id, ...meshFaults(await printSolid(pr)) })));
-  window.__blueprint = { get d() { return d; }, render, printFaults, setParams(p) { given = { ...given, ...p }; render(); renderForm(); }, setUnits(s) { system = s; render(); renderForm(); } };
+  window.__blueprint = { get d() { return d; }, render, printFaults, picture: () => viewer?.picture(), setParams(p) { given = { ...given, ...p }; render(); renderForm(); }, setUnits(s) { system = s; render(); renderForm(); } };
 }
