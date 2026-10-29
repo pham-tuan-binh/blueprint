@@ -87,7 +87,7 @@ return {
   tip: { N: 300, height: 900, sf: 1.5 },     // optional; anchored: 'step 8, four M8 anchors' when fixed down
   checks: [{ name, pass, value, why }],      // the plan's own checks
   steps: [...],
-  facts: [['Work height', u.len(900, { u: true }), 'top surface']],   // optional
+  facts: [['Top', '14 steel bars', 'RHS 40×20 laid flat']],   // optional; what the fields do not already say
   join: 'weld',                              // 'weld', 'bolt', 'screw', 'glue', 'solder', 'clamp': the legend wording
   kerf: 2, trim: 10, minPiece: 32,
   tolerance: `cut ${u.tol(1)}; feed gap ${u.tol(0.5)}`,   // when the frame default does not fit

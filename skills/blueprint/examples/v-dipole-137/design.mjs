@@ -466,9 +466,7 @@ export const plan = {
       ],
       steps,
       facts: [
-        ['Frequency', `${g.f.toFixed(1)} MHz`, 'centre; NOAA APT and Meteor LRPT'],
         ['Element', u.len(Le, { u: true }), `each, ${wireName(u, p.wire)} copper${ins ? ', insulated' : ''}, from its inner end`],
-        ['V angle', `${p.angle}°`, 'opening north or south'],
         ['Tip to tip', u.size(2 * (r0 + Lcut) * s), 'as cut'],
         ['Arms', `${u.len(aOD, { u: true })} PVC conduit`, g.sf16 ? `${u.len(16, { u: true })} is too weak in this wind` : 'rigid electrical conduit'],
         ['Clips', `${nClips}`, `${a.nC} per arm`],

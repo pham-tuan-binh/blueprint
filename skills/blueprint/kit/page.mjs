@@ -25,36 +25,44 @@ p,li{max-width:72ch}
 .btn{font:600 14px var(--sans);background:none;color:var(--ink);border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .btn:hover,.seg button:hover{background:var(--th)}.btn svg{width:15px;height:15px;flex:none}.btn.sm{font-size:12px;padding:3px 8px;font-family:var(--mono)}.dls{display:inline-flex;gap:6px;flex-wrap:wrap}
 .warn{font-weight:600}
-.contents-h{margin:48px 0 4px;font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.contents{list-style:none;margin:0 0 48px;padding:0}.contents li{max-width:none}
+/* the contents in a card, its heading starting where the item titles do: the number column (24 px) and the gap (10 px) */
+.toc{border:1px solid var(--ink);padding:14px 16px 10px;margin:32px 0}
+.contents-h{margin:0 0 4px;padding-left:34px;font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.contents{list-style:none;margin:0;padding:0}.contents li{max-width:none}
 .contents a,.contents .crow{display:flex;align-items:baseline;gap:10px;padding:5px 0;color:inherit;text-decoration:none;width:100%;font:inherit;background:none;border:0;cursor:pointer;text-align:left}
-.contents .cn{flex:none;width:1.6em;font-weight:600;color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
+.contents .cn{flex:none;width:24px;font-weight:600;color:var(--muted)}.contents .ct{flex:0 1 auto;min-width:0;font-weight:600}
 .contents .cl{flex:1;min-width:16px;border-bottom:1.5px dotted #9aa5b1;transform:translateY(-4px)}
 .contents .cm{flex:0 1 auto;min-width:0;text-align:right;font:.82em var(--mono);color:var(--muted);align-self:center}.contents .cm svg{width:16px;height:16px;display:block}
 .contents a:hover .ct,.contents .crow:hover .ct{text-decoration:underline}
-.split{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:24px;align-items:start}
-@media (max-width:880px){.split{grid-template-columns:1fr}}
+.split{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:24px;align-items:stretch}
+/* on a wide screen the 3D view runs the full height of the fields beside it */
+.split>div{display:flex;flex-direction:column}.split .viewer-box{flex:1;aspect-ratio:auto;min-height:420px}
+@media (max-width:880px){.split{grid-template-columns:1fr}.split .viewer-box{flex:none;aspect-ratio:4/3;min-height:0}}
 .viewer-box{position:relative;border:1px solid var(--line);aspect-ratio:4/3;background:#fbfbfa}
 .viewer{position:absolute;inset:0}.viewer canvas{display:block}
 .loading{position:absolute;inset:0;margin:0;display:grid;place-items:center;font:13px var(--mono);color:var(--muted);pointer-events:none}
 .cams{position:absolute;left:12px;bottom:12px;display:flex;border:1px solid var(--ink);background:var(--paper)}
-.cams button{font:600 13px var(--sans);background:none;color:var(--ink);border:0;border-right:1px solid var(--line);padding:6px 11px;cursor:pointer}.cams button:last-child{border-right:0}
+.cams button{font:600 13px/1 var(--sans);height:32px;background:none;color:var(--ink);border:0;border-right:1px solid var(--line);padding:0 11px;cursor:pointer}.cams button:last-child{border-right:0}
 .cams button:hover{background:var(--th)}
-.pick{font-size:14px;margin:8px 0 0}
-.viewer-ctl{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0 0;font-size:15px}.viewer-ctl label{display:flex;gap:8px;align-items:center}.viewer-ctl input{accent-color:var(--ink);width:1.05rem;height:1.05rem}
-.size{border:1px solid var(--ink);padding:14px 16px 16px}
-.size h2{margin:0;padding:0;border:0;font-size:19px}.size-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 4px}
-.size fieldset{border:0;padding:0;margin:10px 0 0}.size legend{font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0;margin:0 0 4px}
-.field{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
-.field>span:first-child{font-weight:600;font-size:14px}.field small{grid-column:1/-1;color:var(--muted);font:12px var(--mono)}
+/* the clicked part, in a white label box on the view */
+.pick{position:absolute;left:12px;top:12px;right:12px;width:fit-content;max-width:calc(100% - 24px);margin:0;padding:4px 8px;font-size:13px;background:var(--paper);border:1px solid var(--ink)}
+/* view toggles: icon buttons on the view, named by their tooltip */
+.vtools{position:absolute;right:12px;bottom:12px;display:flex;border:1px solid var(--ink);background:var(--paper)}
+.vtools label{display:grid;place-items:center;width:32px;height:32px;cursor:pointer}.vtools label:hover{background:var(--th)}.vtools svg{width:18px;height:18px}
+.vtools input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}.vtools label:has(input:checked){background:var(--ink);color:var(--paper)}.vtools label:has(input:focus-visible){outline:2px solid var(--ink);outline-offset:2px}
+.size{border:1px solid var(--ink);padding:16px 18px 18px}
+.size h2{margin:0;padding:0;border:0;font-size:19px}.size-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
+.size fieldset{border:0;padding:0;margin:24px 0 0}.size legend{font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0;margin:0 0 2px}
+.field{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.field>span:first-child{font-weight:600;font-size:14px}.field small{grid-column:1/-1;color:var(--muted);font:12px/1.5 var(--mono)}
 .inp{display:inline-flex;align-items:center;border:1px solid var(--ink);background:var(--paper)}
 .inp input{width:96px;font:600 15px var(--mono);border:0;background:none;color:var(--ink);padding:5px 6px;text-align:right}
 .inp i{font:13px var(--mono);font-style:normal;color:var(--muted);padding:0 8px 0 2px}
 .field select{font:600 14px var(--sans);border:1px solid var(--ink);background:var(--paper);color:var(--ink);padding:5px 6px;max-width:190px}
 .field.check{grid-template-columns:auto 1fr;justify-content:start}.field.check input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
 input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.q:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.size-act{display:flex;gap:8px;margin:12px 0 0;flex-wrap:wrap}
-.built{font:12px var(--mono);color:var(--muted);margin:10px 0 0}
+.size-act{display:flex;gap:8px;margin:20px 0 0;flex-wrap:wrap}
+.built{display:none;font:12px var(--mono);color:var(--muted);margin:10px 0 0}   /* the sizes, for paper only, where the fields are hidden */
 .totals{font:14px var(--mono);color:var(--ink2);margin:0 0 8px;max-width:none}
 .doc{border-collapse:collapse;font:13px/1.45 var(--mono);margin:8px 0;min-width:100%}
 .doc td,.doc th{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}.doc .n{text-align:right;white-space:nowrap}
@@ -108,8 +116,8 @@ ${SHOP_CSS}
 ${Q_CSS}
 @media print{
   :root{--ink:#000;--ink2:#222;--muted:#555;--line:#bbb;--th:#eee;--face:#e4e4e4;--now:#444;--old:#eee;--oldline:#aaa;--lit:#000;color-scheme:light}
-  .dls,.back,.seg,.viewer-box,.step-3d,.toggle-3d,.viewer-ctl,.pick,.size-act,#size-form,.cams,.crow{display:none!important}
-  .contents{break-after:page}.size>p.muted{display:none}
+  .dls,.back,.seg,.viewer-box,.step-3d,.toggle-3d,.vtools,.pick,.size-act,#size-form,.cams,.crow{display:none!important}
+  .toc{break-after:page}.size>p.muted{display:none}.built{display:block}
   .split{display:block}.size{border:1px solid #000}.sec{margin-top:48px}.steps-grid{display:block;width:auto;margin:0}
   .step{break-before:page;margin-top:0}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}
   details.sheets>summary{list-style:none;font-weight:700}details::details-content{content-visibility:visible;display:block}a{text-decoration:none}main{padding-top:0}
@@ -133,16 +141,14 @@ export function pageHtml(d, { script = '', title, description, back = null, guid
 <main id="top">
   ${back ? `<a class="btn back" href="${esc(back.href)}"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>${esc(back.label)}</a>` : ''}
   <h1>${esc(plan.name)}</h1>
-  ${guide ? guideCta(guide) : ''}
-  <nav aria-label="Contents" id="contents-body">${contentsHtml(d)}</nav>
   <div class="split" id="model">
     <div>
       <div class="viewer-box">
         <div class="viewer" id="viewer" role="img" aria-label="3D model. Drag to orbit, Ctrl and scroll to zoom, click a part to identify it."></div>
         <div class="cams" role="group" aria-label="Camera"><button type="button" data-cam="iso">3/4</button><button type="button" data-cam="front">Front</button><button type="button" data-cam="side">Side</button><button type="button" data-cam="top">Top</button></div>
+        <div class="vtools"><label title="Show stress (red = least margin)"><input type="checkbox" id="show-stress" aria-label="Show stress (red = least margin)"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 13.5a6.5 6.5 0 1 1 13 0M9 13.5l3.5-4.5"/><circle cx="9" cy="13.5" r="1" fill="currentColor"/></svg></label></div>
+        <div class="pick" id="pick" hidden></div>
       </div>
-      <div class="viewer-ctl"><label for="show-stress"><input type="checkbox" id="show-stress"> Show stress (red = least margin)</label></div>
-      <div class="pick" id="pick" hidden></div>
     </div>
     <section class="size" id="size" aria-labelledby="size-h">
       <div class="size-h"><h2 id="size-h">Make it yours</h2><div class="seg" role="group" aria-label="Units"><button type="button" data-units="metric" aria-pressed="${!d.units.imperial}">mm</button><button type="button" data-units="imperial" aria-pressed="${d.units.imperial}">in</button></div></div>
@@ -152,6 +158,8 @@ export function pageHtml(d, { script = '', title, description, back = null, guid
       <p class="built" id="built-for">${esc(paramsSummary(d))}</p>
     </section>
   </div>
+  <nav class="toc" aria-label="Contents" id="contents-body">${contentsHtml(d)}</nav>
+  ${guide ? guideCta(guide) : ''}
   <section class="sec" id="checks"><h2><span class="secn">1</span>Checks</h2><div id="checks-body">${checksHtml(d)}</div></section>
   <section class="sec" id="bom"><h2><span class="secn">2</span>Materials</h2><div id="bom-body">${bomHtml(d)}</div></section>
   <section class="sec" id="drawings"><h2><span class="secn">3</span>Drawings</h2><div id="drawings-body">${drawingsHtml(d)}</div></section>

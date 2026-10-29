@@ -206,7 +206,6 @@ export function contentsHtml(d) {
   const row = (href, n, title, meta = '') => `<li><a href="#${href}"><span class="cn">${n}</span><span class="ct">${esc(title)}</span><span class="cl" aria-hidden="true"></span><span class="cm">${esc(meta)}</span></a></li>`;
   const bad = d.checks.filter(c => !c.pass).length;
   return `<p class="contents-h">Contents</p><ol class="contents">` +
-    row('model', '', '3D model and sizes', 'orbit, resize') +
     row('checks', 1, 'Checks', bad ? `${bad} failing` : `all ${d.checks.length} pass`) +
     row('bom', 2, 'Materials', `${bars} stock length${bars > 1 ? 's' : ''}`) +
     row('drawings', 3, 'Drawings', 'top, front, side') +

@@ -36,8 +36,9 @@ After a kit change keep green: `blueprint.mjs test`, the audit of every plan and
 - **Minimal elements.** Black ink on white paper, never a dark theme. No shadows, gradients or decorative borders. Icons only where they mean something, centred in their circle: ✓ check, ! warning, circled ? explainer, open-in-new-tab, printer.
 - **Colour is a code** (`CODE` in `kit/shop.mjs`, the 3D view matches): yellow = look here (new in this step, help, start here), green = the ✓ check, red = the ! warning (and the clicked part in 3D). Everything else black, white and grey. No new colour without one meaning here.
 - **Minimal text.** Short imperative tasks; teaching lives in the guide, reached through the `?` explainers.
-- **No header of any kind.** No bar, nav, logo or version line, nothing pinned to the top or its corners. A plan opens with its title, then the start-here link to the guide, then a numbered Contents list with dotted leaders. Links and controls sit in the flow where a document would put them.
+- **No header of any kind.** No bar, nav, logo or version line, nothing pinned to the top or its corners. A plan opens with its title, then the 3D model and its fields, then a numbered Contents list with dotted leaders in a card (the word Contents inside it, lined up with the item titles), then the start-here link to the guide. Links and controls sit in the flow where a document would put them.
 - **No lede, no facts grid.** The summary is for the gallery card; the totals are one line at the top of the materials list.
+- **Say it once.** Nothing repeats what a field already shows: no line restating the sizes under the fields, no fact or check that only echoes an input (a check whose pass the field's min and max already guarantee is not a check).
 - **Labels on drawings** in their own white boxes. **The 3D model** in the anatomy style: orthographic, four greys by face direction, thin outlines, one accent.
 - **Phone and paper.** 16 px gutter, no sideways scroll at 390 px; print styles hide the controls and print the folded cut sheets open.
 - **Metric by default**, imperial when asked; an mm / in switch on every plan.

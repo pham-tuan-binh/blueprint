@@ -265,7 +265,7 @@ ${d.prints.length ? '<li>Printing: ventilate for ASA and ABS.</li>' : ''}
   const glossary = Object.entries(TIPS).map(([k, [t, more]]) => `<tr><td><a href="#${S.some(s => s.id === more) ? more : 'start'}">${esc({ lp: 'long point', cl: '℄', sf: 'safety factor', weldout: 'weld out', dryfit: 'dry fit', loadtest: 'load test', points: 'joint positions' }[k] || k)}</a></td><td>${esc(t)}</td></tr>`).join('');
   add('glossary', 'Glossary', 'every term', `<div class="wrap"><table class="doc">${glossary}</table></div>`);
 
-  const contents = `<nav aria-label="Contents"><p class="contents-h">Contents</p><ol class="contents">` +
+  const contents = `<nav class="toc" aria-label="Contents"><p class="contents-h">Contents</p><ol class="contents">` +
     S.map((s, i) => `<li><a href="#${s.id}"><span class="cn">${i + 1}</span><span class="ct">${esc(s.title)}</span><span class="cl" aria-hidden="true"></span><span class="cm">${esc(s.note)}</span></a></li>`).join('') +
     `<li><a href="${esc(back)}"><span class="cn"></span><span class="ct">Back to the plan</span><span class="cl" aria-hidden="true"></span><span class="cm">the steps</span></a></li></ol></nav>`;
   return `<!doctype html>

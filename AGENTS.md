@@ -16,7 +16,7 @@ The full rules are in `skills/blueprint/references/kit.md` ("How the page looks"
 - **Minimal elements.** Black ink on white paper, never a dark theme. No shadows, gradients or decorative borders. Icons only where they mean something: ✓ check, ! warning, circled ? explainer, open-in-new-tab, printer.
 - **Colour is a code** (`CODE` in `kit/shop.mjs`): yellow = look here (new in this step, help), green = the check, red = the warning (and the clicked part in 3D). Everything else black and white.
 - **Minimal text.** Short imperative tasks. Teaching goes in the plan's guide (`guide.html`), reached through the `?` explainers.
-- **No header of any kind.** No bar, nav, logo or version line, nothing pinned to the top or its corners. Every page opens with its title, then the start-here link (plans), then a numbered Contents list with dotted leaders. The landing page opens on "Blueprint" and its tagline.
+- **No header of any kind.** No bar, nav, logo or version line, nothing pinned to the top or its corners. A plan opens with its title, then the 3D model and its fields, then the numbered Contents list with dotted leaders (in a card, its heading inside), then the start-here link. A guide opens with its title, then the same Contents card. The landing page opens on "Blueprint" and its tagline.
 - **Labels on drawings** in white boxes. **The 3D model** in the anatomy style.
 - **Phone and paper.** 16 px gutter, no sideways scroll at 390 px, print styles hide controls.
 - **Metric by default**, imperial when asked; an mm / in switch on every plan.
