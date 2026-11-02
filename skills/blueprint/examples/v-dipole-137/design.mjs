@@ -13,10 +13,13 @@
 // horizontal plane; the mast stands behind the apex so nothing metal is under the V.
 
 const C_MM_MHZ = 299792.458;                     // speed of light, in mm × MHz
-const PIPES = {                                  // PVC-U PN16 pressure pipe, outside diameter × wall
-  '32': { OD: 32, t: 2.4, price: 3.2 },
-  '40': { OD: 40, t: 3.0, price: 4.5 },
-  '50': { OD: 50, t: 3.7, price: 6.5 },
+// uPVC water pipe in the inch series (BS 3505 sizes) that Vietnamese and most Asian hardware
+// shops stock, named by its rounded outside diameter: real outside diameter × the thinnest
+// common wall (thicker walls are stronger), 1", 1¼" and 1½" nominal, price per metre
+const PIPES = {
+  '34': { OD: 33.6, t: 2.0, inch: '1', price: 0.8 },
+  '42': { OD: 42.2, t: 2.1, inch: '1¼', price: 1.1 },
+  '49': { OD: 48.3, t: 2.4, inch: '1½', price: 1.4 },
 };
 // solid-core house wire (H07V-U / TW style): conductor and insulated outside diameters, nearest AWG, price per metre
 const WIRES = {
@@ -48,6 +51,7 @@ const WR = 6;                                    // M3 penny washer radius (3.2 
 const PROUD = 0.8;                               // wire top above the pocket floor (= a ring terminal's thickness)
 
 const windText = (u, v) => (u.imperial ? `${Math.round(v * 2.237)} mph` : `${v} m/s`);
+const pipeName = (u, k) => (u.imperial ? `${PIPES[k].inch}"` : `${k} mm`);
 const wireName = (u, k) => (u.imperial ? `${WIRES[k].awg} AWG / ${k} sq mm` : `${k} mm²`);
 
 // The hub, the arms and the drag on the antenna head: depends only on the params
@@ -147,9 +151,9 @@ export const plan = {
       { value: 'bare', label: 'Stripped bare (the length is exact)' },
       { value: 'ins', label: 'Left on (about 3 % shorter, approximate: tune it)' },
     ] },
-    { id: 'pipe', label: 'Mast pipe', type: 'choice', value: '40', group: 'Mast', options: Object.keys(PIPES).map(k => ({ value: k, label: u => `PVC-U pressure pipe, ${u.len(PIPES[k].OD, { u: true })} outside, PN16` })) },
+    { id: 'pipe', label: 'Mast pipe', type: 'choice', value: '42', group: 'Mast', options: Object.keys(PIPES).map(k => ({ value: k, label: u => `uPVC water pipe ${pipeName(u, k)}, wall ${u.fine(PIPES[k].t, { u: true })} or thicker` })) },
     { id: 'wind', label: 'Design wind gust', type: 'choice', value: '35', group: 'Mast', options: ['25', '30', '35', '40'].map(v => ({ value: v, label: u => `${windText(u, +v)} gusts${v === '35' ? ' (exposed roof or garden)' : v === '25' ? ' (sheltered)' : ''}` })) },
-    { id: 'mastLen', label: 'Mast pipe length', type: 'len', value: 1000, min: 500, group: 'Mast',
+    { id: 'mastLen', label: 'Mast pipe length', type: 'len', value: 900, min: 500, group: 'Mast',
       max: p => Math.min(2500, Math.floor((CLAMP_HIGH + head(p).Lfree) / 10) * 10),
       hint: u => `bottom ${u.len(CLAMP_HIGH + 50, { u: true })} clamped to a post; the limit is what this pipe carries in this wind` },
     { id: 'coaxLen', label: 'Coax length', type: 'len', value: 3000, min: 1000, max: 10000, group: 'Feed', hint: 'RG58 from the hub to the receiver' },
@@ -164,8 +168,8 @@ export const plan = {
     const { dc, dw, ins, s, c, r0, Le, Lcut, allow, aOD, aRi, aRo, hwA, OD, R, sd, ySMA, yM, px, py0, py1, rw, ra0, La, rg, bx, by0, by1, sx, sy, a } = g;
     const W = WIRES[p.wire];
     const WIRE = rod(dc, { id: `WIRE${p.wire}${ins ? 'i' : ''}`, label: `${wireName(u, p.wire)} solid copper house wire${ins ? ', insulated' : ''} (⌀${u.fine(dc)} conductor)`, short: `Cu wire ${p.wire}`, stockLen: 1000, price: W.price, material: 'copper' });
-    const ARM = pvcPipe(aOD, g.A.t, { id: `CONDUIT${aOD}`, label: `${aOD} × ${g.A.t} rigid PVC electrical conduit`, short: `Conduit ${aOD}`, stockLen: 3000, price: g.A.price });
-    const MAST = pvcPipe(OD, g.t, { id: `PVC${OD}`, label: `${OD} × ${g.t} PVC-U pressure pipe, PN16`, short: `PVC ${OD}×${g.t}`, stockLen: 3000, price: PIPES[p.pipe].price });
+    const ARM = pvcPipe(aOD, g.A.t, { id: `CONDUIT${aOD}`, label: `${aOD} × ${g.A.t} rigid PVC electrical conduit`, short: `Conduit ${aOD}`, stockLen: 2920, price: g.A.price });
+    const MAST = pvcPipe(OD, g.t, { id: `PVC${p.pipe}`, label: `uPVC water pipe ${pipeName(u, p.pipe)} × ${g.t} wall or thicker`, short: `uPVC ${p.pipe}×${g.t}`, stockLen: 4000, price: PIPES[p.pipe].price });
 
     // heights
     const zb = p.mastLen;                  // top of the mast = underside of the hub
@@ -332,7 +336,7 @@ export const plan = {
       ...(coil ? [] : [{ id: 'ferrite', name: 'Snap-on ferrite core, mix 31, for 5 cable', spec: 'Fair-Rite 0431164181 or similar, about 230 Ω each at 137 MHz', qty: 3, step: 7, kg: 0.02, price: 2 }]),
       { id: 'ties', name: 'Cable ties, UV-stable black', spec: '200 long', qty: ties, step: 7, price: 0.05 },
       { id: 'lidscrews', name: 'Screw, M3 × 8, pan head, stainless', spec: 'lid into the heat-set inserts', qty: 2, step: 9, price: 0.1 },
-      { id: 'clamps', name: 'Mast clamp (U-bolt with saddle)', spec: `M6 U-bolt for a ${OD} pipe, with a saddle for your post or wall bracket`, qty: 2, step: 9, kg: 0.08, price: 3,
+      { id: 'clamps', name: 'Mast clamp (U-bolt with saddle)', spec: `M6 U-bolt for a ${pipeName(u, p.pipe)} pipe, with a saddle for your post or wall bracket`, qty: 2, step: 9, kg: 0.08, price: 3,
         shape: [CLAMP_LOW, CLAMP_HIGH].map(z => ({ type: 'cyl', a: [0, yM, z - 8], b: [0, yM, z + 8], r: OD / 2 + 2 })) },
     ];
 
@@ -379,7 +383,7 @@ export const plan = {
         `Pull the wire straight. Tip ${u.len(a.ls, { u: true })} past the cap.`,
       ], check: `No kinks. Clips on their marks ${u.tol(5)}. Tips ${u.len(a.ls)} ${u.tol(3)} past the caps. Tip to tip ${u.len(2 * (r0 + Lcut) * s)} ${u.tol(5)}.` },
       { n: 6, phase: 'Fabricate', title: 'Mast and hub', hours: 1, tasks: [
-        `Cut the mast ({mark:mast}) from ${u.len(OD, { u: true })} PVC pipe, square. Deburr.`,
+        `Cut the mast ({mark:mast}) from ${pipeName(u, p.pipe)} uPVC pipe, square. Deburr.`,
         `Drill ${fine(4.3)} straight through, ${u.len(sd / 2, { u: true })} below the top.`,
         'Hub onto the mast until it bottoms. Holes in line. M4 bolt, washers, nyloc nut.',
         `Mark the clamps ${u.len(CLAMP_LOW)} and ${u.len(CLAMP_HIGH, { u: true })} up from the bottom.`,
