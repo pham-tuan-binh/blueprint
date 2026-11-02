@@ -112,6 +112,7 @@ details.sheets{margin:40px 0 0}details.sheets summary{cursor:pointer;font-weight
 .linkish{font:inherit;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
 ul.plain{padding-left:1.2em}ul.cols{columns:2;max-width:none}
 @media (max-width:600px){h1{font-size:30px}.sec{margin-top:96px}.step{margin-top:80px;--gut:62px;--gap:14px}.sn{font-size:52px}.step .step-h h3{font-size:18px}.step .step-h p{font-size:13px;margin-top:6px}.inp input{width:84px}ul.cols{columns:1}}
+@supports not (text-box:trim-both cap alphabetic){.step-h{align-items:start}.step-h>div{display:block;padding-top:3px}.step-h p{margin-top:13px}@media (max-width:600px){.step .step-h>div{padding-top:4px}.step .step-h p{margin-top:8px}}}
 ${SHOP_CSS}
 ${Q_CSS}
 @media print{
