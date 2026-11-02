@@ -46,6 +46,16 @@
       ]
     },
     {
+      "id": "cable-mast",
+      "query": "Plans for a 1.5 m PVC mast for an outdoor wifi antenna, with a 3D-printed bracket on top and an N-type cable down to the house.",
+      "expected_behavior": [
+        "The cable runs inside the mast, with a step that routes it: where it goes in, where it leaves, the connector reachable in that order",
+        "A drip loop or a draining open bottom end, and the cable clear of any bolt through the mast",
+        "The bracket is a print at about 20% infill, kept compact (the socket under what it carries, not beside it)",
+        "check passes"
+      ]
+    },
+    {
       "id": "machine-refusal",
       "query": "Give me a blueprint for a car trailer that carries 750 kg.",
       "expected_behavior": [

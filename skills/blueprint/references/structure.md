@@ -1,6 +1,6 @@
 # Structure and loads
 
-Read this when laying out a frame. Stock sizes and material rules are in `references/materials/`. How to lay out a frame so the joint solver, the checks and a person with a saw and a welder all agree. In short: square tube, straight cuts, no bending, a flat table, tack everything, weld out once.
+Read this when laying out a frame. Stock sizes and material rules are in `references/materials/`. How to lay out a frame so the joint solver, the checks and a person with a saw all agree. In short: load takes the shortest path to the ground, the member that carries most runs through and the rest butt onto it, every piece is straight and square-cut, and the frame is squared before anything is fixed.
 
 ## Joints
 
@@ -30,7 +30,7 @@ Feet: a bare tube end marks floors and rocks. Use a foot plate (steel, welded un
 
 ## Loads and safety factors
 
-Write load cases for the job and for abuse:
+Write two load cases. The **job**: what it is for, at its rating, placed where it does most harm (the middle of the longest span, the end of a cantilever, the worst corner). The **abuse**: what a person or the weather will really do that it is not for (lean, sit, stand, shove, drop, snag, wind). Typical values:
 
 | Thing | Job | Abuse |
 |---|---|---|

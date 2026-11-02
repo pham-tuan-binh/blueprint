@@ -4,13 +4,14 @@
 // each one lies along the top of a thin PVC conduit arm, held by printed snap clips
 // and a printed tip cap. The arms push into sockets on a 3D-printed hub that sits on
 // a PVC mast; the wires enter the hub through a channel and are clamped under a
-// screw and washer on a heat-set insert, with the SMA jack's tails. A choke on the
-// coax under the hub keeps the feedline from radiating. Tuned with a NanoVNA by
-// trimming the wire tips.
+// screw and washer on a heat-set insert, with the SMA jack's tails. The jack points
+// down into the mast bore, so the coax runs up inside the mast, out of the weather,
+// with ferrites on it as a choke right under the hub, and leaves at the open bottom
+// end. Tuned with a NanoVNA by trimming the wire tips.
 //
 // Datum: x east from the apex of the V (the feed point), y north (the V opens
 // toward +y), z up from the bottom end of the mast pipe. The two wires lie in one
-// horizontal plane; the mast stands behind the apex so nothing metal is under the V.
+// horizontal plane; the coax drops straight down from the feed, square to both wires.
 
 const C_MM_MHZ = 299792.458;                     // speed of light, in mm × MHz
 // uPVC water pipe in the inch series (BS 3505 sizes) that Vietnamese and most Asian hardware
@@ -35,7 +36,9 @@ const ARMS = {                                   // rigid PVC electrical conduit
 const CLAMP_LOW = 50, CLAMP_HIGH = 250;          // mast clamp centre lines above the pipe's bottom end
 const GAP = 12;                                  // feed gap: between the inner ends of the two wires
 const COAX_D = 5;                                // RG58 outside diameter
-const SNAG_N = 25;                               // coax snagged or tugged at the hub
+const JACK_OFF = 8;                              // SMA jack ahead of the mast axis: the coax hangs clear of the cross bolt
+const FERRITE = { n: 3, ohm: 230, od: 20 };      // snap-on mix 31 cores for 5 cable: count, Ω each at 137 MHz, widest across
+const SNAG_N = 25;                               // the hub snagged or pulled sideways
 const N_PTS = 10;                                // points along the mast for its own wind drag
 const PVC_MPA = 25;                              // PVC long-term design stress (the kit's value)
 const CU_MPA = 70;                               // annealed (soft) copper house wire: yield, MPa
@@ -76,7 +79,7 @@ function headFor(p, armKey) {
   const sock = Math.max(25, 1.6 * aOD);                  // arm socket depth in the hub
   const { OD, t } = PIPES[p.pipe];
   const R = OD / 2 + 0.2 + 4;                            // mast socket: bore OD + 0.4, 4 mm wall
-  const sd = OD + 10;                                    // mast socket depth
+  const sd = Math.max(30, 0.75 * OD);                    // mast socket depth: the push fit and the cross bolt carry the head
   // heights above the top of the mast (the hub's underside)
   const dzW = aOD / 2 + dw / 2 + 0.1;                    // wire centre above the arm's axis: it lies on top
   const eOff = 5.5 + aRi;                                // arm axis: 5.5 of wall under the socket bore
@@ -87,7 +90,7 @@ function headFor(p, armKey) {
   const rs = r0 + 7, off = 2.9 + dc / 2;
   const sx = rs * s + off * c, sy = rs * c - off * s;
   const ySMA = Math.min(-9, sy - WR - 9);                // SMA jack axis, behind the apex, clear of the washers
-  const yM = ySMA - 9 - R;                               // mast axis: room for the SMA plug in front of the socket
+  const yM = ySMA - JACK_OFF;                            // mast axis: the jack points down into the bore
   const px = sx + WR + 1.5, py0 = ySMA - 7, py1 = Math.max(sy + WR + 1.5, r0 * c + 3);
   const rw = Math.min(px / s, c > 0.01 ? py1 / c : Infinity);   // where a wire leaves the pocket
   // the arm socket starts where its bore clears the pocket by a 2.5 wall
@@ -99,7 +102,7 @@ function headFor(p, armKey) {
   while (!clear(ra0)) ra0 += 0.5;
   const La = ra0 + sock;                                 // hub arm end, from the apex
   const rg = ra0 + sock / 2;                             // grub screw under each socket
-  const bx = Math.max(R, px + 3), by0 = yM - R, by1 = py1 + 3;
+  const bx = Math.max(R, px + 3), by0 = Math.min(yM - R, py0 - 10), by1 = py1 + 3;
   const T = topOff;
   const ext = { x: 2 * Math.max(bx, La * s + hwA * c), y: Math.max(by1, La * c + hwA * s) - by0, z: T + sd };
   const Ahub = Math.max(ext.x, ext.y) * T + 2 * R * sd;   // largest face the wind sees, mm²
@@ -140,7 +143,7 @@ export const plan = {
   name: '137 MHz V-dipole for weather satellites',
   short: 'V-dipole 137',
   version: '2',
-  summary: 'Two quarter-wave solid copper wires at 120° in a horizontal plane, each laid along a PVC conduit arm in printed clips, fed by an SMA jack in a 3D-printed hub on a PVC mast: the 9A4QV receive antenna for NOAA APT and Meteor LRPT near 137 MHz.',
+  summary: 'Two quarter-wave solid copper wires at 120° in a horizontal plane, each laid along a PVC conduit arm in printed clips, fed by an SMA jack in a 3D-printed hub on a PVC mast with the coax inside it: the 9A4QV receive antenna for NOAA APT and Meteor LRPT near 137 MHz.',
   units: 'metric',
   currency: '$',
   params: [
@@ -156,11 +159,7 @@ export const plan = {
     { id: 'mastLen', label: 'Mast pipe length', type: 'len', value: 900, min: 500, group: 'Mast',
       max: p => Math.min(2500, Math.floor((CLAMP_HIGH + head(p).Lfree) / 10) * 10),
       hint: u => `bottom ${u.len(CLAMP_HIGH + 50, { u: true })} clamped to a post; the limit is what this pipe carries in this wind` },
-    { id: 'coaxLen', label: 'Coax length', type: 'len', value: 3000, min: 1000, max: 10000, group: 'Feed', hint: 'RG58 from the hub to the receiver' },
-    { id: 'choke', label: 'Choke', type: 'choice', value: 'coil', group: 'Feed', options: [
-      { value: 'coil', label: 'Five turns of the coax round the mast' },
-      { value: 'ferrite', label: 'Three snap-on ferrites (mix 31)' },
-    ] },
+    { id: 'coaxLen', label: 'Coax length', type: 'len', value: 3000, min: p => Math.ceil((p.mastLen + 500) / 100) * 100, max: 10000, group: 'Feed', hint: 'RG58 from the hub, down inside the mast, to the receiver' },
   ],
 
   build(p, { u, rod, pvcPipe }) {
@@ -209,7 +208,7 @@ export const plan = {
     const lidScrews = [[-(px - 4), py0 - 4.5], [px - 4, py0 - 4.5]];
     const hub = {
       id: 'hub', name: 'Feed hub', step: 1, qty: 1,
-      material: 'PETG', layer: 0.2, walls: 4, infill: 0.4, supports: false,
+      material: 'PETG', layer: 0.2, walls: 4, infill: 0.2, supports: false,
       bed: '+z', orient: 'top face down on the bed, mast socket pointing up (the files come turned this way); no supports: the pocket floor and the tops of the arm bores bridge',
       shapes: [
         { type: 'cyl', a: [0, yM, zb - sd], b: [0, yM, zb + 1], r: R },                                    // socket onto the mast
@@ -221,8 +220,8 @@ export const plan = {
         { type: 'hole', a: [0, yM, zb - sd - 1], b: [0, yM, zb], d: OD + 0.4 },                            // mast bore, push fit
         { type: 'hole', a: [-R - 1, yM, zc], b: [R + 1, yM, zc], d: 4.3 },                                  // M4 cross bolt
         { type: 'box', c: [0, (py0 + py1) / 2, (zf + zt + 1) / 2], s: [2 * px, py1 - py0, zt + 1 - zf] },   // wiring pocket, open on top
-        { type: 'box', c: [0, ySMA, (zb + 3 + zf + 1) / 2], s: [14, 14, zf + 1 - zb - 3] },                 // well for the SMA jack: 3 thick floor
-        { type: 'hole', a: [0, ySMA, zb - 1], b: [0, ySMA, zb + 4], d: 6.4 },                               // SMA bulkhead jack
+        { type: 'box', c: [0, ySMA, (zb + 3 + zf + 1) / 2], s: [14, 14, zf + 1 - zb - 3] },                 // well for the SMA jack: 3 thick floor over the mast bore
+        { type: 'hole', a: [0, ySMA, zb - 1], b: [0, ySMA, zb + 4], d: 6.4 },                               // SMA bulkhead jack, pointing down into the mast
         ...[dirE, dirW].map(dir => ({ type: 'hole', a: at(dir, ra0, ze), b: at(dir, La + 1, ze), d: aOD + 0.4 })),      // arm sockets
         ...[dirE, dirW].map(dir => ({ type: 'hole', a: at(dir, rw - 0.5, zw), b: at(dir, La + 1, zw), d: dw + 0.4 })),  // wire channels
         ...[dirE, dirW].map(dir => ({ type: 'hole', a: at(dir, r0 - 1, zw), b: at(dir, rw + 0.5, zw), d: dc + 0.3 })),  // wire grooves in the floor
@@ -235,7 +234,7 @@ export const plan = {
     const lidY0 = py0 - 9, lidY1 = py1 + 3, lidT = 3;
     const lid = {
       id: 'lid', name: 'Pocket lid', step: 1, qty: 1,
-      material: 'PETG', layer: 0.2, walls: 4, infill: 0.4, supports: false,
+      material: 'PETG', layer: 0.2, walls: 4, infill: 0.2, supports: false,
       orient: 'flat on the bed',
       shapes: [{ type: 'box', c: [0, (lidY0 + lidY1) / 2, zt + lidT / 2], s: [2 * (px + 3), lidY1 - lidY0, lidT] }],
       cuts: lidScrews.map(([x, y]) => ({ type: 'hole', a: [x, y, zt - 1], b: [x, y, zt + lidT + 1], d: 3.3 })),
@@ -289,11 +288,9 @@ export const plan = {
     // ---------------------------------------------------------------- electrical numbers
     const lossPer100 = 16 * Math.sqrt(g.f / 100);               // RG58, dB per 100 m
     const loss = (lossPer100 * p.coaxLen) / 1e5 + 0.2;          // plus two SMA pairs
-    const coil = p.choke === 'coil';
-    const turns = 5;
-    const rIn = (OD + COAX_D) / 2 / 25.4, lIn = (turns * COAX_D) / 25.4;
-    const Luh = (rIn * rIn * turns * turns) / (9 * rIn + 10 * lIn);     // Wheeler, µH
-    const Xchoke = coil ? 2 * Math.PI * g.f * Luh : 3 * 230;
+    const Xchoke = FERRITE.n * FERRITE.ohm;
+    const bore = OD - 2 * g.t;                                   // inside the mast: the coax, its plug, the jack's nut and the ferrites
+    const zFer = sd / 2 + 10;                                    // ferrites start this far under the hub, below the cross bolt
     const Rfeed = 73 * s * s;                                    // rough: a V closes the dipole's 73 Ω
     const swr = Math.max(Rfeed / 50, 50 / Rfeed);
     const mmPerMHz = Le / g.f;
@@ -315,8 +312,8 @@ export const plan = {
     // drag spread up the free mast, plus the head's drag (hub, arms, wires, clips, caps) at its top: one case, two parts
     const mastPts = Array.from({ length: N_PTS }, (_, i) => [0, yM, CLAMP_HIGH + (Lf * (i + 1)) / N_PTS]);
 
-    // ties: every 200 down the mast, then every 500 along the rest of the run to the receiver
-    const ties = Math.ceil(p.mastLen / 200) + Math.max(2, Math.ceil(Math.max(0, p.coaxLen - p.mastLen) / 500));
+    // ties: every 500 along the run from the mast's bottom end to the receiver
+    const ties = Math.max(2, Math.ceil((p.coaxLen - p.mastLen) / 500));
     const bolt = [50, 60, 70, 80].find(L => L >= 2 * R + 8) || 80;
     const hardware = [
       { id: 'inserts', name: 'Heat-set insert, M3', spec: 'M3, short (about 4 long), for a 4.0 hole', qty: 6, step: 1, price: 0.1 },
@@ -330,11 +327,11 @@ export const plan = {
         shape: screws.map(([x, y]) => ({ type: 'cyl', a: [x, y, zf + PROUD], b: [x, y, zf + PROUD + 3.2], r: 2.75 })) },
       { id: 'washers', name: 'Penny washer, M3 × 12, stainless', spec: '3.2 hole, 12 outside, about 1 thick', qty: 2, step: 4, price: 0.1,
         shape: screws.map(([x, y]) => ({ type: 'cyl', a: [x, y, zf + PROUD], b: [x, y, zf + PROUD + 1], r: WR })) },
-      { id: 'bolt', name: `Bolt, M4 × ${bolt}, stainless, with nyloc nut and two washers`, spec: 'through the hub socket and the mast', qty: 1, step: 6, kg: 0.01, price: 0.4,
+      { id: 'bolt', name: `Bolt, M4 × ${bolt}, stainless, with nyloc nut and two washers`, spec: 'through the hub socket and the mast', qty: 1, step: 7, kg: 0.01, price: 0.4,
         shape: { type: 'cyl', a: [-R - 3, yM, zc], b: [R + 3, yM, zc], r: 2 } },
       { id: 'coax', name: 'Coax, RG58, SMA male to SMA male', spec: `${(p.coaxLen / 1000).toFixed(1)} metre assembly (or the plug your receiver needs at the far end)`, qty: 1, step: 7, kg: 0.04 * p.coaxLen / 1000, price: 6 + 1.2 * p.coaxLen / 1000 },
-      ...(coil ? [] : [{ id: 'ferrite', name: 'Snap-on ferrite core, mix 31, for 5 cable', spec: 'Fair-Rite 0431164181 or similar, about 230 Ω each at 137 MHz', qty: 3, step: 7, kg: 0.02, price: 2 }]),
-      { id: 'ties', name: 'Cable ties, UV-stable black', spec: '200 long', qty: ties, step: 7, price: 0.05 },
+      { id: 'ferrite', name: 'Snap-on ferrite core, mix 31, for 5 cable', spec: `about ${FERRITE.ohm} Ω at 137 MHz, at most ${u.len(FERRITE.od, { u: true })} across to slide inside the mast`, qty: FERRITE.n, step: 7, kg: 0.02, price: 2 },
+      { id: 'ties', name: 'Cable ties, UV-stable black', spec: '200 long', qty: ties, step: 9, price: 0.05 },
       { id: 'lidscrews', name: 'Screw, M3 × 8, pan head, stainless', spec: 'lid into the heat-set inserts', qty: 2, step: 9, price: 0.1 },
       { id: 'clamps', name: 'Mast clamp (U-bolt with saddle)', spec: `M6 U-bolt for a ${pipeName(u, p.pipe)} pipe, with a saddle for your post or wall bracket`, qty: 2, step: 9, kg: 0.08, price: 3,
         shape: [CLAMP_LOW, CLAMP_HIGH].map(z => ({ type: 'cyl', a: [0, yM, z - 8], b: [0, yM, z + 8], r: OD / 2 + 2 })) },
@@ -348,7 +345,7 @@ export const plan = {
     const steps = [
       { n: 1, phase: 'Fabricate', title: 'Print the hub and the lid', hours: 1, tasks: [
         `Print the hub, then the lid (files below). Queue the ${nClips} clips and 2 tip caps from step 5. PETG or ASA, not PLA.`,
-        'Start steps 2 and 3 while it prints.',
+        'Cut the arms and the mast (steps 3 and 6) while it prints.',
         'Clear strings from the sockets, channels and holes. A scrap of wire must slide through each channel.',
         `Melt an M3 heat-set insert into each ${fine(4)} hole, flush: two in the pocket, two under the arm sockets, two behind the pocket.`,
       ], check: `Conduit and mast push into their sockets by hand. Inserts flush ${u.tol(0.5)}.`,
@@ -356,7 +353,7 @@ export const plan = {
       { n: 2, phase: 'Fabricate', title: 'Wire the SMA jack', hours: 0.5, tasks: [
         `Two hook-up wire tails, ${u.len(50, { u: true })}. Strip ${u.len(4, { u: true })} each end. An M3 ring terminal on one end of each.`,
         'Solder tag over the jack thread. One tail to the centre cup (east), one to the tag (west).',
-        'Jack down through the well behind the pocket. Lock washer and nut from under; hold the body, tighten.',
+        'Jack down through the well behind the pocket, into the mast socket. Lock washer and nut from inside the socket; hold the body, tighten.',
         'Centre tail to the east insert, tag tail to the west one.',
       ], check: 'Multimeter: centre pin to body open; each pin to its ring terminal under 1 Ω.',
         tip: 'Solder before the jack goes in: the insulator and the PETG soften under a slow iron.' },
@@ -382,22 +379,19 @@ export const plan = {
         'Mark the clip centres (table). Snap each clip onto the arm on its mark.',
         `Pull the wire straight. Tip ${u.len(a.ls, { u: true })} past the cap.`,
       ], check: `No kinks. Clips on their marks ${u.tol(5)}. Tips ${u.len(a.ls)} ${u.tol(3)} past the caps. Tip to tip ${u.len(2 * (r0 + Lcut) * s)} ${u.tol(5)}.` },
-      { n: 6, phase: 'Fabricate', title: 'Mast and hub', hours: 1, tasks: [
-        `Cut the mast ({mark:mast}) from ${pipeName(u, p.pipe)} uPVC pipe, square. Deburr.`,
+      { n: 6, phase: 'Fabricate', title: 'Mast', hours: 0.5, tasks: [
+        `Cut the mast ({mark:mast}) from ${pipeName(u, p.pipe)} uPVC pipe, square. Deburr inside and out: the coax runs through it.`,
         `Drill ${fine(4.3)} straight through, ${u.len(sd / 2, { u: true })} below the top.`,
-        'Hub onto the mast until it bottoms. Holes in line. M4 bolt, washers, nyloc nut.',
         `Mark the clamps ${u.len(CLAMP_LOW)} and ${u.len(CLAMP_HIGH, { u: true })} up from the bottom.`,
-      ], check: `Mast ${tol} of its length. Hub does not turn or lift. Arms level with the mast plumb.` },
-      { n: 7, phase: 'Assemble', title: coil ? 'Coax and coil choke' : 'Coax and ferrite choke', hours: 0.5, tasks: [
-        'Coax SMA plug onto the jack: finger tight, then an eighth of a turn.',
-        'Self-amalgamating tape over the joint, half lapped. PVC tape over it.',
-        coil
-          ? `${turns} tight turns of coax round the mast right under the hub (about ${u.len(turns * COAX_D, { u: true })}). Tape each end.`
-          : 'Three ferrite cores on the coax right under the hub, touching. A cable tie each side.',
-        `Coax down the mast, a cable tie every ${u.len(200, { u: true })}. A drip loop where it leaves.`,
-      ], check: coil
-        ? `${turns} turns, tight, starting ${u.len(50, { u: true })} or less under the hub. Nothing slides.`
-        : `Three cores latched, ${u.len(50, { u: true })} or less under the hub. Nothing slides.` },
+      ], check: `Mast ${tol} of its length. Both holes in line, square to the pipe.` },
+      { n: 7, phase: 'Assemble', title: 'Coax up the mast', hours: 1, tasks: [
+        `${FERRITE.n} ferrites on the coax, touching, the first ${u.len(zFer, { u: true })} from the plug at one end. Tape each end.`,
+        'Feed that plug up the mast from the bottom until it comes out the top.',
+        'Plug onto the jack under the hub: finger tight, then an eighth of a turn. A wrap of PVC tape over the joint.',
+        'Hub onto the mast until it bottoms. Pull the slack coax out of the bottom as it goes.',
+        'Holes in line. M4 bolt, washers, nyloc nut.',
+      ], check: 'Hub does not turn or lift. Arms level with the mast plumb. The coax slides a little at the bottom: the bolt does not pinch it.',
+        tip: 'The jack sits off the mast centre, so the coax hangs beside the bolt. If the bolt will not pass, turn the hub half a turn on the mast.' },
       { n: 8, phase: 'Tune and install', title: 'Tune with a NanoVNA', hours: 1, tasks: [
         'Mast upright in the open, clear of walls, metal and people.',
         'Calibrate the NanoVNA (open, short, load). Connect the antenna coax.',
@@ -414,7 +408,7 @@ export const plan = {
         `Two U-bolt clamps on the marks, ${u.len(CLAMP_LOW)} and ${u.len(CLAMP_HIGH, { u: true })} up. Both tight.`,
         'V open to true north or south.',
         'Mast plumb, arms level, as much sky as possible, away from other antennas.',
-        'Coax to the receiver, drip loop below the entry.',
+        `Coax out of the bottom of the mast to the receiver, a cable tie every ${u.len(500, { u: true })}. A drip loop below the entry.`,
       ], check: 'Open within 10° of north or south. Arms level within 3°. No movement when shaken at the hub.',
         tip: 'Both clamps tight on a post that does not move: the wind check counts on them.' },
     ];
@@ -429,7 +423,6 @@ export const plan = {
       nodes, members, plates: [], hardware, prints: [hub, lid, clip, cap],
       consumables: [
         { name: 'Solder, rosin core', qty: 'a little', price: 0.5 },
-        { name: 'Self-amalgamating tape', qty: '1 roll', price: 4 },
         { name: 'PVC electrical tape, black', qty: '1 roll', price: 1 },
         { name: 'Neutral-cure silicone sealant', qty: '1 small tube', price: 4 },
       ],
@@ -438,7 +431,7 @@ export const plan = {
       loads: [
         { id: 'wind', name: 'Wind on mast and antenna head', what: `of drag in ${windText(u, g.V)} gusts (${u.force(g.w * Lf)} on the mast, ${u.force(g.Fh)} on the hub, arms, wires, clips and caps, at the top)`, sf: 2,
           parts: [{ N: g.w * Lf, dir: [1, 0, 0], at: mastPts }, { N: g.Fh, dir: [1, 0, 0], at: [[0, yM, zb]] }] },
-        { id: 'snag', name: 'Coax snagged at the hub', N: SNAG_N, what: 'pulled sideways at the hub', dir: [0, 1, 0], at: [[0, yM, zb]], sf: 2 },
+        { id: 'snag', name: 'Hub snagged or pulled sideways', N: SNAG_N, what: 'pulled sideways at the hub', dir: [0, 1, 0], at: [[0, yM, zb]], sf: 2 },
       ],
       checks: [
         { name: 'Element length from frequency', pass: Le / g.q4 >= 0.9 && Le / g.q4 <= 0.99 && Math.abs(Le - g.q4 * g.K * K_SUP * g.kIns) < 0.01,
@@ -451,8 +444,11 @@ export const plan = {
           why: `Small against the wavelength so it does not detune the feed, and wide enough that the two clamps cannot touch (at least ${u.len(4, { u: true })}).` },
         { name: 'Feed match (rough estimate)', pass: swr <= 1.6, value: `about ${Math.round(Rfeed)} Ω, SWR ${swr.toFixed(2)} on 50 Ω coax`,
           why: 'Estimate R ≈ 73 Ω × sin²(angle ÷ 2) at resonance; the NanoVNA in step 8 gives the real number. Under 2 is plenty for receiving.' },
-        { name: 'Choke on the coax', pass: Xchoke >= 500, value: coil ? `${turns} turns, about ${Luh.toFixed(2)} µH, ${Math.round(Xchoke)} Ω at ${g.f.toFixed(1)} MHz` : `3 ferrites, about ${Xchoke} Ω at ${g.f.toFixed(1)} MHz`,
-          why: 'At least 500 Ω of common-mode impedance keeps current off the outside of the shield, so the coax does not become part of the antenna and pick up house noise. Coil from Wheeler\'s formula; ferrites from the datasheet curve.' },
+        { name: 'Choke on the coax', pass: Xchoke >= 500, value: `${FERRITE.n} ferrites, about ${Xchoke} Ω at ${g.f.toFixed(1)} MHz, starting ${u.len(zFer, { u: true })} under the hub`,
+          why: 'At least 500 Ω of common-mode impedance keeps current off the outside of the shield, so the coax does not become part of the antenna and pick up house noise. Mix 31 snap-on cores for 5 cable give about 230 Ω each here (datasheet curve); right under the feed is where they work.' },
+        { name: 'Coax inside the mast', pass: bore - FERRITE.od >= 2 && bore / 2 - JACK_OFF >= 5 && JACK_OFF - 2 - COAX_D / 2 >= 2,
+          value: `⌀${fine(bore)} bore; ferrites ${u.len(FERRITE.od, { u: true })} across; the jack ${u.len(JACK_OFF, { u: true })} off the axis, the coax ${fine(JACK_OFF - 2 - COAX_D / 2)} clear of the M4 bolt`,
+          why: `The coax drops straight down from the feed inside the pipe, out of the sun and rain, and leaves at the open bottom end, which drains. The SMA plug (about ${u.len(9, { u: true })} across) and the ferrites must pass up the bore, and the coax must hang beside the cross bolt, not under it.` },
         { name: 'Coax loss', pass: loss <= 3, value: `${loss.toFixed(1)} dB over ${u.size(p.coaxLen)} of RG58 with its plugs`,
           why: 'Under 3 dB keeps the weak satellite signal above the receiver noise; use a better cable (or a preamp at the hub) for a longer run.' },
         { name: 'Wire held along the arm', pass: longest <= SPACE && sfTip >= 2,
@@ -478,7 +474,7 @@ export const plan = {
       ],
       join: 'clamp',
       minPiece: 32,
-      orderNote: 'Start the hub print, then wire the jack and cut the arms while it runs; clamp the wires, clip them to the arms, fit the mast, tune by trimming the tips, then seal and mount.',
+      orderNote: 'Start the hub print, then cut the arms and the mast while it runs; wire the jack, clamp the wires, clip them to the arms, feed the coax up the mast and bolt the hub on, tune by trimming the tips, then seal and mount.',
     };
   },
 };

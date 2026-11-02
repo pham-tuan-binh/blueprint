@@ -29,10 +29,11 @@ Open every PNG in `shots/`. For each, ask:
 8. **metric-*.png / imperial-*.png** (the plan switched to the other units): every length in the other system, sensible values, stock labels unchanged (they are what you buy)?
 9. **phone.png / phone-full.png**: readable at 390 px, fields usable, drawings legible when zoomed?
 10. **pdf-N.png** (the printed pages of plan.pdf): each step starts on a new page, no controls printed, drawings not split across pages?
-11. **prints** (if any): does each printed part look right in the 3D view, holes and bores where they should be, and sized for what it holds at this size (clearance per `references/prints.md`)? Capture fails an STL that is not watertight at any end of any field. Is the printing in an early step?
+11. **prints** (if any): does each printed part look right in the 3D view, holes and bores where they should be, and sized for what it holds at this size (clearance per `references/prints.md`)? Capture fails an STL that is not watertight at any end of any field. Is the printing in an early step? Is each print as small as its job (`references/prints.md`, "Keep print time down"), with no part taking most of the total hours for no reason?
 12. **every step, in order: can each part get to its place?** Picture it moving in through what is already built: a deck lowered into a welded rack, a sheet slid between posts, a wheel onto a welded axle. A frame closed round a space shuts out anything bigger than its opening. Wood, plastic and bought parts only after the welding and paint near them. Check the smallest and the largest sizes too.
-13. **guide.png / guide-phone.png** (the guide beside the plan): do its figures show this plan (the marked joint, the bay's diagonals, a real cut sheet, real joint close-ups), and only the sections that apply (no welding section for a glued PVC frame)? Is every task in the steps short enough that the explanation lives behind a `?`, not in the task?
-14. **every variant** you captured with `--hash`: does each step still read right with the option or the extra member (the steel top's welding step, the middle legs)?
+13. **every cable, hose and feedline**: can you trace it from its connector to where it leaves the build? Inside the hollow member if there is one, in and out through a real hole or an open end, its connector reachable when that step comes, not pinched by a bolt, draining outdoors?
+14. **guide.png / guide-phone.png** (the guide beside the plan): do its figures show this plan (the marked joint, the bay's diagonals, a real cut sheet, real joint close-ups), and only the sections that apply (no welding section for a glued PVC frame)? Is every task in the steps short enough that the explanation lives behind a `?`, not in the task?
+15. **every variant** you captured with `--hash`: does each step still read right with the option or the extra member (the steel top's welding step, the middle legs)?
 
 ## Then change the size
 
@@ -40,16 +41,11 @@ Read the audit's "tightest" lines: the sweeps hold every other field at its max 
 
 ## Faults earlier plans were rejected for
 
-- A number in the step text that did not follow the fields (written by hand instead of `u.len()`).
-- A field that changed nothing (the audit flags it now) or changed only the 3D view and not the steps.
-- A long rail with no centre support at the max length: passed strength, sagged past span/300.
-- Rails mitred into legs, so the legs stopped at the rail and the top was not one plane: legs need `prio: 1`.
-- A brace butting onto a smaller tube (the joint check now fails it).
-- Plates or parts that touched nothing: a foot plate modelled 1 mm under the leg.
-- Hardware without a step, so it never got bought or fitted.
-- A cut list with four marks for four identical legs because one leg's node was 0.3 mm off: build nodes from the same numbers so symmetric pieces are exactly symmetric.
-- Imperial plans with metric stock labels, or metric plans with imperial stock.
-- Steps that said "the short rails" where the mark covered three kinds of rail: name pieces with `{mark:id}`, and give members that share a mark one name.
-- A lower shelf modelled as a plain board that passed through the legs: `notch: true` cuts and draws the notches.
-- Joint ids drawn in plain black text over dark members, unreadable: labels sit in their own box (the kit does it; keep it if you change the kit).
-- A worst case the random samples never hit (1800 long × deepest × heaviest, just before the middle leg appears): the sweeps exist for this; still check the sizes either side of every threshold in your design.
+Each broke a rule in SKILL.md. Look for the rule in your own plan, not the case.
+
+- **A number not from the model**: a length typed into a step; a field that changed nothing, or only the 3D view and not the steps.
+- **Proved at the wrong size**: a worst case between the samples, just before a threshold (the last length before a middle leg appears); a long rail that passed strength but sagged past span/300 at the longest size. Check the sizes either side of every threshold in your design.
+- **A model that is not how it is made**: rails mitred into legs so the top was not one plane (legs need `prio: 1`); a brace butting onto a smaller tube; a shelf passing through legs with no notch (`notch: true`); a foot plate 1 mm under its leg, touching nothing; four marks for four identical legs because one node was 0.3 mm off (build symmetric nodes from the same numbers).
+- **A part with no way in**: hardware with no step, so it was never bought; decks screwed into a rack already welded shut round them; coax taped down the outside of a hollow mast, its jack hanging beside it.
+- **A part bigger than its job**: a printed hub that took 10 h, its mast socket beside the pocket instead of under it, deeper and denser than any check needed (6 h once compact).
+- **Words that do not match the builder**: imperial plans with metric stock labels, or the reverse; "the short rails" where the mark covered three kinds of rail; joint ids in black text over dark members.

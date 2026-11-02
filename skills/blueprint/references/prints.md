@@ -11,7 +11,7 @@ Where a fabricated part would be fiddly or a bought one does not exist: a hub wh
 ```js
 prints: [{
   id: 'hub', name: 'Feed hub', step: 1, qty: 1,
-  material: 'PETG', layer: 0.2, walls: 4, infill: 0.4, supports: false,
+  material: 'PETG', layer: 0.2, walls: 4, infill: 0.2, supports: false,
   bed: '+z', orient: 'top face down, socket pointing up; no supports',
   shapes: [
     { type: 'tube', a: [0, 0, z0], b: [0, 0, z1], r: 18, ri: pipeOD / 2 + 0.3 },   // socket onto the mast
@@ -47,7 +47,17 @@ prints: [{
 | Connector holes | SMA bulkhead 6.4; BNC 9.6; 6 mm panel jack 6.3 |
 | Overhangs | 45° or less, or a chamfer; `supports: true` only when there is no way round it |
 | Orientation | keep pulling or bending loads across the layers, not along the stack. A clamped socket is fine either way; pick the side without supports |
-| Outdoors | ASA or PETG, 4 walls, 40% infill or more. PLA creeps and softens in the sun |
+| Outdoors | ASA or PETG, 4 walls. PLA creeps and softens in the sun |
+| Infill | 20%: the walls carry the load. When a plan check needs a stronger print, add walls before infill |
+
+## Keep print time down
+
+The rule "size each part to its job" (SKILL.md), for prints: time follows mass (the **3D prints** table, about 12 g an hour), so every gram should be doing something.
+
+- **Compact.** Stack features over each other (a socket under the pocket or plate it carries, not beside it), so the body is one small block.
+- **No deeper than the load.** A socket held by a push fit and a cross bolt needs about 0.75 × the tube's diameter (30 mm at least).
+- **Walls, not solid.** The table's wall thickness and 20% infill; open up what holds nothing.
+- **Read the table after every change.** A print over about 6 h, or one part taking most of the total, is the first to rethink.
 
 Fits and walls are yours to prove: a plan check for each bore against what it takes and the thinnest clamped wall, sizes in `u.fine()`.
 

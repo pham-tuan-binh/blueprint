@@ -4,18 +4,23 @@ Read this when writing the steps. The steps are what a person reads with gloves 
 
 ## The order
 
-Two or three phases, in this order:
+One sequence fits every build: **make** each piece, **join** them loosely, **check** the whole, **fix** it for good, then **fit** what the earlier work would spoil. Each joining method has its loose and its fixed form:
 
-1. **Fabricate**: everything with a saw, grinder, drill or welder.
-   1. *Cut and prep*: cut every piece from the cutting plan, deburr, label the piece mark on each, count against the cut list. Drill plates now if they are flat.
-   2. *Sub-frames, tacked*: the biggest flat frame first, on a flat table (the top frame upside down, or two end frames). Tack only.
-   3. *Join, tacked*: stand the sub-frames up, join them with the connecting rails, top level first, then the rest. Square it up while it is only tacked.
-   4. *Weld out*: re-check every coordinate and diagonal, then weld in short stitches, alternating sides and corners so the heat does not pull it out of square. Clamped until cold.
-   5. *Plates, tabs and feet*: from the real frame, welded last.
-2. **Finish**: clean, prime, paint (or oil timber). Fit the top, decks, sheet.
-3. **Assemble** (if there are bought parts): feet, casters, vise, drawers, wiring. Level it, then load-test it gently up to its rated load.
+| Joined by | Loose | Fixed |
+|---|---|---|
+| Welding | tack | weld out, in short stitches alternating sides so the heat does not pull it out of square |
+| PVC solvent cement | dry fit, marked | cement, one joint at a time, in the dry-fit order |
+| Glue and screws (timber) | dry fit, clamped | glue and screw |
+| Bolts | snug | tighten, once it is square |
+| Prints, connectors, wire | fitted | sealed or tied down after the test |
 
-All welding before paint. All tacking before welding. Never weld a frame you have not measured.
+The kit's three phases follow from it:
+
+1. **Fabricate**: cut, drill and print every piece (start prints first: they take hours and run while you cut). Build the biggest flat sub-frame first on a flat table, then join the sub-frames, then check every coordinate and diagonal before anything is fixed. Plates, tabs and feet from the real frame, last.
+2. **Finish**: clean, prime, paint or oil. Fit tops, decks and sheet.
+3. **Assemble**: bought parts, wiring and routing, then a gentle, staged test up to the rating (a load test, a leak test, a tune).
+
+Never fix what you have not measured. Nothing hot, dusty or wet near a part it would spoil: paint, wood, plastic, prints and electronics come after.
 
 ## A step
 
@@ -42,12 +47,9 @@ On the page the step opens with its number big (64 px), the title and the time, 
 
 ## Can it get there?
 
-Before a step fits a part, check its path, not just its final position. The model shows where a part ends up; it does not show how it got there. Walk each step in order and ask: what is already built round this spot, and does the part fit past it? The usual traps:
+The model shows where each part ends up, not how it got there. Before a step fits a part, walk its path: what is already built round this spot, can the part pass it, and can a hand and a tool reach it to fasten it? A part goes in before whatever closes round it, or is sized to pass through the opening that is left. The same holds for everything that runs through the build: a cable, hose or pipe is threaded while its path is still open, with its connector on the end that can pass.
 
-- a full-size deck or panel on top of a welded rack: the rails above shut it out. Make it the size of the opening and sit it on ledges inside the frame, so it drops down from the top.
-- a sheet or panel between posts after the posts are tied together top and bottom.
-- a wheel, bearing or bushing on an axle after both ends are welded in.
-- wood, plastic, paint or bought parts fitted before a weld near them.
+Typical traps, all one mistake: a deck larger than the opening of a rack already welded round it; a sheet between posts tied top and bottom; a wheel on an axle welded at both ends; a plug that must go up a mast after the hub is bolted on.
 
 If the order alone cannot solve it, change the design, and say in the step how the part goes in ("lower each deck down through the frames, the lowest first").
 
@@ -60,6 +62,7 @@ If the order alone cannot solve it, change the design, and say in the step how t
 - "Tack each joint, which means a small weld that just holds it, on two faces so that it does not move." (Teaching in the step: say "Tack each joint on two faces."; the `?` explains tack.)
 - "Optionally add bracing if needed." (The checks decide what is needed; the model either has the brace or does not.)
 - "Screw the decks down." on a rack already welded shut round them. (How did the decks get in? See "Can it get there?" above.)
+- "Run the cable down the mast." (In or on it? Where does it enter and leave, and when is the connector fitted?)
 - A step that fits a part the materials list does not have, or a part on the list that no step fits. (The audit fails a part without a step.)
 
 ## Safety lines
