@@ -146,7 +146,7 @@ export const plan = {
   params: [
     { id: 'freq', label: 'Centre frequency', type: 'number', unit: 'MHz', value: 137.5, min: 130, max: 150, group: 'Antenna', hint: 'NOAA and Meteor downlinks: 137.1 to 137.9' },
     { id: 'angle', label: 'V angle', type: 'number', unit: '°', value: 120, min: 90, max: 180, group: 'Antenna', hint: 'between the two elements; 180 is a straight dipole' },
-    { id: 'wire', label: 'Copper wire', type: 'choice', value: '1.5', group: 'Antenna', options: Object.keys(WIRES).map(k => ({ value: k, label: u => `${wireName(u, k)} solid-core house wire, ⌀${u.fine(WIRES[k].dc, { u: true })} copper` })) },
+    { id: 'wire', label: 'Copper wire', type: 'choice', value: '2.5', group: 'Antenna', options: Object.keys(WIRES).map(k => ({ value: k, label: u => `${wireName(u, k)} solid-core house wire, ⌀${u.fine(WIRES[k].dc, { u: true })} copper` })) },
     { id: 'insul', label: 'Insulation', type: 'choice', value: 'bare', group: 'Antenna', options: [
       { value: 'bare', label: 'Stripped bare (the length is exact)' },
       { value: 'ins', label: 'Left on (about 3 % shorter, approximate: tune it)' },
