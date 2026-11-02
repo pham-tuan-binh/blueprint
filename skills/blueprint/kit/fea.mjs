@@ -138,7 +138,10 @@ export function solveFrame(model, fixed, loads) {
 // another member are snapped onto it (a post that starts on top of a rail).
 // fits: boxes of bought fittings (a PVC tee or elbow). An end inside one is carried on
 // along its own axis to the point nearest the fitting's centre, so every pipe in that
-// fitting meets at one node: the fitting is taken as a rigid joint.
+// fitting meets at one node: the fitting is taken as a rigid joint. Only a box the size
+// of a fitting for that member counts (isFitting): a long part whose box happens to hold
+// two ends (a cable down a mast) must not weld them into one node.
+export const isFitting = (box, j) => Math.max(...[0, 1, 2].map(i => box[1][i] - box[0][i])) <= 6 * 2 * Math.max(j.hu, j.hw);
 export function frameModel(jm, extraPts = [], { maxDof = 1100, fits = [] } = {}) {
   const segs = Object.values(jm).filter(j => !j.m.loose).map(j => ({ a: j.A.slice(), b: j.B.slice(), j }));
   const proj = (p, s) => {
@@ -152,7 +155,7 @@ export function frameModel(jm, extraPts = [], { maxDof = 1100, fits = [] } = {})
   // ends in each fitting meet where their axes cross (least squares), or at the box centre
   const fitted = new Set();
   for (const f of fits) {
-    const inF = ends.filter(([s, k]) => [0, 1, 2].every(i => s[k][i] >= f[0][i] && s[k][i] <= f[1][i]));
+    const inF = ends.filter(([s, k]) => isFitting(f, s.j) && [0, 1, 2].every(i => s[k][i] >= f[0][i] && s[k][i] <= f[1][i]));
     if (inF.length < 2) continue;
     const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], r = [0, 0, 0];
     for (const [s] of inF) {
@@ -209,7 +212,10 @@ export function frameModel(jm, extraPts = [], { maxDof = 1100, fits = [] } = {})
     for (let k = 1; k <= div; k++) {
       const next = k === div ? sp.i2 : (pts.push(v3.lerp(pts[sp.i1], pts[sp.i2], k / div)), pts.length - 1);
       const j = sp.s.j;
-      els.push({ n1: prev, n2: next, sec: j.sec, id: j.id, ax: norm(sub(pts[next], pts[prev])), u: j.u, w: j.w });
+      // the element frame must be right-handed (ax × u = w) for rotations to read the right way round;
+      // a member's w may point the other way along the same line (a vertical post), so turn it
+      const ax = norm(sub(pts[next], pts[prev])), w = dot(cross(ax, j.u), j.w) < 0 ? mul(j.w, -1) : j.w;
+      els.push({ n1: prev, n2: next, sec: j.sec, id: j.id, ax, u: j.u, w });
       (byMember[j.id] ||= new Set()).add(prev).add(next);
       prev = next;
     }
@@ -239,25 +245,48 @@ export function runLoads(d) {
     const m = el.sec.A * el.sec.mat.rho * len(sub(fm.pts[el.n2], fm.pts[el.n1]));
     lumps[el.n1] += m / 2; lumps[el.n2] += m / 2;
   }
+  // a mass off the frame (an antenna above a mast, a box on a bracket) keeps its lever arm:
+  // the weight goes to the nearest nodes and the moment it makes about them goes in as a couple
+  const deadM = new Float64Array(N * 3);
   const spread = (p, m) => {
     const near = used.map(i => [i, len(sub(fm.pts[i], p))]).sort((x, y) => x[1] - y[1]).slice(0, 4);
     const w = near.map(([, dd]) => 1 / (dd + 50)), ws = w.reduce((x, y) => x + y, 0);
     near.forEach(([i], j) => (lumps[i] += (m * w[j]) / ws));
+    const c = near.reduce((acc, [i], j) => add(acc, mul(fm.pts[i], w[j] / ws)), [0, 0, 0]);
+    const M = cross(sub(p, c), [0, 0, -m * G0]), i0 = near[0][0];
+    for (let k = 0; k < 3; k++) deadM[i0 * 3 + k] += M[k];
   };
   for (const it of d.massItems) if (it.kind !== 'member' && it.m > 0) spread(it.c, it.m);
   const cases = loads.map(l => {
     const F = new Float64Array(N * 6);
-    for (let i = 0; i < N; i++) F[i * 6 + 2] -= lumps[i] * G0;
+    for (let i = 0; i < N; i++) { F[i * 6 + 2] -= lumps[i] * G0; for (let k = 0; k < 3; k++) F[i * 6 + 3 + k] += deadM[i * 3 + k]; }
     const all = [];
     for (const q of partsOf(l)) {
       const dir = norm(q.dir || l.dir || [0, 0, -1]);
       const total = (q.kg != null ? q.kg * G0 : q.N) || 0;
-      let idx = [];
-      if (q.on) idx = [...new Set(q.on.flatMap(id => [...(fm.byMember[id] || [])]))];
-      if (q.at) idx = idx.concat(q.at.map(() => fm.snapped[k++].idx));
-      if (!idx.length) throw new Error(`load "${l.name}" lands on no member`);
-      idx.forEach(i => { for (let c = 0; c < 3; c++) F[i * 6 + c] += (total * dir[c]) / idx.length; });
-      all.push(...idx);
+      // a load on members is spread by length: each node takes half of every loaded element
+      // touching it, so a long bay carries more than a short one; a load at points is shared equally
+      const w = new Map();
+      if (q.on) {
+        const on = new Set(q.on);
+        for (const el of fm.els) if (on.has(el.id)) {
+          const L = len(sub(fm.pts[el.n2], fm.pts[el.n1])) / 2;
+          w.set(el.n1, (w.get(el.n1) || 0) + L); w.set(el.n2, (w.get(el.n2) || 0) + L);
+        }
+      }
+      const atPts = q.at || [], atIdx = atPts.map(() => fm.snapped[k++].idx);
+      if (!w.size && !atIdx.length) throw new Error(`load "${l.name}" lands on no member`);
+      const shares = [];
+      if (w.size) { const sum = [...w.values()].reduce((a, b) => a + b, 0); for (const [i, L] of w) shares.push([i, (L / sum) * (atIdx.length ? w.size / (w.size + atIdx.length) : 1)]); }
+      for (const i of atIdx) shares.push([i, 1 / (w.size + atIdx.length)]);
+      for (const [i, s] of shares) for (let c = 0; c < 3; c++) F[i * 6 + c] += total * dir[c] * s;
+      // a point off the frame snaps to the nearest member point: the force moves, so add the moment
+      // it makes about that point (a wind load on an antenna above the mast top keeps its lever arm)
+      atIdx.forEach((i, a) => {
+        const M = cross(sub(atPts[a], fm.pts[i]), mul(dir, total / (w.size + atIdx.length)));
+        for (let c = 0; c < 3; c++) F[i * 6 + 3 + c] += M[c];
+      });
+      all.push(...shares.map(x => x[0]));
     }
     return { l, F, idx: all };
   });

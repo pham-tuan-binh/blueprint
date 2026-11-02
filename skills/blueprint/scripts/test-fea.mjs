@@ -41,5 +41,27 @@ const Fc = new Float64Array(pts2.length * 6); Fc[2 * 6 + 2] = -P;
 const [rs] = solveFrame({ pts: pts2, els: els2 }, [[0, [0, 1, 2, 3]], [4, [1, 2]]], [Fc]);
 check('simply supported centre  PL^3/48EI', -rs.u[2 * 6 + 2], (P * L ** 3) / (48 * E * sec.Iww));
 
+// a cantilever mast through derive(): a long bought part whose box spans both ends (a cable
+// over the top and down the bore) must not join them as a fitting, which would leave the
+// mast unstressed (safety factor infinity, a false pass). Textbook: M = P L at the root.
+{
+  const { derive } = await import('../kit/derive.mjs');
+  const mastPlan = { id: 't', name: 't', summary: 't', params: [{ id: 'h', label: 'H', type: 'len', value: 1500, min: 1000, max: 2000 }],
+    build(p, { pvcPipe, shapes }) {
+      return { sections: { M: pvcPipe(63, 3, { id: 'M' }) }, nodes: { A: [0, 0, 0], B: [0, 0, p.h] },
+        members: [{ id: 'mast', name: 'Mast', sec: 'M', pts: ['A', 'B'], step: 1 }],
+        hardware: [{ id: 'cable', name: 'Cable', step: 1, shape: shapes.sweep([[60, 0, p.h - 80], [0, 0, p.h + 30], [-8, 0, p.h], [-8, 0, -20]], 4) }],
+        supports: [{ at: [0, 0, 0], fix: 'fixed' }], loads: [{ id: 'w', name: 'Wind', N: P, dir: [1, 0, 0], at: [[0, 0, p.h]] }],
+        steps: [{ n: 1, title: 't', tasks: ['t'] }] };
+    } };
+  const d = derive(mastPlan, {}, 'metric'), r = d.loads[0];
+  const Sm = d.joints.mast.sec.Su;
+  check('mast root stress with a cable over it  PL/S', Math.max(...r.stress ? Object.values(r.stress).flat().filter(Number.isFinite) : [0]), (P * 1500) / Sm);
+  // a load off the frame keeps its lever arm: P at 300 above the mast top gives M = P (L + 300) at the root
+  const high = { ...mastPlan, build: (p, k) => { const m = mastPlan.build(p, k); m.loads = [{ id: 'w', name: 'Wind', N: P, dir: [1, 0, 0], at: [[0, 0, p.h + 300]] }]; return m; } };
+  const r2 = derive(high, {}, 'metric').loads[0];
+  check('load 300 above the mast top  P(L+300)/S', Math.max(...Object.values(r2.stress).flat().filter(Number.isFinite)), (P * 1800) / Sm);
+}
+
 if (failed) { console.log(`\n${failed} check(s) failed`); process.exit(1); }
 console.log('\nFrame solver matches the textbook.');

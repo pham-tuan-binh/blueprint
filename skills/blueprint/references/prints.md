@@ -30,10 +30,12 @@ prints: [{
 
 - Plan coordinates (mm), so it sits where it goes.
 - `shapes` are unioned; `cuts` and every `tube` bore are taken out. Solids: `box`, `cyl`, `tube`, `prism`, `sphere`, `mesh` (`k.shapes` or your own closed mesh). Cuts: `hole` (round, a to b, diameter `d`), `cyl`, `box`, `prism`.
-- `prism` extrudes an outline: `axis: 'z'` takes `pts` as [x, y]; `'x'` as [y, z]; `'y'` as [x, z].
+- `prism` extrudes an outline, concave or convex: `axis: 'z'` takes `pts` as [x, y]; `'x'` as [y, z]; `'y'` as [x, z].
 - Overlap solids that join by a millimetre, and run a cut 1 mm past any face it opens. A `tube` bore cuts through everything it overlaps; to stop a bore against a plate, use a `cyl` and a `hole` of the length you want.
 - `bed`: the face that goes down on the bed, `'-z'` (default), `'+z'`, `'-x'`, `'+x'`, `'-y'`, `'+y'`. The STL and .scad come out turned that way, at the origin. Say the same in `orient` (the step prints it after "print it").
 - `material`: PLA, PETG, ASA, ABS, TPU, PA. `infill` 0 to 1.
+- `note`: one plain line under the print's files (what to do after printing: inserts, clearing strings). A warning goes in the step's `tip`.
+- A print and a few bought parts with nothing to cut is a plan with no frame (`references/model.md`): no members, and plan checks prove the fit, the walls and the grip.
 - A print touches what it holds (the floating check sees it); `on: 'member-id'` names a holder it does not touch.
 - `copies: [{ move, rotZ, about }]`: each copy turned about a vertical axis through `about`, then moved. One STL; quantity is copies plus one (or `qty`).
 
@@ -60,6 +62,8 @@ The rule "size each part to its job" (SKILL.md), for prints: time follows mass (
 - **Read the table after every change.** A print over about 6 h, or one part taking most of the total, is the first to rethink.
 
 Fits and walls are yours to prove: a plan check for each bore against what it takes and the thinnest clamped wall, sizes in `u.fine()`.
+
+A clamp that grips by friction: grip force = bolt preload × number of bolts × friction (0.2 to 0.3 for a print on metal; take 0.25), and torque against turning = grip × the tube's radius. An M4 to M6 screw done up snug in a print gives about 400 to 800 N of preload; plastic creeps, so take the low end outdoors. Check the grip against the job with safety factor 2, and the flanges and bolt pull-out against the preload.
 
 The frame solver does not analyse prints. When a print carries load (an arm, a bracket, a hook), prove it with a plan check by hand: bending stress M / Z at its root at most a quarter of the filament's strength (PLA 50, PETG 45, ASA 40, PA 60 MPa along the layers; halve it across them). If it cannot pass, it is not a print's job.
 

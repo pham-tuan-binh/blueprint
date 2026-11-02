@@ -9,8 +9,9 @@
 //                               start plans/<id>/design.mjs from the closest example
 //   build <design.mjs> [--out index.html] [--units imperial]
 //                               the standalone page, and every check with its value
-//   audit <design.mjs> [--samples 40] [--verbose]
-//                               every check at every size the fields allow: "audit passed"
+//   audit <design.mjs> [--samples 40] [--verbose] [--at "length=800"]...
+//                               every check at every size the fields allow: "audit passed";
+//                               --at prints every check at just those sizes
 //   capture <index.html> [--out dir] [--pdf] [--hash "a=1&b=2"]
 //                               the page in headless Chromium, with screenshots: "capture passed"
 //   check <design.mjs> [--hash "a=1"]... [--no-browser]
@@ -101,6 +102,8 @@ async function scaffold() {
   if (!id || !/^[a-z0-9][a-z0-9-]*$/.test(id)) die('usage: new <id> [--from <example>] [--dir plans] [--name "Name"]   (id: lower-case words joined by -, e.g. welding-cart)');
   const from = opt('from', 'shelf-rack');
   if (!exampleIds().includes(from)) die(`no example "${from}". Examples: ${exampleIds().join(', ')}`);
+  // an id is how the site and links find a plan, so it must not be an example's
+  if (exampleIds().includes(id)) die(`"${id}" is an example's id; name this plan for what it is (steel-workbench, garage-bench)`);
   const dir = resolve(opt('dir', 'plans'), id), file = join(dir, 'design.mjs');
   if (existsSync(file)) die(`${rel(file)} already exists; edit it instead`);
   const name = opt('name', id.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase()));

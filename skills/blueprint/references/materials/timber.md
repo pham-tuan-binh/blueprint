@@ -19,7 +19,17 @@ Use actual sizes, not names:
 ## Design
 
 - **Wood moves across the grain**, about 1% of its width per 4% change in moisture for flatsawn boards, almost nothing along it. A solid top over 300 mm wide is fixed at the middle of each rail and held elsewhere with slotted holes or tabletop clips. Plywood and MDF barely move: screw them anywhere.
-- **Grain along the span.** Rails and shelves span with the grain; plywood spans with its face grain.
+- **Grain along the span.** Rails and solid shelves span with the grain. Plywood is stiffer and stronger along its face grain, which runs along the sheet's long side: a long, narrow shelf cut along a 2440 sheet has the grain along its length, so when it spans its depth (supported front and back) it spans across the grain. Check which way it really spans and use that column below.
+- **Sheet properties** for a plate check (the kit does not analyse sheets). Design values with creep and moisture allowed for:
+
+| Sheet | E along face grain | E across | Bending strength along | across | Density |
+|---|---|---|---|---|---|
+| Softwood plywood (structural) | 7 GPa | 4 GPa | 20 MPa | 12 MPa | 550 kg/m³ |
+| Birch plywood | 9 GPa | 6 GPa | 30 MPa | 20 MPa | 680 kg/m³ |
+| OSB/3 | 4.5 GPa | 1.8 GPa | 15 MPa | 7 MPa | 600 kg/m³ |
+| MDF | 3 GPa | 3 GPa | 12 MPa | 12 MPa | 750 kg/m³ |
+
+  A sheet on two supports is a beam of its full width: stress = M ÷ (b t² / 6), sag = 5 w L⁴ ÷ (384 E b t³ / 12). Supported on all four sides it does better, but take two sides unless it is screwed down all round.
 - **Shelves sag and creep.** Wood sags about 50% more over months under a steady load. Hold wooden shelves to span/600 at their rated load in the load case (`defl: span / 600`), or add a front edge strip on edge, which stiffens a plywood shelf several times.
 - **Screws**: length about 2.5 × the piece being fixed; pilot holes always in hardwood and within 50 mm of an end or edge in softwood; at least 5 diameters from an edge and 10 from an end. Glue and screws in long grain; screws alone into end grain hold poorly, so use a block, a pocket screw or a bolt there.
 - **Bolts** (coach / carriage bolts) where a joint carries a person or racks: a washer under every nut on wood.

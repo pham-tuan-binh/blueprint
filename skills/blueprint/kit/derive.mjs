@@ -4,7 +4,7 @@
 // page is computed anywhere else.
 import { v3, makeUnits, resolveParams, G0, MATERIALS, squareTube, rectTube, roundTube, flatBar, bar, timber, rod, pvcPipe, inch, feet } from './core.mjs';
 import { solveJoints, memberCorners, describeEnd } from './joints.mjs';
-import { runLoads } from './fea.mjs';
+import { runLoads, isFitting } from './fea.mjs';
 import { printBox, printBoxAll, printEstimate, printQty, FILAMENTS, bedBox } from './print.mjs';
 import { shapes, meshBox } from './shapes.mjs';
 
@@ -65,7 +65,7 @@ function plateAt(model) {
 // a bought fitting (a PVC tee, a clamp, a socket) a free end sits in: its shape box holds the end
 function fittingAt(model) {
   const fits = fitBoxesOf(model);
-  return p => fits.find(f => [0, 1, 2].every(i => p[i] >= f.b[0][i] && p[i] <= f.b[1][i]))?.h;
+  return (p, j) => fits.find(f => (!j || isFitting(f.b, j)) && [0, 1, 2].every(i => p[i] >= f.b[0][i] && p[i] <= f.b[1][i]))?.h;
 }
 
 function groupPieces(model, joints, onPlate = () => null, inFitting = () => null) {
@@ -94,7 +94,7 @@ function groupPieces(model, joints, onPlate = () => null, inFitting = () => null
         const r = describeEnd(e, ref);
         const pl = e.kind === 'free' && onPlate(X);
         if (pl) return { ...r, how: `onto ${pl.mark} (${pl.name.toLowerCase()})` };
-        const fit = e.kind === 'free' && inFitting(X);
+        const fit = e.kind === 'free' && inFitting(X, j);
         return fit ? { ...r, how: `into the ${fit.name.split(",")[0].toLowerCase()}` } : r;
       };
       const da = end(j.ends.A, j.A), db = end(j.ends.B, j.B);
@@ -173,7 +173,8 @@ export function partBoxes(h, pad = 1.5) {
   }
   return pieces.map(shapeBox).filter(Boolean).map(b => ({ h, b: [b[0].map(v => v - pad), b[1].map(v => v + pad)] }));
 }
-const fitBoxesOf = model => model.hardware.flatMap(h => partBoxes(h));
+// bought parts that pipes push into; fitting: false opts a part out (a cable, a hose, a bracket)
+const fitBoxesOf = model => model.hardware.filter(h => h.fitting !== false).flatMap(h => partBoxes(h));
 const plateBox = pl => [pl.c.map((v, i) => v - pl.s[i] / 2), pl.c.map((v, i) => v + pl.s[i] / 2)];
 const boxGap = (A, B) => Math.max(0, ...[0, 1, 2].map(i => Math.max(A[0][i] - B[1][i], B[0][i] - A[1][i])));
 const memberBox = j => { const c = memberCorners(j); return [[0, 1, 2].map(i => Math.min(...c.map(q => q[i]))), [0, 1, 2].map(i => Math.max(...c.map(q => q[i])))]; };
@@ -276,7 +277,7 @@ function geometryChecks(model, joints, sites, ref) {
     }
     return true;
   };
-  const meetInFitting = (A, B) => fitBoxes.some(b => ((inBox(b, A.A) || inBox(b, A.B)) && segHitsBox(b, B.A, B.B)) || ((inBox(b, B.A) || inBox(b, B.B)) && segHitsBox(b, A.A, A.B)));
+  const meetInFitting = (A, B) => fitBoxes.some(b => isFitting(b, A) && isFitting(b, B) && (((inBox(b, A.A) || inBox(b, A.B)) && segHitsBox(b, B.A, B.B)) || ((inBox(b, B.A) || inBox(b, B.B)) && segHitsBox(b, A.A, A.B))));
   const link = (a, b) => { (adj.get(a) || adj.set(a, new Set()).get(a)).add(b); (adj.get(b) || adj.set(b, new Set()).get(b)).add(a); };
   for (let i = 0; i < ids.length; i++) for (let k = i + 1; k < ids.length; k++) {
     const A = joints[ids[i]], B = joints[ids[k]];
@@ -331,8 +332,9 @@ export function derive(plan, given = {}, system) {
   const plateGroups = [...pg.values()].sort((a, b) => a.step - b.step);
   plateGroups.forEach((g, i) => { g.mark = 'P' + (i + 1); for (const pl of model.plates) if (g.ids.includes(pl.id)) pl.mark = g.mark; });
   const { pieces, markOf, ref } = groupPieces(model, joints, plateAt(model), fittingAt(model));
-  // step text may name a piece by its mark: {mark:leg-FL} becomes "A"
-  const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { if (!markOf[id]) throw new Error(`{mark:${id}}: no member "${id}"`); return markOf[id]; }) : t);
+  // step text may name a piece or a plate by its mark: {mark:leg-FL} becomes "A", {mark:foot-FL} "P1"
+  const plateMark = Object.fromEntries(model.plates.map(pl => [pl.id, pl.mark]));
+  const fill = t => (typeof t === 'string' ? t.replace(/\{mark:([\w-]+)\}/g, (_, id) => { const m = markOf[id] || plateMark[id]; if (!m) throw new Error(`{mark:${id}}: no member or plate "${id}"`); return m; }) : t);
   for (const st of model.steps) { for (const k of ['title', 'summary', 'check', 'tip']) st[k] = fill(st[k]); st.tasks = st.tasks.map(fill); if (st.table) st.table.rows = st.table.rows.map(r => r.map(c => fill(String(c)))); }
   for (const c of model.checks) { c.value = fill(c.value); c.why = fill(c.why); }
   for (const pl of model.plates) pl.note = fill(pl.note);
@@ -342,7 +344,9 @@ export function derive(plan, given = {}, system) {
   const totalKg = mass.reduce((s, it) => s + it.m, 0);
   const cog = mass.reduce((c, it) => add(c, mul(it.c, it.m / (totalKg || 1))), [0, 0, 0]);
   const geo = geometryChecks(model, joints, sites, ref);
-  const allBoxes = Object.values(geo.boxes);
+  // the overall size is the build's: what the builder already owns (the tube it clamps to, the camera on it) is left out
+  const owned = new Set(model.hardware.filter(h => h.owned).map(h => h.id));
+  const allBoxes = Object.entries(geo.boxes).filter(([id]) => !owned.has(id)).map(([, b]) => b);
   const bbox = [[0, 1, 2].map(i => Math.min(...allBoxes.map(b => b[0][i]))), [0, 1, 2].map(i => Math.max(...allBoxes.map(b => b[1][i])))];
   const d = { plan, p, notes, limits, units, model, joints, sites, pieces, markOf, ref, nesting, plateGroups, massItems: mass, totalKg, cog, bbox };
 
@@ -362,21 +366,26 @@ export function derive(plan, given = {}, system) {
   try { d.loads = runLoads(d); } catch (e) { d.loads = []; loadErr = e.message; }
 
   // stability: tip over under a side push at a height
+  // tip.with: [{ kg, at }] adds what it carries in the case that tips worst (a bottle high on a cart)
   if (model.tip && model.supports?.length) {
+    const extra = model.tip.with || [];
+    const tipKg = totalKg + extra.reduce((s, w) => s + w.kg, 0);
+    const tipCog = extra.reduce((c, w) => add(c, mul(w.at, w.kg / tipKg)), mul(cog, totalKg / (tipKg || 1)));
     const hull = hull2(model.supports.map(s => s.at));
     let dmin = Infinity;
     for (let i = 0; i < hull.length; i++) {
       const a = hull[i], b = hull[(i + 1) % hull.length];
       const ex = b[0] - a[0], ey = b[1] - a[1], L = Math.hypot(ex, ey);
-      dmin = Math.min(dmin, ((cog[0] - a[0]) * ey - (cog[1] - a[1]) * ex) / L * -1);
+      dmin = Math.min(dmin, ((tipCog[0] - a[0]) * ey - (tipCog[1] - a[1]) * ex) / L * -1);
     }
     const F = model.tip.kg != null ? model.tip.kg * G0 : model.tip.N;
-    d.tip = { sf: (totalKg * G0 * dmin) / (F * model.tip.height), dmin, F, height: model.tip.height };
+    d.tip = { sf: (tipKg * G0 * dmin) / (F * model.tip.height), dmin, F, height: model.tip.height, withKg: tipKg - totalKg };
   }
 
   // checks: kit checks first, then the plan's own
   const u = units, checks = [];
   const add2 = (name, pass, value, why) => checks.push({ name, pass: !!pass, value, why });
+  const framed = model.members.length > 0;
   if (d.weld.joins || report.length) add2('Every joint can be made as drawn', !report.length, report.length ? report[0] : `${d.weld.joins} joints`, 'Each end is a mitre, a butt onto a face, a flush cut or a free end; nothing overhangs.');
   if (model.prints.length) {
     const bed = model.printer?.bed || [220, 220, 250];
@@ -390,18 +399,23 @@ export function derive(plan, given = {}, system) {
   const longest = Math.max(...pieces.map(g => g.pm.stock));
   const tooLongRef = it => `${markOf[it.id]} (${it.id})`;
   const tooLong = nesting.flatMap(n => n.tooLong);
-  add2('Every piece fits the stock', !tooLong.length, tooLong.length ? `${tooLongRef(tooLong[0])} is ${u.len(tooLong[0].L, { u: true })}` : `longest ${u.len(longest, { u: true })}`, 'Cut from standard lengths with a trim and a kerf per cut.');
+  // a plan with nothing to cut (a print and bought parts) has no stock to fit or clamp
+  if (framed) add2('Every piece fits the stock', !tooLong.length, tooLong.length ? `${tooLongRef(tooLong[0])} is ${u.len(tooLong[0].L, { u: true })}` : `longest ${u.len(longest, { u: true })}`, 'Cut from standard lengths with a trim and a kerf per cut.');
   const shortest = pieces.reduce((m, g) => (g.pm.shortPoint < m.v ? { v: g.pm.shortPoint, g } : m), { v: Infinity });
   const minPiece = model.minPiece;
-  add2('Every piece can be clamped and cut', shortest.v >= minPiece, `shortest ${u.len(shortest.v, { u: true })}`, `No piece shorter than ${u.len(minPiece, { u: true })} on its short side.`);
+  if (framed) add2('Every piece can be clamped and cut', shortest.v >= minPiece, `shortest ${u.len(shortest.v, { u: true })}`, `No piece shorter than ${u.len(minPiece, { u: true })} on its short side.`);
   if (loadErr) add2('Frame analysis', false, loadErr, 'The frame solver could not run.');
+  // a load shown as the user gave it: a mass in kg or lb, a force in N or lbf, each part of a combined case on its own
+  const amount = q => (q.kg != null ? u.mass(q.kg) : u.force(q.N || 0));
   for (const r of d.loads) {
     const need = r.load.sf ?? 2;
-    add2(`${r.name}: strength`, r.sf >= need, `safety factor ${r.sf === Infinity ? '∞' : r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + ref(r.worstMember) : ''}`, `Yield ÷ peak stress with ${r.load.parts ? u.force(r.load.parts.reduce((t, q) => t + (q.kg != null ? q.kg * G0 : q.N || 0), 0)) : r.load.kg != null ? u.mass(r.load.kg) : u.force(r.load.N)} ${r.load.what || 'applied'}, plus self weight.`);
+    // no stress at all under a real load means the load never reached the frame: never a pass
+    const reached = Number.isFinite(r.sf);
+    add2(`${r.name}: strength`, reached && r.sf >= need, reached ? `safety factor ${r.sf.toFixed(2)} (need ${need})${r.worstMember ? ', worst ' + ref(r.worstMember) : ''}` : 'no stress anywhere: the load reaches no member (a fitting or part may be joining ends it should not; give a long part fitting: false)', `Yield ÷ peak stress with ${r.load.parts ? r.load.parts.map(amount).join(' + ') : amount(r.load)} ${r.load.what || 'applied'}, plus self weight.`);
     if (r.load.defl != null) add2(`${r.name}: deflection`, r.loadDefl <= r.load.defl, `${u.deflection(r.loadDefl)} (limit ${u.deflection(r.load.defl)})`, 'Largest movement of the loaded members.');
   }
   if (d.tip && model.tip.anchored) add2('Does not tip over', true, `anchored (${model.tip.anchored}); free-standing factor ${d.tip.sf.toFixed(2)}`, `Free-standing it would tip with ${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high, so it is fixed down.`);
-  else if (d.tip) add2('Does not tip over', d.tip.sf >= (model.tip.sf ?? 1.5), `factor ${d.tip.sf.toFixed(2)} (need ${model.tip.sf ?? 1.5})`, `${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high against its own weight.`);
+  else if (d.tip) add2('Does not tip over', d.tip.sf >= (model.tip.sf ?? 1.5), `factor ${d.tip.sf.toFixed(2)} (need ${model.tip.sf ?? 1.5})`, `${u.force(d.tip.F)} sideways at ${u.len(d.tip.height, { u: true })} high against its own weight${d.tip.withKg ? ` and ${u.mass(d.tip.withKg)} it carries` : ''}.`);
   const stepNs = new Set(model.steps.map(s => s.n));
   const orphan = [...model.members, ...model.plates, ...model.hardware, ...model.prints].filter(x => !stepNs.has(x.step));
   add2('Every part has a step', !orphan.length, orphan.length ? orphan.map(x => x.id).slice(0, 3).join(', ') : `${model.steps.length} steps`, 'Each piece is cut, fitted or bought in a numbered step.');
@@ -420,6 +434,6 @@ export function derive(plan, given = {}, system) {
   price.prints = d.prints.reduce((t, x) => t + x.est.cost * printQty(x.part), 0);
   price.total = price.stock + price.plates + price.hardware + price.consumables + price.prints;
   d.price = price;
-  d.hours = model.steps.reduce((s, st) => s + (st.hours || 0), 0);
+  d.hours = Math.round(model.steps.reduce((s, st) => s + (st.hours || 0), 0) * 10) / 10;
   return d;
 }

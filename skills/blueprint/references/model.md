@@ -9,6 +9,7 @@ Read this when writing `design.mjs`. `examples/shelf-rack/design.mjs` (in the sk
 - params: the input fields
 - build(p, k): what `k` holds
 - The model: members, plates, hardware, shapes, supports and loads, steps, checks
+- A plan with no frame
 
 ## The plan object
 
@@ -32,9 +33,9 @@ export const plan = {
 
 - The model is always millimetres, kilograms and newtons. The page's mm / in switch only changes how numbers print, so stock never depends on it.
 - Imperial (only when asked): `units: 'imperial'`, imperial stock (`squareTube(inch(1.5), inch(0.083))`, `stockLen: feet(20)`), round inch defaults and limits (`inch(60)`).
-- Every size in any text goes through `k.u`: `u.len(v)` (bare, for tables and drawings: `1500` or `59 1/16"`), `u.len(v, { u: true })` (with its unit, for sentences), `u.fine(v, { u: true })` (to a tenth: drills, clearances, walls), `u.size(v)` (overall: `1.50 m`, `4' 11"`), `u.mass(kg)`, `u.tol(mm)` (`±1 mm`), `u.force(N)`. That covers tasks, checks, facts, notes, hints, option labels and `tolerance`. The audit fails "mm" left in imperial and inch marks left in metric.
-- Bought parts keep their trade names ("Tee, 32 mm solvent weld", "M8 × 25"): the lint leaves hardware names and specs alone.
-- A shared link carries the params in the hash, always in mm and kg, bools `1`/`0`: `#length=1828.8&shelf=0` (the same for `--hash`). Imperial fields show and take fractions (`59 1/16`).
+- Every size in any text goes through `k.u`: `u.len(v)` (bare, for tables and drawings: `1500` or `59 1/16"`), `u.len(v, { u: true })` (with its unit, for sentences), `u.fine(v, { u: true })` (to a tenth: clearances, walls), `u.drill(v, { u: true })` (a drill: `8.5 mm`, `11/32"`), `u.size(v)` (overall: `1.50 m`, `4' 11"`), `u.mass(kg)` (grams or ounces when small), `u.tol(mm)` (`±1 mm`), `u.force(N)`, `u.torque(N·m)`, `u.speed(m/s)` (`10 m/s`, `22 mph`). In a table or on a drawing a bare `u.len(v)`; in a sentence always `{ u: true }`, so the number never stands without its unit. That covers tasks, checks, facts, notes, hints, option labels and `tolerance`. The audit fails "mm" left in imperial and inch marks left in metric.
+- Bought things keep their trade names in either unit system: hardware names and specs, stock labels as sold (`'1-1/2" × 1-1/2" × 11 ga square tube'`), and thread or pipe sizes in any text (`1/2"-13`, `#10-24`, `3/4" NPT`, `M8`). The lint and the units capture leave those alone; every other size follows `u`.
+- A shared link carries the params in the hash, always in mm and kg, bools `1`/`0`, a choice by its `value` as written: `#length=1828.8&shelf=0&top=steel` (the same for `--hash` and `audit --at`). Imperial fields show and take fractions (`59 1/16`).
 
 ## params: the input fields
 
@@ -51,9 +52,9 @@ export const plan = {
 | `choice` | one of `options: [{ value: 'steel', label: u => `${u.len(5, { u: true })} steel plate` }]` | a select |
 | `bool` | true / false | a checkbox |
 
-- `min` / `max` may be functions of the params declared **before**: `max: p => Math.floor((p.height - 270) / 250) + 1`.
+- `min` / `max` may be functions of the params declared **before**: `max: p => Math.floor((p.height - 270) / 250) + 1`. A limit that reads a later field stops the build with an error naming it: move the field it reads up.
 - `hint` and option `label` are strings, or functions of `u` when they name a size.
-- `group` puts fields under a heading (Size, Load, Options). Overall size first.
+- `group` puts fields under a heading (Size, Load, Options). Overall size first, unless a limit needs another field above it.
 - Params are plain data outside `build`; for imperial define helpers at the top of the file: `const inch = v => v * 25.4, lb = v => v / 2.2046;`.
 
 ## build(p, k)
@@ -84,7 +85,7 @@ return {
   tools: ['MIG welder', '...'],
   supports: [{ at: [x, y, z], fix: 'pin' }], // 'pin' (feet), 'fixed', 'roller'
   loads: [...],
-  tip: { N: 300, height: 900, sf: 1.5 },     // optional; anchored: 'step 8, four M8 anchors' when fixed down
+  tip: { N: 300, height: 900, sf: 1.5 },     // optional; anchored: 'step 8, four M8 anchors' when fixed down; with: [{ kg, at }] for a carried mass that tips it worse
   checks: [{ name, pass, value, why }],      // the plan's own checks
   steps: [...],
   facts: [['Top', '14 steel bars', 'RHS 40×20 laid flat']],   // optional; what the fields do not already say
@@ -127,8 +128,10 @@ return {
   shape: [{ type: 'cyl', a: [x, y, 0], b: [x, y, 40], r: 25 }] }
 ```
 
-- Anything bought. `shape` (a box `{ type: 'box', c, s }`, cylinder `{ type: 'cyl', a, b, r }`, sphere `{ type: 'sphere', c, r }`, mesh, or a list) draws it and makes it count in the floating check; `kg` adds to the mass and analysis; `on: 'id'` names what holds it if it does not touch it.
+- Anything bought. `shape` (a box `{ type: 'box', c, s }`, cylinder `{ type: 'cyl', a, b, r }`, sphere `{ type: 'sphere', c, r }`, mesh, or a list) draws it and makes it count in the floating check; `kg` adds to the mass, the analysis and the tip check (so a load that can be taken off is a load case, not hardware with `kg`); `on: 'id'` names what holds it if it does not touch it.
+- What the builder already owns (the welder on a cart, the antenna on a mast, the tube a clamp grips) is hardware with `owned: true`, its `kg` and real `shape`: it shows in the 3D view and in its step as "yours", carries its weight, and stays out of Parts to buy and the overall size.
 - **A fitting** (PVC tee, clamp, socket): put each pipe's nodes where the pipe really ends (the socket bottom) and give the fitting a `shape` round the joint; with `qty` above 1, one list per piece (`shape: [[run, branch], ...]`). Ends inside it read "into the tee", pipes meeting inside it are not a clash, and the analysis joins them. `examples/pvc-drying-stand` does this.
+- Only a part the size of a fitting joins pipe ends: at most 6 × the pipe's size across. A long part (a cable, a hose, a strap) never joins the ends it spans; give anything else that holds pipe ends but is not a joint `fitting: false`.
 - Entries with the same `name`, `spec` and `price` merge into one line with the total quantity.
 
 ### shapes
@@ -159,8 +162,9 @@ loads: [
 ]
 ```
 
-- Supports must hold the frame still in every direction, or the solver reports a mechanism. Two `pin`s on one vertical line (a mast in two clamps) leave it free to spin: make one `fixed`.
-- `kg` (or `N`) is spread over every node of the members in `on` and/or the points in `at` (snapped to the nearest member). `dir` defaults to down. Self weight is always added.
+- A support wherever it really bears: every foot, cap or fitting that rests on the ground, every clamp that holds it. Supports must hold the frame still in every direction, or the solver reports a mechanism. Two `pin`s on one vertical line (a mast in two clamps) leave it free to spin: make one `fixed`.
+- `kg` (or `N`) on members in `on` is spread along them by length, so a long bay carries more than a short one; on points in `at` it is shared equally. `dir` defaults to down. Self weight is always added.
+- A load can act off the frame (wind on an antenna above the mast top, a sign hung out from a post): give its real point in `at`. The solver puts the force on the nearest member point with the moment of its lever arm, so the base sees the right bending. Hardware with `kg` off the frame keeps its lever arm the same way. Give the load where it really acts; never work out an equivalent force by hand.
 - `what` reads after the load in the check: "Yield ÷ peak stress with 150 kg *on one corner*".
 - `parts: [{ on, at, kg | N, dir }, ...]` makes one case of several loads together (drag up a mast plus a load at its head).
 - `sf`: required safety factor on yield. `defl`: largest movement allowed at the loaded points, mm.
@@ -177,7 +181,7 @@ loads: [
 ```
 
 - Numbered 1, 2, 3 with no gaps; `phase` groups them; `hours` is honest time for one person; `views` picks the jig views (`'top'`, `'front'`, `'side'`).
-- `{mark:member-id}` in any step text, check or plate note prints that piece's mark; marks are assigned after `build()`, so this is the only way to write them.
+- `{mark:member-id}` or `{mark:plate-id}` in any step text, check or plate note prints that piece's or plate's mark (A, P1); marks are assigned after `build()`, so this is the only way to write them.
 - `alone: true` draws a sub-assembly on its own. `points: false` drops the point labels and joint table for parts placed by a rule; `table: { title, head, rows }` adds the step's own table instead. A column headed `✓` or listed in `ticks: [i]` gets checkboxes, `fill: [i]` gets number fields; both are saved on the device and print as boxes for a pen.
 - Every member, plate, part and print has a `step`. Not modelled, so write them as tasks: holes in members, bends, copes.
 
@@ -187,4 +191,8 @@ loads: [
 { name: 'Knee room under the top', pass: clear >= 600, value: u.len(clear, { u: true }), why: 'Sit at it on a stool.' }
 ```
 
-Anything the kit cannot know: a clearance, a work height, a span, an element length. The audit requires them at every size.
+Anything the kit cannot know: a clearance, a work height, a span, an element length. The audit requires them at every size. Compare with a hair of margin where the numbers are built to meet exactly (`hole - bolt >= 0.3 - 1e-9`), or floating point fails a check that is right.
+
+## A plan with no frame
+
+Some things have nothing to cut: a printed clamp and a few bolts, a holder for a bought part. Leave `members` empty. The kit then skips the stock, cut list and frame checks, and the audit asks for no load cases or supports; instead the plan checks prove what it must do (the bore fits, the thinnest wall, the grip, the bolt engagement). Never add a fake member to get a frame check: it puts a cut sheet for a part nobody cuts on the page.

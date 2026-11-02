@@ -3,7 +3,7 @@
 // number of its own, it only lays out what derive() found.
 import { esc } from './core.mjs';
 import { jigSheet, gaSheet, printSheet, pieceSvg, plateSvg, plateNotes, nestSvg, stepNodes, stepViews } from './shop.mjs';
-import { printBox, bedBox, printQty } from './print.mjs';
+import { printBox, bedBox, printQty, printSolids } from './print.mjs';
 import { annotate, q, ICON } from './guide.mjs';
 
 // a plate: its drawing, then its holes, notches and note as text that wraps
@@ -31,10 +31,13 @@ function mergeParts(list) {
 
 function printCuts(d, pr) {
   const u = d.units, [lo] = printBox(pr), rel = p => p.map((v, i) => u.fine(v - lo[i])).join(', ');
+  // a box cut that runs out past the solids trims the part's shape: it is not a pocket to check
+  const sp = printSolids(pr).flat(), slo = [0, 1, 2].map(i => Math.min(...sp.map(q => q[i]))), shi = [0, 1, 2].map(i => Math.max(...sp.map(q => q[i])));
+  const trims = c => c.type === 'box' && [0, 1, 2].reduce((v, i) => v * Math.max(0, Math.min(shi[i], c.c[i] + c.s[i] / 2) - Math.max(slo[i], c.c[i] - c.s[i] / 2)), 1) > 0.25 * [0, 1, 2].reduce((v, i) => v * (shi[i] - slo[i]), 1);
   const axis = (a, b) => { const v = b.map((x, i) => x - a[i]), k = [0, 1, 2].filter(i => Math.abs(v[i]) > 1e-6); return k.length === 1 ? 'xyz'[k[0]] : 'angled'; };
   const rows = [
     ...pr.shapes.filter(c => c.type === 'tube').map(c => ['Bore', `⌀${u.fine(c.ri * 2)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))]),
-    ...(pr.cuts || []).map(c => c.type === 'hole' ? ['Hole', `⌀${u.fine(c.d)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))]
+    ...(pr.cuts || []).filter(c => !trims(c)).map(c => c.type === 'hole' ? ['Hole', `⌀${u.fine(c.d)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))]
       : c.type === 'box' ? ['Pocket', c.s.map(v => u.fine(v)).join(' × '), '', rel(c.c), ''] : c.type === 'cyl' ? ['Bore', `⌀${u.fine(c.r * 2)}`, axis(c.a, c.b), rel(c.a), u.fine(Math.hypot(...c.b.map((x, i) => x - c.a[i])))] : ['Cut', c.type, '', '', '']),
   ];
   const bb = bedBox(pr);
@@ -53,7 +56,7 @@ export function totalsLine(d) {
   const bits = [
     `${u.len(hi[0] - lo[0])} × ${u.len(hi[1] - lo[1])} × ${u.len(hi[2] - lo[2])}${u.imperial ? '' : ' mm'}`,
     u.mass(d.totalKg),
-    `${d.model.members.length} pieces`,
+    ...(d.model.members.length ? [`${d.model.members.length} piece${d.model.members.length > 1 ? 's' : ''}`] : []),
     ...(plateLine(d) ? [plateLine(d)] : []),
     ...(d.prints.length ? [`${d.prints.reduce((n, x) => n + printQty(x.part), 0)} prints, about ${Math.round(d.prints.reduce((g, x) => g + x.est.grams * printQty(x.part), 0))} g, ${printHours(d)} h`] : []),
     ...(d.hours ? [`${d.hours} h of work`] : []),
@@ -73,13 +76,13 @@ export function checksHtml(d) {
 
 export function bomHtml(d) {
   const u = d.units, md = d.model;
-  let h = totalsLine(d) + `<h3>Stock${q('stock')}</h3><div class="wrap"><table class="doc"><tr><th>Section</th><th class=n>Pieces</th><th class=n>Cut length</th><th class=n>Buy</th><th class=n>Mass</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
+  let h = totalsLine(d) + (d.nesting.length ? `<h3>Stock${q('stock')}</h3><div class="wrap"><table class="doc"><tr><th>Section</th><th class=n>Pieces</th><th class=n>Cut length</th><th class=n>Buy</th><th class=n>Mass</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>` : '');
   for (const n of d.nesting) {
     const pieces = n.bars.reduce((s, b) => s + b.cuts.length, 0) + n.tooLong.length;
     const kg = (n.total / 1000) * n.sec.kgPerM;
-    h += `<tr><td>${esc(n.sec.label)}</td><td class=n>${pieces}</td><td class=n>${esc(u.run(n.total))}</td><td class=n>${n.bars.length} × ${esc(u.size(n.sec.stockLen))}</td><td class=n>${esc(u.mass(kg))}</td>${md.currency ? `<td class=n>${n.sec.price != null ? money(d, (n.bars.length * n.sec.stockLen / 1000) * n.sec.price) : ''}</td>` : ''}</tr>`;
+    h += `<tr><td><span class="trade">${esc(n.sec.label)}</span></td><td class=n>${pieces}</td><td class=n>${esc(u.run(n.total))}</td><td class=n>${n.bars.length} × ${esc(u.size(n.sec.stockLen))}</td><td class=n>${esc(u.mass(kg))}</td>${md.currency ? `<td class=n>${n.sec.price != null ? money(d, (n.bars.length * n.sec.stockLen / 1000) * n.sec.price) : ''}</td>` : ''}</tr>`;
   }
-  h += `</table></div>`;
+  if (d.nesting.length) h += `</table></div>`;
   if (md.plates.length) {
     h += `<h3>Plate and sheet</h3><div class="wrap"><table class="doc"><tr><th>Mark</th><th>Part</th><th>Size</th><th class=n>Qty</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
     for (const g of d.plateGroups) {
@@ -93,9 +96,9 @@ export function bomHtml(d) {
     for (const { part: pr, est } of d.prints) h += `<tr><td>${esc(pr.name)}</td><td><span class="spec">${esc(printSettings(pr))}</span></td><td class=n>${printQty(pr)}</td><td class=n>${Math.round(est.grams * printQty(pr))} g</td><td class=n>${(Math.round(est.hours * printQty(pr) * 10) / 10)} h</td><td class=n>${pr.step}</td>${md.currency ? `<td class=n>${money(d, est.cost * printQty(pr))}</td>` : ''}<td>${dl(pr)}</td></tr>`;
     h += `</table></div><p class="muted">Filament and time are estimates from the part's volume; your slicer has the real numbers. The .stl is the part at this size, in millimetres; the .scad is its OpenSCAD source.</p>`;
   }
-  if (md.hardware.length) {
+  if (md.hardware.some(x => !x.owned)) {
     h += `<h3>Parts to buy</h3><div class="wrap"><table class="doc bought"><tr><th>Part</th><th>Spec</th><th class=n>Qty</th><th class=n>Step</th>${md.currency ? '<th class=n>Cost</th>' : ''}</tr>`;
-    for (const x of mergeParts(md.hardware)) h += `<tr><td>${esc(x.name)}</td><td>${esc(x.spec || '')}</td><td class=n>${x.qty || 1}</td><td class=n>${x.step}</td>${md.currency ? `<td class=n>${x.price != null ? money(d, x.price * (x.qty || 1)) : ''}</td>` : ''}</tr>`;
+    for (const x of mergeParts(md.hardware.filter(x => !x.owned))) h += `<tr><td>${esc(x.name)}</td><td>${esc(x.spec || '')}</td><td class=n>${x.qty || 1}</td><td class=n>${x.step}</td>${md.currency ? `<td class=n>${x.price != null ? money(d, x.price * (x.qty || 1)) : ''}</td>` : ''}</tr>`;
     h += `</table></div>`;
   }
   if (md.consumables.length) h += `<h3>Consumables</h3><ul class="plain">${md.consumables.map(c => `<li>${esc(c.name)}${c.qty ? ` · ${esc(c.qty)}` : ''}${c.note ? ` <span class="muted">${esc(c.note)}</span>` : ''}</li>`).join('')}</ul>`;
@@ -163,10 +166,10 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
     h += `<h4>${esc(t.title || 'Table')}</h4><div class="wrap"><table class="doc"><tr>${t.head.map((c, i) => `<th${numCol(t, i) || fill.has(i) ? ' class=n' : tick(i) ? ' class=tick' : ''}>${esc(c)}</th>`).join('')}</tr>${t.rows.map((r, ri) => `<tr>${t.head.map((_, i) => cell(r[i] ?? '', i, ri)).join('')}</tr>`).join('')}</table></div>`;
   }
   for (const { part: pr, est } of d.prints.filter(x => x.part.step === n)) {
-    h += `<h4>Print: ${esc(pr.name)}${printQty(pr) > 1 ? ` x${printQty(pr)}` : ''}${q('print')}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}${printCuts(d, pr)}<p>${dl(pr)}</p>${pr.note ? mark('warn', esc(pr.note)) : ''}`;
+    h += `<h4>Print: ${esc(pr.name)}${printQty(pr) > 1 ? ` x${printQty(pr)}` : ''}${q('print')}</h4><p class="muted"><span class="spec">${esc(printSettings(pr))}</span> · about ${Math.round(est.grams)} g, ${Math.round(est.hours * 10) / 10} h each${pr.orient ? ` · print it ${esc(pr.orient)}` : ''}</p>${printSheet(d, pr)}${printCuts(d, pr)}<p>${dl(pr)}</p>${pr.note ? `<p>${esc(pr.note)}</p>` : ''}`;
   }
   const hw = mergeParts(d.model.hardware.filter(x => x.step === n));
-  if (hw.length) h += `<h4>Parts</h4><ul class="plain">${hw.map(x => `<li>${esc(x.name)} x${x.qty || 1}${x.spec ? ` <span class="muted">${esc(x.spec)}</span>` : ''}</li>`).join('')}</ul>`;
+  if (hw.length) h += `<h4>Parts</h4><ul class="plain">${hw.map(x => `<li>${esc(x.name)} x${x.qty || 1}${x.owned ? ' <span class="muted">yours</span>' : ''}${x.spec ? ` <span class="muted">${esc(x.spec)}</span>` : ''}</li>`).join('')}</ul>`;
   const ms = d.model.members.filter(m => m.step === n);
   if (ms.length) {
     h += `<h4>Jig${q('jig')}</h4>${jigSheet(d, st, stepViews(d, st))}`;
@@ -186,10 +189,11 @@ export function stepHtml(d, st, { interactive = false, checked = {} } = {}) {
 
 export function cutListHtml(d) {
   const u = d.units;
+  if (!d.pieces.length) return `<p class="muted">Nothing to cut: every part is printed or bought.</p>`;
   return `<div class="wrap"><table class="doc"><tr><th>Mark</th><th class=n>Qty</th><th>Section</th><th class=n>Long point</th><th>Left end</th><th>Right end</th><th class=n>Step</th></tr>` +
     d.pieces.map(g => {
       const [A, B] = g.endText;
-      return `<tr><td><b>${esc(g.mark)}</b> <span class="muted">${esc(g.name)}</span></td><td class=n>${g.qty}</td><td>${esc(g.sec.short)}</td><td class=n>${esc(u.len(g.pm.longPoint))}</td><td>${esc(A.ang)} · ${esc(A.how)}</td><td>${esc(B.ang)} · ${esc(B.how)}</td><td class=n>${g.step}</td></tr>`;
+      return `<tr><td><b>${esc(g.mark)}</b> <span class="muted">${esc(g.name)}</span></td><td class=n>${g.qty}</td><td><span class="trade">${esc(g.sec.short)}</span></td><td class=n>${esc(u.len(g.pm.longPoint))}</td><td>${esc(A.ang)} · ${esc(A.how)}</td><td>${esc(B.ang)} · ${esc(B.how)}</td><td class=n>${g.step}</td></tr>`;
     }).join('') + `</table></div><h3>Cutting plan</h3><p class="muted">Each bar is one stock length; cut the pieces left to right.</p>` +
     d.nesting.map(n => `<figure>${nestSvg(d, n)}</figure>`).join('');
 }
@@ -207,12 +211,12 @@ export function contentsHtml(d) {
   const bad = d.checks.filter(c => !c.pass).length;
   return `<p class="contents-h">Contents</p><ol class="contents">` +
     row('checks', 1, 'Checks', bad ? `${bad} failing` : `all ${d.checks.length} pass`) +
-    row('bom', 2, 'Materials', `${bars} stock length${bars > 1 ? 's' : ''}`) +
+    row('bom', 2, 'Materials', bars ? `${bars} stock length${bars > 1 ? 's' : ''}` : `${md.hardware.length + md.prints.length} part${md.hardware.length + md.prints.length === 1 ? '' : 's'}`) +
     row('drawings', 3, 'Drawings', 'top, front, side') +
     row('legend', 4, 'Legend', 'units, datum, joints') +
     row('order', 5, 'Order', `${new Set(md.steps.map(s => s.phase || 'Build')).size} phases`) +
     row('steps', 6, 'Steps', `${md.steps.length} steps${d.hours ? `, ~${d.hours} h` : ''}`) +
-    row('cutlist', 7, 'Cut list', `${d.pieces.length} piece mark${d.pieces.length > 1 ? 's' : ''}`) +
+    row('cutlist', 7, 'Cut list', d.pieces.length ? `${d.pieces.length} piece mark${d.pieces.length > 1 ? 's' : ''}` : 'nothing to cut') +
     `<li><button type="button" id="print" class="crow"><span class="cn"></span><span class="ct">Print this plan</span><span class="cl" aria-hidden="true"></span><span class="cm">${PRINT_ICON}</span></button></li>` +
     `</ol>`;
 }

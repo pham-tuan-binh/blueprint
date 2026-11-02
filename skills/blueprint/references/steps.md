@@ -28,7 +28,7 @@ Never fix what you have not measured. Nothing hot, dusty or wet near a part it w
 { n: 2, phase: 'Fabricate', title: 'Top frame (tack)', hours: 2, views: ['top'],
   tasks: [
     'Rails (A, B) upside down on the table.',
-    `Outside ${u.len(L)} × ${u.len(D)}.`,
+    `Outside ${u.len(L)} × ${u.len(D, { u: true })}.`,
     'Clamp square. Tack each joint top and bottom.',
   ],
   check: `Diagonals equal ${u.tol(2)}. Flat at all four corners.`,
@@ -47,7 +47,7 @@ On the page the step opens with its number big (64 px), the title and the time, 
 
 ## Can it get there?
 
-The model shows where each part ends up, not how it got there. Before a step fits a part, walk its path: what is already built round this spot, can the part pass it, and can a hand and a tool reach it to fasten it? A part goes in before whatever closes round it, or is sized to pass through the opening that is left. The same holds for everything that runs through the build: a cable, hose or pipe is threaded while its path is still open, with its connector on the end that can pass.
+The model shows where each part ends up, not how it got there. Before a step fits a part, walk its path: what is already built round this spot, can the part pass it, and can a hand and a tool reach it to fasten it? A part goes in before whatever closes round it, or is sized to pass through the opening that is left. The same holds for everything that runs through the build: a cable, hose or pipe is threaded while its path is still open, with its connector on the end that can pass. When both ends carry plugs, the path needs an opening the plug fits through, or a slot open to an edge so the cable is laid in sideways.
 
 Typical traps, all one mistake: a deck larger than the opening of a rack already welded round it; a sheet between posts tied top and bottom; a wheel on an axle welded at both ends; a plug that must go up a mast after the hub is bolted on.
 

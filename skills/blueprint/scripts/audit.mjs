@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // Prove a plan, the way a checker would, before anyone cuts steel.
 //
-//   node scripts/audit.mjs path/to/design.mjs [--samples 40] [--verbose]
+//   node scripts/audit.mjs path/to/design.mjs [--samples 40] [--verbose] [--at "length=800&height=1500"]...
+//
+// --at (repeatable) runs only the sizes given, every check printed: a quick look at one
+// size, a threshold or a worst case, without editing the defaults.
 //
 // Runs derive() at the defaults, at every parameter's min and max (the others at
 // their defaults), at all-min and all-max, and at random combinations, in metric
@@ -16,9 +19,10 @@ import { readFileSync } from 'node:fs';
 const KIT = resolve(dirname(fileURLToPath(import.meta.url)), '../kit');
 const args = process.argv.slice(2);
 const file = args.find(a => !a.startsWith('--'));
-if (!file) { console.error('usage: node scripts/audit.mjs path/to/design.mjs [--samples 40] [--verbose]'); process.exit(2); }
+if (!file) { console.error('usage: node scripts/audit.mjs path/to/design.mjs [--samples 40] [--verbose] [--at "a=1&b=2"]...'); process.exit(2); }
 const opt = (k, def) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : def; };
 const verbose = args.includes('--verbose');
+const atList = args.flatMap((a, i) => (a === '--at' ? [args[i + 1]] : []));
 const { derive } = await import(pathToFileURL(join(KIT, 'derive.mjs')).href);
 const { resolveParams } = await import(pathToFileURL(join(KIT, 'core.mjs')).href);
 const mod = await import(pathToFileURL(resolve(file)).href);
@@ -44,6 +48,22 @@ for (const pd of params) {
   if (!['len', 'count', 'kg', 'choice', 'bool', 'number'].includes(pd.type)) fail(`param ${pd.id}`, `unknown type "${pd.type}" (len, count, kg, number, choice, bool)`);
   if (['len', 'count', 'kg', 'number'].includes(pd.type) && (pd.min == null || pd.max == null)) fail(`param ${pd.id}`, 'needs min and max');
   if (pd.type === 'choice' && !pd.options?.some(o => o.value === pd.value)) fail(`param ${pd.id}`, 'default is not one of its options');
+}
+
+// ---------------------------------------------------------------- --at: one size, every check
+if (atList.length) {
+  let bad = 0;
+  for (const at of atList) {
+    const given = Object.fromEntries(new URLSearchParams(at.replace(/^#/, '')));
+    for (const system of ['metric', 'imperial']) {
+      const d = derive(plan, given, system);
+      console.log(`── ${at} [${system}]${d.notes.length ? ' · ' + d.notes.join('; ') : ''}`);
+      if (system === 'imperial') { const f = d.checks.filter(c => !c.pass); f.forEach(c => console.log(`  ✗ ${c.name}: ${c.value}`)); bad += f.length; continue; }
+      for (const c of d.checks) { console.log(`  ${c.pass ? '✓' : '✗'} ${c.name}: ${c.value}`); if (!c.pass) bad++; }
+    }
+  }
+  console.log(bad ? `\n${bad} check(s) failing` : '\nevery check passing at these sizes (this is not the audit: run it without --at)');
+  process.exit(bad ? 1 : 0);
 }
 
 // ---------------------------------------------------------------- the sweep
@@ -95,6 +115,8 @@ const fingerprint = d => JSON.stringify([d.bbox.map(b => b.map(Math.round)), d.p
 const prints = {};
 // a metric length in text; a wire gauge ("2.5 mm²") is a product name, not a length
 const metricNum = /(^|[^\w.])\d+(\.\d+)?\s?(mm|cm|m)\b(?![²2])/;
+// trade names keep their units in either system: a 1/2"-13 or #10-24 thread, a 3/4" NPT or BSP pipe thread, an M8 bolt
+const tradeFree = t => String(t).replace(/(\d+\s)?\d+(\/\d+)?"\s?-\s?\d+/g, '').replace(/#\d+-\d+/g, '').replace(/(\d+\s)?\d+(\/\d+)?"\s?(NPT|NPS|BSPP|BSPT|BSP)\b/g, '');
 let worst = {};
 for (const c of cases) {
   for (const system of c.sweep ? ['metric'] : ['metric', 'imperial']) {
@@ -120,8 +142,9 @@ for (const c of cases) {
       .concat([['model tolerance', d.model.tolerance || '']])
       .concat((plan.params || []).flatMap(pd => [['param ' + pd.id, typeof pd.hint === 'function' ? pd.hint(d.units) : pd.hint || ''],
         ...(pd.options || []).map(o => ['param ' + pd.id, typeof o.label === 'function' ? o.label(d.units) : o.label])]));
-    const bad = system === 'imperial' ? metricNum : /\d(\s\d+\/\d+)?"|\d+(\.\d+)?\s?(in|inch|inches|ft|feet)\b/;
-    for (const [where2, t] of texts) if (bad.test(t)) { fail(`${where2} text`, `hard-coded ${system === 'imperial' ? 'metric' : 'imperial'} "${t.match(bad)[0].trim()}" in "${t.slice(0, 70)}…": format sizes with u.len() (a hint or option label can be a function of u)`); break; }
+    // "in" is a unit only when it ends the phrase (12 in, 12 in. or 12in), not "2.99 in the wind"
+    const bad = system === 'imperial' ? metricNum : /\d(\s\d+\/\d+)?"|\d+(\.\d+)?(in\b|\s?in(?=[.,;:)]|$)|\s?(inch|inches|ft|feet)\b)/;
+    for (const [where2, t0] of texts) { const t = tradeFree(t0); if (bad.test(t)) { fail(`${where2} text`, `hard-coded ${system === 'imperial' ? 'metric' : 'imperial'} "${t.match(bad)[0].trim()}" in "${t.slice(0, 70)}…": format sizes with u.len() (a hint or option label can be a function of u)`); break; } }
     if (c.name === 'defaults' && system === 'metric') {
       const md = d.model;
       for (const s of md.steps) {
@@ -130,14 +153,18 @@ for (const c of cases) {
         if (md.members.some(m => m.step === s.n) && !s.check) fail(`step ${s.n}`, 'fits members but ends without a check to pass');
       }
       if (!md.datum) fail('model', 'no datum: say where x, y and z are measured from');
-      if (!md.loads?.length) fail('model', 'no load case: say what it must hold and prove it');
-      if (!md.supports?.length) fail('model', 'no supports: say where it stands');
+      // a frame is proved by the solver; a plan with no members (a print and bought parts) by its plan checks
+      if (md.members.length) {
+        if (!md.loads?.length) fail('model', 'no load case: say what it must hold and prove it');
+        if (!md.supports?.length) fail('model', 'no supports: say where it stands');
+      } else if (!md.checks.length) fail('model', 'no members and no plan checks: prove what it must do (a fit, a wall, a grip) with plan checks');
       if (!md.tools?.length) fail('model', 'no tools list');
       if (md.tip?.anchored) {
         const n = +(/step (\d+)/.exec(md.tip.anchored) || [])[1];
-        const fixings = md.hardware.filter(h => h.step === n && /anchor|bolt|screw|lag|fixing/i.test(h.name + ' ' + (h.spec || '')));
+        // whatever holds it down (anchors, pegs, straps, ballast) is bought hardware fitted in that step
+        const fixings = md.hardware.filter(h => h.step === n);
         if (!n || !md.steps.some(s => s.n === n)) fail('tip', 'anchored must name the step that fixes it down: "step 6, four M8 anchors"');
-        else if (!fixings.length) fail('tip', `anchored in step ${n}, but no anchor, bolt or screw is fitted in step ${n}`);
+        else if (!fixings.length) fail('tip', `anchored in step ${n}, but no hardware is fitted in step ${n}: list what holds it down (anchors, pegs, straps, ballast) as hardware in that step`);
       }
       const nsteps = md.steps.map(s => s.n);
       nsteps.forEach((n, i) => { if (n !== i + 1) fail('steps', `numbered ${nsteps.join(',')}: number them 1, 2, 3…`); });

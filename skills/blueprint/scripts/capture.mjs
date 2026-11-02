@@ -89,17 +89,19 @@ const lenField = await p.evaluate(() => {
   return pd && { id: pd.id, len: pd.type === 'len', max: window.__blueprint.d.limits[pd.id].max, min: window.__blueprint.d.limits[pd.id].min, value: window.__blueprint.d.p[pd.id] };
 });
 if (lenField) {
-  const before = await text(p, '#cutlist-body');
+  // the whole plan, not only the cut list: a print-only plan changes its prints and steps
+  const planText = async () => (await Promise.all(['#cutlist-body', '#bom-body', '#steps-body', '#checks-body'].map(s => text(p, s)))).join('\n');
+  const before = await planText();
   const target = Math.abs(lenField.value - lenField.max) < 1 ? lenField.min : lenField.max;
   // type it the way the field shows it: mm, or inches in an imperial page
   const typed = await p.evaluate(([mm, isLen]) => { const u = window.__blueprint.d.units; return isLen ? (u.imperial ? u.toText(mm) : String(Math.round(mm))) : String(Math.round(mm)); }, [target, lenField.len]);
   await p.fill(`#f-${lenField.id}`, typed);
   await p.press(`#f-${lenField.id}`, 'Tab');
   await p.waitForTimeout(600);
-  const after = await text(p, '#cutlist-body');
+  const after = await planText();
   const got = await p.evaluate(id => window.__blueprint.d.p[id], lenField.id);
   if (Math.abs(got - target) > 1) problems.push(`typing ${typed} into ${lenField.id} gave ${Math.round(got)} mm, not ${Math.round(target)}`);
-  if (before === after) problems.push(`changing ${lenField.id} did not change the cut list`);
+  if (before === after) problems.push(`changing ${lenField.id} did not change the plan (cut list, materials, steps or checks)`);
   if (!(await p.evaluate(() => location.hash.length > 1))) problems.push('the size is not in the URL, so it cannot be shared');
   await p.screenshot({ path: join(out, 'desktop-changed.png') });
   await p.click('#reset');
@@ -147,18 +149,19 @@ if (await p.$('[data-stl]')) {
 // of the first is left in the plan's own numbers (bought parts keep their trade names)
 const home = await p.evaluate(() => window.__blueprint.d.units.system);
 const other = home === 'imperial' ? 'metric' : 'imperial';
-const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain, .spec, .bought').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
+const ownText = (sel) => p.$eval(sel, el => { const c = el.cloneNode(true); c.querySelectorAll('ul.plain, .spec, .bought, .trade').forEach(x => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; }).catch(() => '');
 const SECTIONS = ['#checks-body', '#bom-body', '#drawings-body', '#legend-body', '#steps-body', '#cutlist-body', '#size'];
 await p.click(`[data-units="${other}"]`);
 await p.waitForTimeout(600);
 const left = other === 'imperial' ? /(?<![\d.])\d+(\.\d+)?\s?mm\b(?![²2])/g : /\d+(\s\d+\/\d+)?"/g;
 for (const sel of SECTIONS) {
-  const t = await ownText(sel), hits = t.match(left);
+  // trade names keep their units: a 1/2"-13 thread, a 3/4" NPT pipe
+  const t = (await ownText(sel)).replace(/(\d+\s)?\d+(\/\d+)?"\s?-\s?\d+/g, '').replace(/(\d+\s)?\d+(\/\d+)?"\s?(NPT|NPS|BSPP|BSPT|BSP)\b/g, ''), hits = t.match(left);
   if (!hits) continue;
   const at = t.indexOf(hits[0]), ctx = t.slice(Math.max(0, at - 40), at + 20).replace(/\s+/g, ' ').trim();
   problems.push(`${other}: ${sel.replace(/^#|-body$/g, '')} still shows ${other === 'imperial' ? 'millimetres' : 'inches'} (${hits.slice(0, 3).join(', ')}) in "…${ctx}…": format it with u.len() / u.tol() in design.mjs`);
 }
-if (other === 'imperial' && !/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
+if (other === 'imperial' && (await p.evaluate(() => window.__blueprint.d.pieces.length)) && !/"/.test(await text(p, '#cutlist-body'))) problems.push('imperial: no inch marks in the cut list');
 await shot(p, '#model', `${other}-model.png`);
 await shot(p, '#cutlist', `${other}-cutlist.png`);
 await shot(p, '#steps-body .step:nth-child(2)', `${other}-step-2.png`);
@@ -169,7 +172,7 @@ if (args.includes('--pdf')) {
   await p.emulateMedia({ media: 'print' });
   await p.pdf({ path: join(out, 'plan.pdf'), format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '12mm', left: '10mm', right: '10mm' } });
   // pages as images, so the print layout can be read too
-  if (hasPdftoppm()) execSync(`pdftoppm -r 50 -png "${join(out, 'plan.pdf')}" "${join(out, 'pdf')}"`);
+  if (hasPdftoppm()) execSync(`pdftoppm -r 50 -png "${join(out, 'plan.pdf')}" "${join(out, 'pdf')}"`, { stdio: ['ignore', 'ignore', 'pipe'] });
   else console.log('note: pdftoppm not found, so plan.pdf pages were not rendered to PNG (install poppler-utils)');
 }
 await p.close();

@@ -122,8 +122,15 @@ export function makeUnits(system = 'metric') {
     },
     // long totals: 14.2 m / 46.6 ft
     run: mm => (imp ? `${(mm / 304.8).toFixed(1)} ft` : `${(mm / 1000).toFixed(1)} m`),
+    // a drill or clearance hole: the nearest 1/64" in imperial (how drills are sold), a tenth of a mm in metric
+    drill: (mm, { u = false } = {}) => (imp ? fracIn(mm, 64) : `${Math.round(mm * 10) / 10}${u ? ' mm' : ''}`),
     tol: mm => (imp ? '±' + fracIn(Math.max(mm, 0.8)) : `±${mm} mm`),
-    mass: kg => (imp ? `${Math.round(kg * 2.2046)} lb` : `${kg < 10 ? kg.toFixed(1) : Math.round(kg)} kg`),
+    // a torque, given in N·m: a bolt tightened, a clamp's grip against turning
+    torque: Nm => (imp ? `${Math.round(Nm * 0.7376 * 10) / 10} lbf·ft` : `${Math.round(Nm * 10) / 10} N·m`),
+    // a wind or travel speed, given in m/s
+    speed: ms => (imp ? `${Math.round(ms * 2.237)} mph` : `${Math.round(ms * 10) / 10} m/s`),
+    // small parts in grams or ounces, so a printed clip is not "0.0 kg"
+    mass: kg => (imp ? (kg < 0.45 ? `${Math.max(1, Math.round(kg * 35.27))} oz` : `${Math.round(kg * 2.2046)} lb`) : kg < 0.1 ? `${Math.max(1, Math.round(kg * 1000))} g` : `${kg < 10 ? kg.toFixed(1) : Math.round(kg)} kg`),
     force: N => (imp ? `${Math.round(N / 4.448)} lbf` : `${Math.round(N)} N`),
     area: mm2 => (imp ? `${(mm2 / 92903).toFixed(1)} ft²` : `${(mm2 / 1e6).toFixed(2)} m²`),
     stress: mpa => (imp ? `${(mpa * 0.145).toFixed(1)} ksi` : `${Math.round(mpa)} MPa`),
@@ -160,13 +167,22 @@ export function resolveParams(defs, given = {}) {
     if (d.type === 'choice') { if (!d.options.some(o => o.value === v)) v = d.value; }
     else if (d.type === 'bool') v = v === true || v === 'true' || v === 1 || v === '1';
     else {
-      const min = typeof d.min === 'function' ? d.min(p) : d.min, max = typeof d.max === 'function' ? d.max(p) : d.max;
+      // a limit may only read the params declared before it: anything else is undefined here
+      const lim = (k, f) => {
+        if (typeof f !== 'function') return f;
+        const r = f(p);
+        if (!Number.isFinite(r)) throw new Error(`param ${d.id}: its ${k} came out as ${r}. A limit may only use params declared before it (${Object.keys(p).join(', ') || 'none yet'}); move the field it reads above "${d.id}"`);
+        return r;
+      };
+      const min = lim('min', d.min), max = lim('max', d.max);
       limits[d.id] = { min, max };
       v = Number(v);
       if (!Number.isFinite(v)) v = d.value;
       if (d.type === 'count') v = Math.round(v);
-      if (min != null && v < min) { if (given[d.id] != null) notes.push(`${d.label} raised to its minimum`); v = min; }
-      if (max != null && v > max) { if (given[d.id] != null) notes.push(`${d.label} lowered to its maximum`); v = max; }
+      // a hair outside a limit is the limit: 24" typed into a field whose max is 24 × 25.4
+      const eps = 1e-6 * Math.max(1, Math.abs(v));
+      if (min != null && v < min) { if (given[d.id] != null && v < min - eps) notes.push(`${d.label} raised to its minimum`); v = min; }
+      if (max != null && v > max) { if (given[d.id] != null && v > max + eps) notes.push(`${d.label} lowered to its maximum`); v = max; }
     }
     p[d.id] = v;
   }

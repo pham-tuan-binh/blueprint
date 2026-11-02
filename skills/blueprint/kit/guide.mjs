@@ -237,7 +237,7 @@ ${fig(markedJig(d, ptStep, view, pt.name), `One joint, <code>${esc(pt.name)}</co
   if (bay) add('square', 'Squareness', 'diagonals', `
 ${fig(diagJig(d, bay.st, bay.v, bay.b), 'Both diagonals of a rectangle. Equal = square.')}
 <p>Not equal: push the long diagonal until they match, then check again.</p>`);
-  add('stock', 'Buying stock', `${d.nesting.length} section${d.nesting.length > 1 ? 's' : ''}`, `<p>The materials list says how many lengths to buy; the cutting plan shows which pieces come out of each. Reject bent or damaged lengths. Write the piece mark on every piece as you cut it.</p>`);
+  if (d.nesting.length) add('stock', 'Buying stock', `${d.nesting.length} section${d.nesting.length > 1 ? 's' : ''}`, `<p>The materials list says how many lengths to buy; the cutting plan shows which pieces come out of each. Reject bent or damaged lengths. Write the piece mark on every piece as you cut it.</p>`);
   if (piece) add('cut', 'Cut sheets', 'marks, long point', `
 <div class="gpiece">${pieceSvg(d, piece)}</div>
 ${piece.endText[0].square && piece.endText[1].square ? `<ol><li>Measure the long point from a square end.</li><li>Mark it all the way round.</li><li>Cut on the waste side. Deburr.</li></ol>`
@@ -251,18 +251,21 @@ ${piece.endText[0].square && piece.endText[1].square ? `<ol><li>Measure the long
   if (glued) add('glue', 'Dry fit and cement', 'dry fit first', `
 <ol><li>Dry fit everything. Check it.</li><li>Draw a line across each joint so it goes back the same way.</li><li>One joint at a time: primer, cement on both parts, push home with a quarter turn to the line, hold 30 seconds.</li><li>Handle it gently after about 2 hours. Load it only after the full cure time on the can (often 24 hours).</li></ol>`);
   if (d.prints.length) add('prints', '3D prints', 'settings, files', `
-<p>Each print lists its filament, layer height, walls, infill and how to lay it on the bed. Download the <code>.stl</code> (the part at this size) or the <code>.scad</code> (its source). Print them first: they take hours, and you can cut while the printer runs.</p>`);
+<p>Each print lists its filament, layer height, walls, infill and how to lay it on the bed. Download the <code>.stl</code> (the part at this size) or the <code>.scad</code> (its source). Print them first: they take hours${d.pieces.length ? ', and you can cut while the printer runs' : ''}.</p>`);
   add('checks', 'The checks', 'what they prove', `
-<p>Every size the fields allow is checked before you see it: every joint can be made, nothing floats or clashes, pieces fit the stock, and it holds its loads. A <b>safety factor</b> of 2 means it would take twice the load before the metal bends for good. <b>Sag</b> is how far it moves under the rated load.</p>
+<p>Every size the fields allow is checked before you see it: ${[framed.length || d.pieces.length ? 'every joint can be made' : '', 'nothing floats or clashes', d.pieces.length ? 'pieces fit the stock' : '', d.prints.length ? 'prints fit the printer' : '', d.loads.length ? 'it holds its loads' : 'it does what the plan checks prove'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ', and $1')}.${d.loads.length ? ` A <b>safety factor</b> of 2 means it would take twice the load before it gives way for good. <b>Sag</b> is how far it moves under the rated load.` : ''}</p>
 <p>A plan is a starting point, not an engineer's sign-off. Load-test it gently.</p>`);
-  add('tol', 'Tolerances', 'how close is close enough', `<p>${esc(md.tolerance || (welded ? `Cut ${u.tol(1)}, tacked ${u.tol(1)}, finished ${u.tol(2)}.` : `Cut ${u.tol(1)}.`))} Out of tolerance: fix it now, before the next step.</p>`);
+  add('tol', 'Tolerances', 'how close is close enough', `<p>${esc((t => (/[.!?]$/.test(t) ? t : t + '.').replace(/^./, c => c.toUpperCase()))(md.tolerance || (welded ? `Cut ${u.tol(1)}, tacked ${u.tol(1)}, finished ${u.tol(2)}.` : `Cut ${u.tol(1)}.`)))} Out of tolerance: fix it now, before the next step.</p>`);
   add('safety', 'Safety', 'before you start', `<ul>
-<li>Eye protection for every cut. Ear protection for saws and grinders.</li>
+${d.pieces.length || md.plates.length ? '<li>Eye protection for every cut. Ear protection for saws and grinders.</li>' : '<li>Eye protection when drilling or trimming prints.</li>'}
 ${welded ? '<li>Welding: auto-darkening helmet, leather gloves, cotton sleeves. Never weld galvanised steel. Extinguisher in reach.</li>' : ''}
 ${glued ? '<li>Primer and cement: ventilate, gloves, no flames.</li>' : ''}
 ${d.prints.length ? '<li>Printing: ventilate for ASA and ABS.</li>' : ''}
 <li>Load-test gently before you trust it.</li></ul>`);
-  const glossary = Object.entries(TIPS).map(([k, [t, more]]) => `<tr><td><a href="#${S.some(s => s.id === more) ? more : 'start'}">${esc({ lp: 'long point', cl: '℄', sf: 'safety factor', weldout: 'weld out', dryfit: 'dry fit', loadtest: 'load test', points: 'joint positions' }[k] || k)}</a></td><td>${esc(t)}</td></tr>`).join('');
+  // only the terms this plan uses: a term whose section is in the guide, or that its steps say
+  const stepText = md.steps.flatMap(st => [st.title, st.summary, st.check, st.tip, ...st.tasks]).filter(Boolean).join(' ');
+  const said = new Set(TERMS.filter(([re]) => re.test(stepText)).map(([, k]) => k));
+  const glossary = Object.entries(TIPS).filter(([k, [, more]]) => (S.some(s => s.id === more) || said.has(k)) && !(['sf', 'sag'].includes(k) && !d.loads.length)).map(([k, [t, more]]) => `<tr><td><a href="#${S.some(s => s.id === more) ? more : 'start'}">${esc({ lp: 'long point', cl: '℄', sf: 'safety factor', weldout: 'weld out', dryfit: 'dry fit', loadtest: 'load test', points: 'joint positions' }[k] || k)}</a></td><td>${esc(t)}</td></tr>`).join('');
   add('glossary', 'Glossary', 'every term', `<div class="wrap"><table class="doc">${glossary}</table></div>`);
 
   const contents = `<nav class="toc" aria-label="Contents"><p class="contents-h">Contents</p><ol class="contents">` +

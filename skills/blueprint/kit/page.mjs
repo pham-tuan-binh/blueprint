@@ -120,7 +120,7 @@ ${Q_CSS}
   .dls,.back,.seg,.viewer-box,.step-3d,.toggle-3d,.vtools,.pick,.size-act,#size-form,.cams,.crow{display:none!important}
   .toc{break-after:page}.size>p.muted{display:none}.built{display:block}
   .split{display:block}.size{border:1px solid #000}.sec{margin-top:48px}.steps-grid{display:block;width:auto;margin:0}
-  .step{break-before:page;margin-top:0}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}
+  #steps{break-before:page}.step{break-before:page;margin-top:0}#steps-body .step:first-of-type{break-before:avoid;margin-top:40px}.piece-list svg,figure,.sheet,table{break-inside:avoid}h2,h3,h4,.step-h{break-after:avoid}
   details.sheets>summary{list-style:none;font-weight:700}details::details-content{content-visibility:visible;display:block}a{text-decoration:none}main{padding-top:0}
 }
 `;

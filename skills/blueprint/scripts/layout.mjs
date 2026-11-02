@@ -45,7 +45,9 @@ export function layoutAudit() {
     const n = textInk(sh.querySelector('.sn'), '0'), t = textInk(sh.querySelector('h3'));
     const s = probe(); const pEl = sh.querySelector('p'); pEl.appendChild(s); const hb = s.getBoundingClientRect().top; s.remove();
     add('step title top vs number top', sh, t.top - n.top);
-    add('step hours baseline vs number baseline', sh, hb - n.bottom);
+    // a title that wraps is taller than the number, so its hours line sits under it, not on the number's baseline
+    const h3 = sh.querySelector('h3'), oneLine = h3.getClientRects().length && h3.getBoundingClientRect().height < parseFloat(getComputedStyle(h3).fontSize) * 1.8;
+    if (oneLine) add('step hours baseline vs number baseline', sh, hb - n.bottom);
   });
   // 4. checkboxes vs the first line of their task
   document.querySelectorAll('.tasks li').forEach(li => { const i = li.querySelector('input'), l = li.querySelector('label'); if (shown(i)) add('checkbox vs task text', li, boxMid(i) - textInk(l, 'x').mid); });

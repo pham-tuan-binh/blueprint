@@ -140,6 +140,15 @@ function meshPoly(it, V) {
 const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
+// a prism seen along its extrusion is its own outline (which may be concave); otherwise the hull
+const area2 = P => Math.abs(P.reduce((s, p, i) => { const q = P[(i + 1) % P.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
+function outlineOrHull(it, V) {
+  const h = hull2(it.pts.map(V.pr));
+  if (!it.ring) return h;
+  const r = it.ring.map(V.pr);
+  return area2(r) > 0.3 * area2(h) ? r : h;
+}
+
 // One orthographic view with overall dimensions. now(id) marks the parts of this step.
 // overlay(V, fs) adds marks of a figure's own; win { c, r } crops to a close-up round c.
 function viewSvg(items, view, { now = () => true, labels = [], title = '', u, dims = true, cls = 'jig', fs: fsIn, dimPts = null, bare = false, overlay = null, win = null }) {
@@ -147,7 +156,7 @@ function viewSvg(items, view, { now = () => true, labels = [], title = '', u, di
   // in the flat views a member is drawn as short slices, each sorted by its own depth, so a
   // sloped member passing over or under another overlaps right (a whole member has no one depth)
   let polys = items.flatMap(it => it.mesh ? [meshPoly(it, V)] : (view !== 'iso' && it.kind === 'member' && it.pts.length === 8) ? memberSlices(it, V)
-    : [{ ...it, hull: hull2(it.pts.map(V.pr)), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }])
+    : [{ ...it, hull: outlineOrHull(it, V), depth: it.pts.reduce((s, q) => s + V.depth(q), 0) / it.pts.length }])
     .sort((a, b) => a.depth - b.depth);
   if (view === 'iso') polys = isoOrder(polys);
   const draw = p => {
@@ -322,8 +331,8 @@ export function thumbSvg(d, view = 'iso') {
 export function printSheet(d, pr) {
   const cuts = [...(pr.cuts || []), ...pr.shapes.filter(c => c.type === 'tube').map(c => ({ type: 'cyl', a: c.a, b: c.b, r: c.ri }))];
   const items = [
-    ...printSolids(pr).map(pts => ({ id: pr.id, kind: 'print', step: pr.step, pts })),
-    ...printSolids({ shapes: cuts.map(c => (c.type === 'hole' ? { ...c, type: 'cyl', r: c.d / 2 } : c)) }).map(pts => ({ id: pr.id, kind: 'cut', step: pr.step, pts })),
+    ...printSolids(pr).map(pts => ({ id: pr.id, kind: 'print', step: pr.step, pts, ring: pts.ring })),
+    ...printSolids({ shapes: cuts.map(c => (c.type === 'hole' ? { ...c, type: 'cyl', r: c.d / 2 } : c)) }).map(pts => ({ id: pr.id, kind: 'cut', step: pr.step, pts, ring: pts.ring })),
   ];
   // text sized to the sheet as it is shown (about 520 px wide), not to the part
   const [lo, hi] = printBox(pr);
@@ -354,7 +363,7 @@ export function pieceSvg(d, g) {
   const u = d.units, pm = g.pm, sec = g.sec;
   const [A, B] = g.endText;
   const head = (total) => `<text class="pt" x="10" y="28">${esc(g.mark)}</text><text class="pq" x="${10 + 18 * g.mark.length + 8}" y="28">x${g.qty}</text>` +
-    `<text class="ps" x="10" y="52">${esc(g.name)} · ${esc(sec.short)} · step ${g.step}</text>` +
+    `<text class="ps" x="10" y="52">${esc(g.name)} · <tspan class="trade">${esc(sec.short)}</tspan> · step ${g.step}</text>` +
     `<text class="ps pm2" x="10" y="72">${esc(idList(g.ids, total))}</text>` +
     `<text class="pk" x="${total - 10}" y="28" text-anchor="end">${esc(u.len(pm.longPoint, { u: true }))}</text>` +
     `<text class="ps" x="${total - 10}" y="52" text-anchor="end">long point</text>`;
@@ -469,7 +478,7 @@ export function nestSvg(d, n) {
   const u = d.units, S = n.sec.stockLen, W = 720, k = W / S, bh = 26, gap = 12;
   const H = n.bars.length * (bh + gap) + 44;
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W + 120} ${H}" class="nest" role="img" aria-label="Cutting plan ${esc(n.sec.short)}">`;
-  s += `<text class="ps" x="0" y="16">${esc(n.sec.short)} · ${n.bars.length} x ${esc(u.size(S))} lengths · kerf ${esc(u.len(d.model.kerf))}</text>`;
+  s += `<text class="ps" x="0" y="16"><tspan class="trade">${esc(n.sec.short)}</tspan> · ${n.bars.length} x ${esc(u.size(S))} lengths · kerf ${esc(u.len(d.model.kerf))}</text>`;
   n.bars.forEach((b, i) => {
     const y = 30 + i * (bh + gap);
     s += `<rect class="nb" x="0" y="${y}" width="${f1(W)}" height="${bh}"/>`;

@@ -69,7 +69,11 @@ function solidsOf(part) {
   return part.shapes.map(sh => {
     if (sh.type === 'prism') {
       const [iu, iv, iz] = prismAxes(sh.axis);
-      return sh.pts.flatMap(([u, v]) => [sh.z0, sh.z0 + sh.h].map(z => { const q = []; q[iu] = u; q[iv] = v; q[iz] = z; return q; }));
+      const at = (u, v, z) => { const q = []; q[iu] = u; q[iv] = v; q[iz] = z; return q; };
+      const pts = sh.pts.flatMap(([u, v]) => [sh.z0, sh.z0 + sh.h].map(z => at(u, v, z)));
+      // the outline in order, so a view along the extrusion draws it as it is (concave too), not its hull
+      pts.ring = sh.pts.map(([u, v]) => at(u, v, sh.z0));
+      return pts;
     }
     if (sh.type === 'cyl' || sh.type === 'tube') {
       const ax = v3.norm(v3.sub(sh.b, sh.a));
